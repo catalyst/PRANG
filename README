@@ -1,0 +1,60 @@
+README for SRS::EPP::Proxy
+==========================
+
+This package in an implementation of an application server proxy
+between the stateful EPP protocol, as described in RFC3730 and a
+plethora of other languages, and the stateless SRS XML language.
+
+On its own, the application has a somewhat limited audience;
+basically, domain registrars who want to manage their .nz domains (or
+any other CCTLD operator using the GPL'd registry software available
+at http://dnrs.sf.net/) using their existing EPP software, but want to
+retain the actual signed messages which are sent to and from the
+registry.  These messages are useful in that they are PGP signed,
+hence providing non-repudiation in both directions.
+
+However the code base also serves as a useful base for those who are
+writing XML application servers, or an EPP registry.  Contributions
+which generalise the code base to make it more useful to you will be
+accepted if they don't break the code for us and conform to the patch
+submission guidelines; see the SubmittingPatches file for details.
+
+
+Installing
+----------
+The application is designed to be installed like a CPAN module; so use
+the usual:
+
+  perl Makefile.PL
+  make
+  sudo make install
+
+The CPAN module dependencies will be highlighted during the first
+command. If you do not have 'sudo' installed, you can use:
+
+  su root -c make install
+
+Once it is installed, the 'srs_epp_proxy' program will need
+configuration (configuring valid SSL CAs, SRS registrar interface URL,
+registrar ID, and the SRS PGP key; see its man page/perldoc for
+details) and then started via:
+
+  # srs_epp_proxy
+
+There is also an example /etc/init.d-style script supplied which can
+be used to start the proxy on system start-up.
+
+
+License and credits
+-------------------
+This software development is sponsored and directed by New Zealand
+Registry Services, http://www.nzrs.net.nz/
+
+The work is being carried out by Catalyst IT,
+http://www.catalyst.net.nz/
+
+Copyright (c) 2009, NZ Registry Services.  All Rights Reserved.  This
+software may be used under the terms of the Artistic License 2.0.
+Note that this license is compatible with both the GNU GPL and
+Artistic licenses.  A copy of this license is supplied with the
+distribution in the file COPYING.txt.
