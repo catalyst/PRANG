@@ -1,0 +1,7 @@
+\.bak$
+~$
+Makefile$
+^\.git
+^blib/
+^debian/
+-stamp$
