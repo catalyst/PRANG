@@ -9,19 +9,23 @@ plan "no_plan";
 use FindBin qw($Bin);
 use File::Find;
 
-find(sub {
-	if (m{\.(pm|pl|t)$}) {
-		open FILE, "<", $_ or die $!;
-		while ( <FILE> ) {
-			m{Copyright} && do {
-				pass("$File::Find::name mentions Copyright");
-				return;
-			};
+find(   sub {
+		if (m{\.(pm|pl|t)$}) {
+			open FILE, "<", $_ or die $!;
+			while (<FILE>) {
+				m{Copyright} && do {
+					pass(   "$File::Find::name mentions Copyright"
+					);
+					return;
+				};
+			}
+			close FILE;
+			fail("$File::Find::name missing license text");
 		}
-		close FILE;
-		fail("$File::Find::name missing license text");
-	}
-}, $Bin, "$Bin/../lib");
+	},
+	$Bin,
+	"$Bin/../lib"
+);
 
 # Copyright (C) 2007  Sam Vilain
 #
