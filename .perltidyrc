@@ -1,0 +1,13 @@
+# based on PBP list, but with tabification
+--maximum-line-length=78
+--indent-columns=8
+--continuation-indentation=8
+--entab-leading-whitespace=8
+--vertical-tightness=2
+--closing-token-indentation=0
+--paren-tightness=1
+--brace-tightness=1
+--square-bracket-tightness=1
+--block-brace-tightness=1
+--nospace-for-semicolon
+--no-outdent-long-quotes

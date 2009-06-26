@@ -5,3 +5,5 @@ Makefile$
 ^blib/
 ^debian/
 -stamp$
+perltidy.pl
+\.perltidyrc
