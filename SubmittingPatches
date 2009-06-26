@@ -113,7 +113,7 @@ Ideally, the new tests should fail on the old code, pass on the new
 code, and test the documented functionality.
 
 
-(1b) Whitespace, indentation and documentation
+(1b) Whitespace, indentation, documentation and copyright boilerplate
 
 There are tests which check that the indentation matches that which
 'perltidy' will produce for the file.  Please use them to check that
@@ -130,6 +130,9 @@ internal functions, which are marked by starting with an underscore.
 Again, there is a test script for this which only runs with a
 particular environment variable set.  Running the test suite using
 'make test' will tell you what you need to set.
+
+It is also required that every Perl program contains a brief copyright
+statement, and there is a test for that too.
 
 
 (1c) Be nice to Perl 5.8.x
