@@ -39,7 +39,16 @@ for my $module (@modules) {
 			}
 		}
 	}
-	ok($rating == 1, "POD Coverage of $module complete");
+	if ( defined $rating ) {
+		is($rating*100, 100, "POD Coverage of $module complete");
+	}
+	else {
+		my $why = $pc->why_unrated;
+		my $nopublics = ( $why =~ "no public symbols defined" );
+		ok( $nopublics, "POD coverage of $module complete" );
+		my $verbose = $ENV{HARNESS_VERBOSE} || 0;
+		diag( "$module: $why" ) unless ( $nopublics && !$verbose );
+	}
 
 	my $s = @naked == 1 ? "" : "s";
 	if (@naked) {
