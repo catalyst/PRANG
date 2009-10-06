@@ -44,11 +44,19 @@ for my $module (@modules) {
 		my %naked = map { $_ => 1 } @naked;
 		open POD, $location;
 		while (<POD>) {
-			if ( m{^=head1 SYNOPSIS$} .. m{^=\w+} ) {
+			if ( m{^=head1 SYNOPSIS$} ..
+				m{^=(?!head1 SYNOPSIS)\w+} )
+			{
 				next if m{^=};
 				delete $naked{$_} for m{(\w+)}g;
 			}
 		}
+		$rating = 1 - (
+			( scalar keys %naked ) / (
+				$pc->covered + ( @naked - scalar keys %naked )
+			)
+		);
+		@naked = keys %naked;
 	} ## end if (@naked)
 	if ( defined $rating ) {
 		is( $rating * 100, 100, "POD Coverage of $module complete" );
