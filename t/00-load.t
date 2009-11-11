@@ -19,7 +19,7 @@ finddepth(
 			push @modules, $module;
 			open MODULE, "<", $_ or die "Failed to open ($_): $!";
 			while (<MODULE>) {
-				if (m{^use (\S+)}) {
+				if (m{^use (\S+);}) {
 					$uses{$module}{$1}++;
 				}
 				if (m{^(?:extends|with) (["'])?(\S+)\1}) {
@@ -31,6 +31,16 @@ finddepth(
 	},
 	"$Bin/../lib"
 );
+
+while ( my ($module, $uses) = each %uses ) {
+	my @gonners;
+	while ( my $dep = each %$uses ) {
+		if ( not exists $uses{$dep} ) {
+			push @gonners, $dep;
+		}
+	}
+	delete $uses->{$_} for @gonners;
+}
 
 my %done;
 while (@modules) {
