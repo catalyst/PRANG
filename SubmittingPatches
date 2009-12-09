@@ -182,12 +182,12 @@ can use 'Acked-by:'
 As there is not currently a mailing list for this program, please
 submit via one of the following means:
 
-  * drop a patch to srsadmins@catalyst.net.nz, perhaps using
-    git-send-email(1)
+  * drop a patch to the addresses listed on the AUTHORS section of the
+    main man page, perhaps using git-send-email(1)
 
-  * Log a ticket at rt.cpan.org under the queue for 'SRS::EPP::Proxy'
+  * Log a ticket at rt.cpan.org under the queue for 'PRANG'
 
   * fork the project on github
-    (http://github.com/catalyst/SRS-EPP-Proxy) and send a pull
+    (http://github.com/catalyst/PRANG) and send a pull
     request.
 
