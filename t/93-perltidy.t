@@ -12,8 +12,9 @@
 use strict;
 use Test::More;
 use FindBin qw($Bin);
-plan skip_all => 'set TEST_TIDY to enable this test'
-	unless $ENV{TEST_TIDY};
+plan skip_all => 'set TEST_TIDY or TEST_ALL to enable this test'
+	unless $ENV{TEST_TIDY}
+		or $ENV{TEST_ALL};
 my $perltidy = "$Bin/../perltidy.pl";
 plan skip_all => 'no perltidy.pl script; run this from a git clone'
 	unless -x $perltidy;
