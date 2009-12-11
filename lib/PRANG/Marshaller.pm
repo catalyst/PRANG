@@ -6,16 +6,18 @@ use MooseX::Method::Signatures;
 use Moose::Util::TypeConstraints;
 
 use XML::LibXML 1.70;
+use PRANG::Util qw(types_of);
 
 BEGIN {
 	class_type 'Moose::Meta::Class';
+	class_type "Moose::Meta::Role";
 	class_type "XML::LibXML::Element";
 	class_type "XML::LibXML::Node";
 	role_type "PRANG::Graph";
 };
 
 has 'class' =>
-	isa => "Moose::Meta::Class",
+	isa => "Moose::Meta::Class|Moose::Meta::Role",
 	is => "ro",
 	required => 1,
 	;
@@ -25,8 +27,16 @@ method get($inv: Str $class) {
 	if ( ref $inv ) {
 		$inv = ref $inv;
 	}
-	$class->can("meta") or
-		die "cannot marshall $class; no ->meta";
+	$class->can("meta") or do {
+		my $filename = $class;
+		$filename =~ s{::}{/}g;
+		$filename .= ".pm";
+		if ( !$INC{$filename} ) {
+			eval { require $filename };
+		}
+		$class->can("meta") or
+			die "cannot marshall $class; no ->meta";
+	};
 	my $meta = $class->meta;
 	if ( $meta->does_role("PRANG::Graph") or
 		     $meta->does_role("PRANG::Graph::Class")
@@ -111,8 +121,31 @@ method parse( Str $xml ) {
 
 	my $rootNode = $dom->documentElement;
 	my $rootNodeNS = $rootNode->namespaceURI;
-	my $expected_ns = $self->class->name->xmlns;
 
+	my $xsi = {};
+	if ( $self->class->isa("Moose::Meta::Role") ) {
+		my @possible = types_of($self->class);
+		my $found;
+		my $root_localname = $rootNode->localname;
+		my @expected;
+		for my $class ( @possible ) {
+			if ( $root_localname eq
+				     $class->name->root_element ) {
+				# yeah, this is lazy ;-)
+				$self = (ref $self)->get($class->name);
+				$found = 1;
+				last;
+			}
+			else {
+				push @expected, $class->name->root_element;
+			}
+		}
+		if ( !$found ) {
+			die "No type of ".$self->class->name
+				." that expects '$root_localname' as a root element (expected: @expected)";
+		}
+	}
+	my $expected_ns = $self->class->name->xmlns;
 	if ( $rootNodeNS and $expected_ns ) {
 		if ( $rootNodeNS ne $expected_ns ) {
 			die "Namespace mismatch: expected '$expected_ns', found '$rootNodeNS'";
