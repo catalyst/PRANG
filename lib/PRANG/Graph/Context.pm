@@ -237,7 +237,7 @@ method show_node {
 	if ( $node->isa("XML::LibXML::Element") ) {
 		$extra = " (parsing: <".$node->nodeName;
 		if ( $node->hasAttributes ) {
-			$extra .= join(" ", map {
+			$extra .= join(" ", "", map {
 				$_->name."='".$_->value."'"
 			} $node->attributes);
 		}
