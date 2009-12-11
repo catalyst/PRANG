@@ -17,6 +17,8 @@ use PRANG::Graph::Meta::Attr;
 use PRANG::Graph::Meta::Element;
 use MooseX::Method::Signatures;
 
+use PRANG::Marshaller;
+
 use MooseX::Attributes::Curried (
 	has_attr => {
 		metaclass => "PRANG::Attr",
