@@ -57,7 +57,7 @@ has 'attributes' =>
 				$attr->xmlns : $default_xmlns;
 			my $xml_name = $attr->has_xml_name ?
 				$attr->xml_name : $attr->name;
-			$attr_ns{$xmlns}{$xml_name} = $attr;
+			$attr_ns{$xmlns//""}{$xml_name} = $attr;
 		}
 		\%attr_ns;
 	};
@@ -118,7 +118,11 @@ method parse( Str $xml ) {
 			die "Namespace mismatch: expected '$expected_ns', found '$rootNodeNS'";
 		}
 	}
-	my $xsi = {};
+	if ( !defined($rootNode->prefix) and
+		     !defined($rootNode->getAttribute("xmlns")) ) {
+		# namespace free;
+		$xsi->{""}=undef;
+	}
 	my $rv = $self->marshall_in_element(
 		$rootNode,
 		$xsi,
@@ -152,7 +156,7 @@ method marshall_in_element( XML::LibXML::Node $node, HashRef $xsi, Str $xpath ) 
 				$node->nodeName." (input line "
 					.$node->line_number.")";
 		}
-		my $xmlns = $xsi->{$prefix};
+		my $xmlns = $xsi->{$prefix}//"";
 		my $meta_att = $attributes->{$xmlns}{"*"} ||
 			$attributes->{$xmlns}{$attr->localname};
 
