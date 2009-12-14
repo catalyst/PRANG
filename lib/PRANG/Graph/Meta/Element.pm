@@ -2,6 +2,7 @@
 package PRANG::Graph::Meta::Element;
 
 use Moose;
+use PRANG::Util qw(types_of);
 extends 'Moose::Meta::Attribute';
 use MooseX::Method::Signatures;
 
@@ -172,17 +173,7 @@ method build_graph_node() {
 
 	# plug-in type classes.
 	if ( @expect_role ) {
-		my @users;
-		# FIXME:
-		# 12:20 <@mugwump> is there a 'Class::MOP::Class::subclasses' for roles?
-		# 12:20 <@mugwump> I want a list of classes that implement a role
-		# 12:37 <@autarch> mugwump: I'd kind of like to see that in core
-		for my $mc ( Class::MOP::get_all_metaclass_instances ) {
-			next if !$mc->isa("Moose::Meta::Class");
-			if ( grep { $mc->does_role($_) } @expect_role ) {
-				push @users, $mc->name;
-			}
-		}
+		my @users = map { $_->name } types_of(@expect_role);
 		$nodeName = {} if !ref $nodeName;
 		for my $user ( @users ) {
 			if ( $user->does("PRANG::Graph") ) {
