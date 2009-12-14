@@ -220,7 +220,12 @@ method build_graph_node() {
 			die "type '$class' specified as allowed on '"
 	.$self->name."' element of ".$self->associated_class->name
 	.", but which node names indicate that type?  You've defined: "
-		."@{[ values %$nodeName ]}";
+	.($self->has_xml_nodeName
+	? ( ref $self->xml_nodeName
+	    ? join("; ", map { "$_ => ".$self->xml_nodeName->{$_} }
+		      sort keys %{$self->xml_nodeName} )
+	    : ("(all '".$self->xml_nodeName."')") )
+	: "(nothing)" );
 		}
 
 		for my $name ( @names ) {
