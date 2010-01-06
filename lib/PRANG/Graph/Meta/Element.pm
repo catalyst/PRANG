@@ -208,10 +208,17 @@ method build_graph_node() {
 	my @expect;
 	for my $class ( @expect_type ) {
 		my @xmlns;
-		# XXX - this isn't quite right... it should be
-		# $class->xmlns;
 		if ( $self->has_xmlns ) {
 			push @xmlns, (xmlns => $self->xmlns);
+		}
+		else {
+			my $xmlns = $self->associated_class->name->xmlns;
+			if ( !$class->can("xmlns") ) {
+				eval "use $class";
+			}
+			if ( ($class->xmlns||"") ne ($xmlns||"") ) {
+				push @xmlns, (xmlns => $class->xmlns);
+			}
 		}
 		my (@names) = grep { $nodeName->{$_} eq $class }
 			keys %$nodeName;
@@ -531,14 +538,98 @@ another attribute which records the names of the node.
 If any node name is allowed, then you can simply pass in C<*> as an
 C<xml_nodeName> value.
 
+=item B<more types than element names>
+
+This happens when some of the types have different XML namespaces; the
+type of the node is indicated by the namespace prefix.
+
+In this case, you must supply a namespace map, too.
+
+  has_element 'message' =>
+      is => "rw",
+      isa => "my::unionType",
+      xml_nodeName => {
+          "trumpery:nodename" => "TypeA",
+          "rubble:nodename" => "TypeB",
+          "claptrap:nodename" => "TypeC",
+      },
+      xml_nodeName_prefix => {
+          "trumpery" => "uri:type:A",
+          "rubble" => "uri:type:B",
+          "claptrap" => "uri:type:C",
+      },
+      ;
+
+=item B<more namespaces than types>
+
+The principle use of this is L<PRANG::XMLSchema::Whatever>, which
+converts arbitrarily namespaced XML into objects.  In this case,
+another attribute is needed, to record the XML namespaces of the
+elements.
+
+  has 'nodenames' =>
+	is => "rw",
+	isa => "ArrayRef[Maybe[Str]]",
+        ;
+
+  has 'nodenames_xmlns' =>
+	is => "rw",
+	isa => "ArrayRef[Maybe[Str]]",
+	;
+
+  has_element 'contents' =>
+      is => "rw",
+      isa => "ArrayRef[PRANG::XMLSchema::Whatever|Str]",
+      xml_nodeName => { "" => "Str", "*" => "PRANG::XMLSchema::Whatever" },
+      xml_nodeName_attr => "nodenames",
+      xml_nodeName_xmlns_attr => "nodenames_xmlns",
+      xmlns => "*",
+      ;
+
+=item B<unknown/extensible element names and types>
+
+These are indicated by specifying a role.  At the time that the
+L<PRANG::Graph::Node> is built for the attribute, the currently
+available implementors of these roles are checked, and depending on
+whether they implement L<PRANG::Graph> or merely
+L<PRANG::Graph::Class>, the following actions are taken:
+
+=over
+
+=item L<PRANG::Graph> types
+
+Treated as if there is an C<xml_nodeName> entry for the class, from
+the C<root_element> value for the class to the type.
+
+For writing extensible schemas, this is generally the role you want to
+inherit.
+
+=item L<PRANG::Graph::Class> types
+
+You must supply C<xml_nodeName_attr>.  This type will never be used on
+marshall in; however, it will happily work on the way out.
+
+This can be used when you have slots which may be unprocessed,
+L<PRANG::XMLSchema::Whatever> object structures, B<or> real
+L<PRANG::Graph::Class> instances.
+
+eg
+
+  has 'maybe_parsed' =>
+      is => "rw",
+      isa => "PRANG::Graph::Whatever|PRANG::Graph::Class",
+      xml_nodeName_attr => "maybe_parsed_name",
+      ;
+
+=back
+
 =back
 
 =item B<ArrayRef sub-type>
 
 An C<ArrayRef> sub-type indicates that the element may occur multiple
-times at this point.  Currently, bounds are not specified directly -
-use a sub-type of C<ArrayRef> which specifies a type constraint to
-achieve this.
+times at this point.  Currently, bounds may be specified directly -
+the C<xml_min> and C<xml_max> attribute properties.
 
 If C<xml_nodeName> is specified, it is applied to I<items> in the
 array ref.
@@ -564,6 +655,8 @@ eg
 This would allow the enclosing class to have a 'things' property,
 which contains all of the elements at that point, which can be C<cd>,
 C<store> or C<person> elements.
+
+You cannot (currently) Union an ArrayRef type with other simple types.
 
 =cut
 
