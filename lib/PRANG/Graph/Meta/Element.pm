@@ -1,9 +1,8 @@
 
 package PRANG::Graph::Meta::Element;
 
-use Moose;
+use Moose::Role;
 use PRANG::Util qw(types_of);
-extends 'Moose::Meta::Attribute';
 use MooseX::Method::Signatures;
 
 has 'xmlns' =>
@@ -348,7 +347,7 @@ method build_graph_node() {
 	return $node;
 }
 
-package Moose::Meta::Attribute::Custom::PRANG::Element;
+package Moose::Meta::Attribute::Custom::Trait::PRANG::Element;
 sub register_implementation {
 	"PRANG::Graph::Meta::Element";
 };

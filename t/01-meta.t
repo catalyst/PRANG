@@ -7,13 +7,13 @@ use warnings;
 {
 	package Lust;
 	use Moose;
+	sub xmlns {}
 	use PRANG::Graph;
 	has_attr "envy" =>
 		is => "ro",
 		isa => "Str",
 		xml_name => "greed",
 		;
-	sub xmlns {}
 	with "PRANG::Graph::Class";
 }
 
@@ -23,6 +23,8 @@ ok(Lust->meta->get_attribute("envy")->has_xml_name,
 {
 	package Octothorpe;
 	use Moose;
+	sub xmlns {}
+	sub root_element { "Octothorpe" }
 	use PRANG::Graph;
 	has_element "hyphen" =>
 		is => "ro",
@@ -72,8 +74,7 @@ ok(Lust->meta->get_attribute("envy")->has_xml_name,
 			"slash" => "Str",
 		},
 		;
-	sub xmlns {}
-	with "PRANG::Graph::Class";
+	with "PRANG::Graph", "PRANG::Graph::Class";
 }
 
 my %atts = map { $_->name => $_ } Octothorpe->meta->get_all_attributes;
@@ -94,4 +95,7 @@ for my $attname (@attnames) {
 	$gn{$attname} = $gn;
 }
 
+ok(Octothorpe->meta->meta->does_role("PRANG::Graph::Meta::Class"),
+   "use PRANG::Graph applies metarole");
 
+print Octothorpe->new->to_xml;

@@ -1,8 +1,7 @@
 
 package PRANG::Graph::Meta::Attr;
 
-use Moose;
-extends 'Moose::Meta::Attribute';
+use Moose::Role;
 
 has 'xmlns' =>
 	is => "rw",
@@ -22,7 +21,7 @@ has 'xml_required' =>
 	predicate => "has_xml_required",
 	;
 
-package Moose::Meta::Attribute::Custom::PRANG::Attr;
+package Moose::Meta::Attribute::Custom::Trait::PRANG::Attr;
 sub register_implementation {
 	"PRANG::Graph::Meta::Attr";
 };
@@ -31,10 +30,13 @@ sub register_implementation {
 
 =head1 NAME
 
-PRANG::Graph::Meta::Attr - metaclass for XML attributes
+PRANG::Graph::Meta::Attr - metaclass metarole for XML attributes
 
 =head1 SYNOPSIS
 
+ package My::XML::Language::Node;
+
+ use Moose;
  use PRANG::Graph;
 
  has_attr 'someattr' =>
@@ -53,12 +55,12 @@ metaclass.
 You could do this in principle with:
 
  has 'someattr' =>
-    metaclass => 'PRANG::Attr',
+    traits => ['PRANG::Attr'],
     ...
 
-But PRANG::Graph exports a convenient shorthand for you to use.
+But L<PRANG::Graph> exports a convenient shorthand for you to use.
 
-If you like, you can also set the 'xmlns' and 'xmlname' attribute
+If you like, you can also set the C<xmlns> and C<xml_name> attribute
 property, to override the default behaviour, which is to assume that
 the XML attribute name matches the Moose attribute name, and that the
 XML namespace of the attribute matches that of the class in which it
