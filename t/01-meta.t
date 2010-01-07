@@ -97,5 +97,3 @@ for my $attname (@attnames) {
 
 ok(Octothorpe->meta->meta->does_role("PRANG::Graph::Meta::Class"),
    "use PRANG::Graph applies metarole");
-
-print Octothorpe->new->to_xml;
