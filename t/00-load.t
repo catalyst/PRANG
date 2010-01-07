@@ -51,6 +51,7 @@ while (@modules) {
 	for my $module ( sort @winners ) {
 		my @fail;
 		local ( $SIG{__WARN__} ) = sub {
+			return if ( $_[0] =~ /does not export its sugar/);
 			push @fail, join " ", @_;
 			warn "# oh look a warning: @_";
 		};
