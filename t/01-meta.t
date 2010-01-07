@@ -3,79 +3,10 @@
 use Test::More no_plan;
 use strict;
 use warnings;
+use t::Octothorpe;
 
-{
-	package Lust;
-	use Moose;
-	sub xmlns {}
-	use PRANG::Graph;
-	has_attr "envy" =>
-		is => "ro",
-		isa => "Str",
-		xml_name => "greed",
-		;
-	with "PRANG::Graph::Class";
-}
-
-ok(Lust->meta->get_attribute("envy")->has_xml_name,
+ok(Fingernails->meta->get_attribute("currency")->has_xml_name,
    "has_attr produces an XML attribute");
-
-{
-	package Octothorpe;
-	use Moose;
-	sub xmlns {}
-	sub root_element { "Octothorpe" }
-	use PRANG::Graph;
-	has_element "hyphen" =>
-		is => "ro",
-		isa => "Bool",
-		xml_nodeName => "emdash",
-		;
-	has_element "colon" =>
-		is => "ro",
-		isa => "Str",
-		;
-	has_element "interpunct" =>
-		is => "ro",
-		isa => "Int",
-		predicate => "has_interpunct",
-		;
-	has_element "apostrophe" =>
-		is => "ro",
-		isa => "Octothorpe",
-		;
-	has_element "solidus" =>
-		is => "ro",
-		isa => "Octothorpe|Int",
-		xml_nodeName => {
-			"braces" => "Int",
-			"parens" => "Octothorpe",
-		},
-		;
-	has_element "bullet" =>
-		is => "ro",
-		isa => "ArrayRef[Str|Int]",
-		xml_max => 5,
-		xml_nodeName => {
-			"umlout" => "Int",
-			"guillemets" => "Str",
-		},
-		;
-	has_element "backslash" =>
-		is => "ro",
-		isa => "ArrayRef[Octothorpe]",
-		;
-	has_element "asterism" =>
-		is => "ro",
-		isa => "ArrayRef[Octothorpe|Lust|Str]",
-		xml_nodeName => {
-			"space" => "Octothorpe",
-			"underscore" => "Lust",
-			"slash" => "Str",
-		},
-		;
-	with "PRANG::Graph", "PRANG::Graph::Class";
-}
 
 my %atts = map { $_->name => $_ } Octothorpe->meta->get_all_attributes;
 my @attnames = map { $_->name }
@@ -91,7 +22,7 @@ for my $attname (@attnames) {
 		}
 	}
 	ok($gn, "Build graph node for '$attname' attribute ("
-		   .($atts{$attname}->type_constraint));
+		   .($atts{$attname}->type_constraint).")");
 	$gn{$attname} = $gn;
 }
 
