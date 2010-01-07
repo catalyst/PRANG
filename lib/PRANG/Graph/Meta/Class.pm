@@ -1,5 +1,6 @@
 package PRANG::Graph::Meta::Class;
 
+use 5.010;
 use Moose::Role;
 use MooseX::Method::Signatures;
 use Moose::Util::TypeConstraints;
@@ -12,16 +13,16 @@ has 'xml_attr' =>
 	required => 1,
 	default => sub {
 		my $self = shift;
-		my @attr = grep { $_->isa("PRANG::Graph::Meta::Attr") }
-			$self->class->get_all_attributes;
-		my $default_xmlns = eval { $self->class->name->xmlns };
+		my @attr = grep { $_->does("PRANG::Graph::Meta::Attr") }
+			$self->get_all_attributes;
+		my $default_xmlns = eval { $self->name->xmlns };
 		my %attr_ns;
 		for my $attr ( @attr ) {
 			my $xmlns = $attr->has_xmlns ?
 				$attr->xmlns : $default_xmlns;
 			my $xml_name = $attr->has_xml_name ?
 				$attr->xml_name : $attr->name;
-			$attr_ns{$xmlns}{$xml_name} = $attr;
+			$attr_ns{$xmlns//""}{$xml_name} = $attr;
 		}
 		\%attr_ns;
 	};
@@ -209,7 +210,7 @@ method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Con
 			if ( $meta_att->has_xml_required ) {
 				$is_optional = !$meta_att->xml_required;
 			}
-			elsif ( $meta_att->has_predicate ) {
+			elsif ( ! $meta_att->is_required ) {
 				# it's optional
 				$is_optional = 1;
 			}
