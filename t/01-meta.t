@@ -8,11 +8,22 @@ use t::Octothorpe;
 ok(Fingernails->meta->get_attribute("currency")->has_xml_name,
    "has_attr produces an XML attribute");
 
-my %atts = map { $_->name => $_ } Octothorpe->meta->get_all_attributes;
+my %atts;
+
+for my $class (qw(Octothorpe Ampersand Caret Asteriks Pilcrow
+		  Deaeresis Fingernails )) {
+	for my $att ( $class->meta->get_all_attributes ) {
+		if ( $att->does("PRANG::Graph::Meta::Element") ) {
+			$atts{$att->name} = $att;
+		}
+	}
+}
 my @attnames = map { $_->name }
 	sort { $a->insertion_order <=> $b->insertion_order }
 	values %atts;
 my %gn;
+
+cmp_ok(@attnames, ">", 7, "found at least 7 elements in Octothorpe.pm");
 
 for my $attname (@attnames) {
 	my $gn = eval { $atts{$attname}->graph_node };

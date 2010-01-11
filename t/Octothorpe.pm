@@ -3,7 +3,6 @@ use Moose;
 sub xmlns {}
 sub root_element { "Octothorpe" }
 use PRANG::Graph;
-
 has_element "hyphen" =>
 	is => "ro",
 	isa => "Bool",
@@ -13,6 +12,14 @@ has_element "colon" =>
 	is => "ro",
 	isa => "Str",
 	;
+with "PRANG::Graph", "PRANG::Graph::Class";
+
+package Ampersand;
+use Moose;
+sub xmlns {}
+use PRANG::Graph;
+with "PRANG::Graph::Class";
+
 has_element "interpunct" =>
 	is => "ro",
 	isa => "Int",
@@ -22,6 +29,13 @@ has_element "apostrophe" =>
 	is => "ro",
 	isa => "Octothorpe",
 	;
+
+package Caret;
+use Moose;
+sub xmlns {}
+use PRANG::Graph;
+with "PRANG::Graph::Class";
+
 has_element "solidus" =>
 	is => "ro",
 	isa => "Octothorpe|Int",
@@ -30,6 +44,13 @@ has_element "solidus" =>
 		"parens" => "Octothorpe",
 	},
 	;
+
+package Asteriks;
+use Moose;
+sub xmlns {}
+use PRANG::Graph;
+with "PRANG::Graph::Class";
+
 has_element "bullet" =>
 	is => "ro",
 	isa => "ArrayRef[Str|Int]",
@@ -39,20 +60,34 @@ has_element "bullet" =>
 		"guillemets" => "Str",
 	},
 	;
+
+package Pilcrow;
+use Moose;
+sub xmlns {}
+use PRANG::Graph;
+with "PRANG::Graph::Class";
+
 has_element "backslash" =>
 	is => "ro",
-	isa => "ArrayRef[Octothorpe]",
+	isa => "ArrayRef[Asteriks]",
+	xml_required => 0,
 	;
+
+package Deaeresis;
+use Moose;
+sub xmlns {}
+use PRANG::Graph;
+with "PRANG::Graph::Class";
+
 has_element "asterism" =>
 	is => "ro",
-	isa => "ArrayRef[Octothorpe|Fingernails|Str]",
+	isa => "ArrayRef[Caret|Pilcrow|Str]",
 	xml_nodeName => {
-		"space" => "Octothorpe",
-		"underscore" => "Fingernails",
+		"space" => "Caret",
+		"underscore" => "Pilcrow",
 		"slash" => "Str",
 	},
 	;
-with "PRANG::Graph", "PRANG::Graph::Class";
 
 package Fingernails;
 use Moose;
@@ -63,4 +98,9 @@ has_attr "currency" =>
 	isa => "Str",
 	xml_name => "dollar_sign",
 	;
+has_element "fishhooks" =>
+	is => "ro",
+	isa => "Deaeresis",
+	;
+
 with "PRANG::Graph::Class";
