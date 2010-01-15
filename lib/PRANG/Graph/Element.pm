@@ -79,7 +79,7 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	}
 	undef($ret_nodeName) if !length($ret_nodeName);
 	if ( $self->has_nodeClass ) {
-		# genkral nested XML support
+		# general nested XML support
 		my $marshaller = $ctx->base->get($self->nodeClass);
 		my $value = ( $marshaller ? $marshaller->marshall_in_element(
 			$node,

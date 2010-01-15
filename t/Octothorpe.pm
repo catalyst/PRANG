@@ -7,6 +7,7 @@ has_element "hyphen" =>
 	is => "ro",
 	isa => "Bool",
 	xml_nodeName => "emdash",
+	predicate => "has_hyphen",
 	;
 has_element "colon" =>
 	is => "ro",

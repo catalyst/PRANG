@@ -35,8 +35,8 @@ has 'xml_elements' =>
 	default => sub {
 		my $self = shift;
 		my @elements = grep {
-			$_->isa("PRANG::Graph::Meta::Element")
-		} $self->class->get_all_attributes;
+			$_->does("PRANG::Graph::Meta::Element")
+		} $self->get_all_attributes;
 		my @e_c = map { $_->associated_class->name } @elements;
 		my %e_c_does;
 		for my $parent ( @e_c ) {
@@ -115,7 +115,10 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 
 	my (%init_args, %init_arg_names);
 	my @rv;
-	while ( my $input_node = shift @$childNodes ) {
+	my @nodes = grep { !( $_->isa("XML::LibXML::Text")
+				      and $_->data =~ /\A\s*\Z/) }
+		@$childNodes;
+	while ( my $input_node = shift @nodes ) {
 		next if $input_node->nodeType == XML_COMMENT_NODE;
 		if ( my ($key, $value, $name) =
 			     $graph->accept($input_node, $context) ) {

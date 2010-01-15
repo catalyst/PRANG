@@ -32,7 +32,12 @@ has 'seq_pos' =>
 		$self->clear_chosen;
 		$self->clear_element_ok;
 	},
+	clearer => "clear_seq_pos",
 	;
+
+method reset() {
+	$self->clear_seq_pos;
+}
 
 has 'quant_found' =>
 	is => "rw",
