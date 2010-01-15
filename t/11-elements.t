@@ -15,13 +15,13 @@ my $doc = $parser->parse_string(<<XML);
     <Octothorpe><colon/></Octothorpe>
     <Octothorpe><emdash/><colon></colon></Octothorpe>
     <Octothorpe><colon>Larry Gets the colon</colon></Octothorpe>
-    <Ampersand><apostrophe><emdash/><colon/></apostrophe></Ampersand>
+    <Ampersand><apostrophe/></Ampersand>
     <Ampersand>
         <interpunct>2</interpunct>
         <apostrophe><colon/></apostrophe>
     </Ampersand>
     <Caret><braces>2</braces></Caret>
-    <Caret><parens><apostrophe><emdash/><colon/></apostrophe></parens></Caret>
+    <Caret><parens></parens></Caret>
   </ok>
   <fail>
     <Octothorpe desc="missing a required element">
