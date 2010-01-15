@@ -67,7 +67,6 @@ for my $oktest ( $doc->findnodes("//ok/Sins") ) {
 		  "ok test $test_num - correct init args returned");
 	my $sin = eval{ Sins->new(%rv) };
 	ok($sin, "created new sin OK") or diag("exception: $@");
-	$test_num++;
 
 	my $node = $doc->createElement("Blah");
 	eval { Sins->meta->add_xml_attr($sin, $node, $context) };
@@ -75,6 +74,7 @@ for my $oktest ( $doc->findnodes("//ok/Sins") ) {
 	my @wrote_attrs = $node->attributes;
 	is(@wrote_attrs, @attrs,
 	   "ok test $test_num - correct number of output attributes");
+	$test_num++;
 }
 
 $test_num = 1;
