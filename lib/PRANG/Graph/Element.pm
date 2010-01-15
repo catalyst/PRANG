@@ -202,7 +202,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		$node->appendChild($nn);
 		# now proceed with contents...
 		if ( my $class = $self->nodeClass ) {
-			my $m = PRANG::Marshaller->get($class);
+			my $m = $ctx->base->get($class);
 			if ( !$m and blessed $value ) {
 				$m = PRANG::Marshaller->get(ref $value);
 			}

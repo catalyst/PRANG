@@ -59,6 +59,8 @@ XML
 	sub get { bless [ $_[1] ], __PACKAGE__ }
 	sub marshall_in_element { return \${$_[0]}[0] }
 	sub isa { 1 }
+	# this eliminates recursion on the way out.
+	sub to_libxml { }
 }
 
 my $test_num = 1;
