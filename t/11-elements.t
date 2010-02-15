@@ -24,7 +24,7 @@ my $doc = $parser->parse_string(<<XML);
     <Caret><parens></parens></Caret>
   </ok>
   <fail>
-    <Octothorpe desc="missing a required element">
+    <Octothorpe desc="missing a required element" error="Node incomplete; expecting: .colon">
     </Octothorpe>
     <Octothorpe desc="text passed for Bool element">
       <emdash>x</emdash><colon></colon>
