@@ -108,6 +108,8 @@ for my $failtest ( $doc->findnodes("//fail/*") ) {
 	next unless $failtest->isa("XML::LibXML::Element");
 	my @nodes = $failtest->childNodes;
 	my $class = $failtest->localname;
+	my $test_name = $failtest->getAttribute("desc")
+		|| "fail test $test_num";
 	my $context = PRANG::Graph::Context->new(
 		xpath => "//fail/$class\[position()=$test_num]",
 		xsi => { "" => "" },
@@ -118,10 +120,11 @@ for my $failtest ( $doc->findnodes("//fail/*") ) {
 	my %rv = eval { $class->new(
 		$class->meta->accept_childnodes( \@nodes, $context )
 	       ) };
-	isnt("$@", "", "fail test $test_num - exception raised");
+	my $exception = "$@";
+	isnt($exception, "", "$test_name - exception raised");
 	if ( my $err_re = $failtest->getAttribute("error") ) {
-		like("$@", qr/$err_re/,
-		     "fail test $test_num - exception string OK");
+		like($exception, qr/$err_re/,
+		     "$test_name - exception string OK");
 	}
 	$test_num++;
 }
