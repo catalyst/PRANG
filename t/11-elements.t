@@ -26,25 +26,25 @@ my $doc = $parser->parse_string(<<XML);
   <fail>
     <Octothorpe desc="missing a required element" error="Node incomplete; expecting: .colon">
     </Octothorpe>
-    <Octothorpe desc="text passed for Bool element">
+    <Octothorpe desc="text passed for Bool element" error="Superfluous child nodes on presence-only node">
       <emdash>x</emdash><colon></colon>
     </Octothorpe>
-    <Octothorpe desc="attribute passed on Bool element">
+    <Octothorpe desc="attribute passed on Bool element" error="Superfluous attributes on presence-only node">
       <emdash foo="bar"><colon>x</colon></emdash>
     </Octothorpe>
-    <Ampersand desc="bad value for Int xml data element">
+    <Ampersand desc="bad value for Int xml data element" error="Attribute .interpunct. does not pass the type constraint">
       <interpunct>two</interpunct><apostrophe><colon /></apostrophe>
     </Ampersand>
-    <Ampersand desc="attribute passed on xml data element">
+    <Ampersand desc="attribute passed on xml data element" error="Superfluous attributes on XML data node">
       <interpunct lang="en">2</interpunct>
       <apostrophe><colon /></apostrophe>
     </Ampersand>
-    <Ampersand desc="missing required element">
+    <Ampersand desc="missing required element" error="Node incomplete; expecting: .apostrophe">
       <interpunct>2</interpunct> 
     </Ampersand>
-    <Caret desc="alternation required, nothing given">
+    <Caret desc="alternation required, nothing given" error="Node incomplete; expecting: .parens.+braces.">
     </Caret>
-    <Caret desc="single alternation required, passed multiple">
+    <Caret desc="single alternation required, passed multiple" error="XXX">
       <braces>2</braces>
       <parens><apostrophe><emdash/><colon/></apostrophe></parens>
     </Caret>

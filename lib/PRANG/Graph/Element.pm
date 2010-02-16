@@ -92,9 +92,11 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	}
 	else {
 		# XML data types
+		my $type = $self->has_contents ?
+			"XML data" : "presence-only";
 		if ($node->hasAttributes) {
 			$ctx->exception(
-			"superfluous attributes on XML data node",
+			"Superfluous attributes on $type node",
 				$node);
 		}
 		if ( $self->has_contents ) {
@@ -103,7 +105,7 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 			if ( @childNodes > 1 ) {
 				# we could maybe merge CDATA nodes...
 				$ctx->exception(
-			"Too many child nodes for XML data node",
+			"Too many child nodes for $type node",
 					$node,
 				       );
 			}
@@ -123,7 +125,7 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 			# boolean
 			if ( $node->hasChildNodes ) {
 				$ctx->exception(
-		"Superfluous child nodes on presence-only node",
+		"Superfluous child nodes on $type node",
 					$node,
 	       				);
 			}
