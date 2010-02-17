@@ -40,6 +40,18 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 }
 
 method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+
+	if ($ctx->chosen) {
+		# this is a safe exception; the only time this graph
+		# node will be called repeatedly is if it is the root
+		# node for an element, due to the structure of
+		# PRANG::Graph::Context
+		$ctx->exception(
+			"Single child node expected, multiple found",
+			$node,
+		       );
+	}
+
 	my $num;
 	my $name = $node->isa("XML::LibXML::Text") ? ""
 		: $node->localname;

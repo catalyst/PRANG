@@ -44,7 +44,7 @@ my $doc = $parser->parse_string(<<XML);
     </Ampersand>
     <Caret desc="alternation required, nothing given" error="Node incomplete; expecting: .parens.+braces.">
     </Caret>
-    <Caret desc="single alternation required, passed multiple" error="XXX">
+    <Caret desc="single alternation required, passed multiple" error="Single child node expected">
       <braces>2</braces>
       <parens><apostrophe><emdash/><colon/></apostrophe></parens>
     </Caret>

@@ -20,6 +20,9 @@ BEGIN {
 #
 #  (any of the above may be absent)
 #
+# There are a few assumptions that nodes only connect as above, and
+# not just in this class.
+
 # These variables allow us to remember where we were.
 has 'seq_pos' =>
 	is => "rw",
