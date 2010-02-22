@@ -121,7 +121,7 @@ sub thing_xmlns {
 	}
 }
 
-method next_ctx( Maybe[Str] $xmlns, Str $newnode_name, $thing )  {
+method next_ctx( Maybe[Str] $xmlns, Str $newnode_name, $thing? )  {
 	my $prefix = $self->prefix;
 	my $new_prefix;
 	if ( $xmlns ) {
