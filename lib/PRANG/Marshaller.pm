@@ -94,10 +94,17 @@ method parse( Str $xml ) {
 		# namespace free;
 		$xsi->{""}=undef;
 	}
-	my $rv = $self->marshall_in_element(
+
+	my $context = PRANG::Graph::Context->new(
+		base => $self,
+		xpath => "/".$rootNode->nodeName,
+		xsi => $xsi,
+		prefix => ($rootNode->prefix||""),
+	       );
+
+	my $rv = $self->class->marshall_in_element(
 		$rootNode,
-		$xsi,
-		"/".$rootNode->nodeName,
+		$context,
 	       );
 	$rv;
 }
@@ -155,6 +162,44 @@ method generate_prefix( Str $xmlns ) {
 		$gen_prefix ||= "a";
 		$gen_prefix++;
 	}
+}
+
+method to_xml_doc( PRANG::Graph $item ) {
+	my $xmlns = $item->xmlns;
+	my $prefix = "";
+	if ( $item->can("preferred_prefix") ) {
+		$prefix = $item->preferred_prefix;
+	}
+	my $xsi = { $prefix => ($xmlns||"") };
+	# whoops, this is non-reentrant
+	%zok_seen=();
+	undef($gen_prefix);
+	my $doc = XML::LibXML::Document->new(
+		$self->xml_version, $self->encoding,
+	       );
+	my $root = $doc->createElement(
+		($prefix ? "$prefix:" : "" ) .$item->root_element,
+	       );
+	if ( $xmlns ) {
+		$root->setAttribute(
+			"xmlns".($prefix?":$prefix":""),
+			$xmlns,
+		       );
+	}
+	$doc->setDocumentElement( $root );
+	my $ctx = PRANG::Graph::Context->new(
+		xpath => "/".$root->nodeName,
+		base => $self,
+		prefix => $prefix,
+		xsi => $xsi,
+	       );
+	$item->meta->to_libxml( $item, $root, $ctx );
+	$doc;
+}
+
+method to_xml( PRANG::Graph $item ) {
+	my $document = $self->to_xml_doc($item);
+	$document->toString;
 }
 
 1;

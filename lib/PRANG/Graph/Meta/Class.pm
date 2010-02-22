@@ -202,6 +202,37 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 	return @rv;
 }
 
+method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+	my @node_attr = grep { $_->isa("XML::LibXML::Attr") }
+		$node->attributes;
+	my @ns_attr = $node->getNamespaces;
+
+	if ( @ns_attr ) {
+		$ctx->add_xmlns($_->declaredPrefix => $_->declaredURI)
+			for @ns_attr;
+	}
+
+
+	my @init_args = $self->accept_attributes( \@node_attr, $ctx );
+
+	# now process elements
+	my @childNodes = $node->nonBlankChildNodes;
+
+	push @init_args, $self->accept_childnodes( \@childNodes, $ctx );
+
+	my $value = eval { $self->name->new( @init_args ) };
+	if ( !$value ) {
+		$ctx->exception(
+			"Validation error from ".$self->name
+				." constructor: $@)",
+			$node,
+		       );
+	}
+	else {
+		return $value;
+	}
+}
+
 method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx ) {
 	my $attributes = $self->xml_attr;
 	my $node_prefix = $node->prefix||"";
