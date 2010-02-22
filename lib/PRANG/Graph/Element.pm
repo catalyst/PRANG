@@ -224,7 +224,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 				$m->to_libxml($value, $nn, $ctx);
 			}
 		}
-		elsif ( $self->has_contents ) {
+		elsif ( $self->has_contents and defined $value ) {
 			my $tn = $doc->createTextNode($value);
 			$nn->appendChild($tn);
 		}
