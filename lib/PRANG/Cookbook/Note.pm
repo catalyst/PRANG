@@ -4,9 +4,15 @@ package PRANG::Cookbook::Note;
 use Moose;
 use MooseX::Method::Signatures;
 use PRANG::Graph;
+use PRANG::XMLSchema::Types;
 
 # attributes
-# none
+has_attr 'replied' =>
+	is => 'rw',
+	isa => 'PRANG::XMLSchema::boolean',
+	required => 0,
+	xml_required => 0,
+	;
 
 # elements
 has_element 'from' =>
