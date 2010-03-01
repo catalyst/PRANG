@@ -30,6 +30,14 @@ has_element 'subject' =>
 	xml_required => 1,
 	;
 
+has_element 'body' =>
+	xml_nodeName => 'body',
+	is => 'rw',
+	isa => 'Str',
+	required => 0,
+	xml_required => 0,
+	;
+
 sub root_element { 'note' }
 with 'PRANG::Cookbook';
 
