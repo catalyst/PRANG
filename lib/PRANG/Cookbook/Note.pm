@@ -29,6 +29,13 @@ has_element 'to' =>
 	xml_required => 1,
 	;
 
+has_element 'sent' =>
+	xml_nodeName => 'sent',
+	is => 'rw',
+	isa => 'PRANG::Cookbook::DateTime',
+	xml_required => 0,
+	;
+
 has_element 'subject' =>
 	xml_nodeName => 'subject',
 	is => 'rw',
