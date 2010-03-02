@@ -36,6 +36,13 @@ has_element 'sent' =>
 	xml_required => 0,
 	;
 
+has_element 'location' =>
+	xml_nodeName => 'location',
+	is => 'rw',
+	isa => 'PRANG::Cookbook::Location',
+	xml_required => 0,
+	;
+
 has_element 'subject' =>
 	xml_nodeName => 'subject',
 	is => 'rw',
