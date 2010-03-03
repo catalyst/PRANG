@@ -23,7 +23,7 @@ has_element 'title' =>
 has_element 'author' =>
 	xml_nodeName => 'author',
 	is => 'rw',
-	isa => 'Str',
+	isa => 'ArrayRef[Str]',
 	xml_required => 1,
 	;
 

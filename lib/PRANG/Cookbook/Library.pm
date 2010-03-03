@@ -9,7 +9,7 @@ use PRANG::XMLSchema::Types;
 has_element 'book' =>
 	xml_nodeName => 'book',
 	is => 'rw',
-	isa => 'PRANG::Cookbook::Book',
+	isa => 'ArrayRef[PRANG::Cookbook::Book]',
 	xml_required => 1,
 	;
 
