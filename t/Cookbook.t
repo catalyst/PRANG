@@ -13,6 +13,7 @@ use XML::Compare;
 
 use PRANG::Cookbook;
 use PRANG::Cookbook::Note;
+use PRANG::Cookbook::Library;
 
 our @tests = XMLTests::find_tests;
 
