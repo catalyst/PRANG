@@ -142,7 +142,6 @@ method next_ctx( Maybe[Str] $xmlns, Str $newnode_name, $thing? )  {
 		xpath => $self->xpath."/".$nodename,
 		xsi => $self->xsi,
 		rxsi => $self->rxsi,
-		@_
 	       );
 	if ( $new_prefix ) {
 		$clone->add_xmlns($prefix, $xmlns);
