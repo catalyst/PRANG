@@ -213,7 +213,13 @@ method build_graph_node() {
 		else {
 			my $xmlns = $self->associated_class->name->xmlns;
 			if ( !$class->can("xmlns") ) {
-				eval "use $class";
+				my $ok = eval "use $class; 1";
+				if ( !$ok ) {
+					die "problem auto-including class '$class'; exception is: $@";
+				}
+			}
+			if ( !$class->meta->can("marshall_in_element") ) {
+				die "'$class' can't marshall in; did you 'with' the 'PRANG::Graph::Class' role?";
 			}
 			if ( ($class->xmlns||"") ne ($xmlns||"") ) {
 				push @xmlns, (xmlns => $class->xmlns);
