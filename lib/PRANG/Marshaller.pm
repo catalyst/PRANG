@@ -92,7 +92,7 @@ method parse( Str $xml ) {
 	if ( !defined($rootNode->prefix) and
 		     !defined($rootNode->getAttribute("xmlns")) ) {
 		# namespace free;
-		$xsi->{""}=undef;
+		$xsi->{""}="";
 	}
 
 	my $context = PRANG::Graph::Context->new(
