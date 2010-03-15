@@ -15,7 +15,7 @@ use PRANG::Cookbook;
 use PRANG::Cookbook::Note;
 use PRANG::Cookbook::Library;
 
-our @tests = XMLTests::find_tests;
+our @tests = XMLTests::find_tests "Cookbook";
 
 plan tests => @tests * 3;
 
@@ -30,15 +30,17 @@ for my $test ( sort @tests ) {
 	my $xml = XMLTests::read_xml($test);
 
 	my $object = XMLTests::parse_test( "PRANG::Cookbook", $xml, $test );
- SKIP: {
-		skip "didn't parse", 2 unless $object;
-		my $r_xml = XMLTests::emit_test( $object, $test );
-		if ( !defined $r_xml ) {
-			skip "no XML returned", 1;
-		}
-		XMLTests::xml_compare_test(
-			$xml_compare, $xml, $r_xml, $test,
-		       );
+ SKIP:{
+		skip "parse failed", 2 if !$object;
+
+		my $xml_2 = XMLTests::emit_test($object, $test);
+		skip "re-emit failed", 1 if !$xml_2;
+
+		ok(eval { $xml_compare->same($xml, $xml_2) },
+		   "$test - round-tripped from XML to data and back OK")
+			or do {
+				diag("Error: $@");
+			};
 	}
 }
 
