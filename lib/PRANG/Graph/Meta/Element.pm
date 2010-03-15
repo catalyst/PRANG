@@ -362,7 +362,7 @@ sub register_implementation {
 
 =head1 NAME
 
-PRANG::Graph::Meta::Element - metaclass for XML elements
+PRANG::Graph::Meta::Element - metaclass metarole for XML elements
 
 =head1 SYNOPSIS
 
@@ -370,29 +370,40 @@ PRANG::Graph::Meta::Element - metaclass for XML elements
 
  has_element 'somechild' =>
     is => "rw",
-    isa => $str_subtype,
-    predicate => "has_somechild",
+    isa => "Some::Type",
+    xml_required => 0,
+    ;
+
+ # equivalent alternative - plays well with others!
+ has 'somechild' =>
+    is => "rw",
+    traits => [qr/PRANG::Element/],
+    isa => "Some::Type",
+    xml_required => 0,
     ;
 
 =head1 DESCRIPTION
 
-When defining a class, you mark attributes which correspond to XML
-element children.  To do this in a way that the PRANG::Marshaller can
-use when marshalling to XML and back, make the attributes have this
-metaclass.
+The PRANG concept is that attributes in your classes are marked to
+correspond with attributes and elements in your XML.  This class is
+for marking your class' attributes as XML I<elements>.  For marking
+them as XML I<attributes>, see L<PRANG::Graph::Meta::Attr>.
 
-You could do this in principle with:
+Non-trivial elements - and this means elements which contain more than
+a single data element within - are mapped to Moose classes.  The child
+elements that are allowed within that class correspond to the
+attributes marked with the C<PRANG::Element> trait, either via
+C<has_element> or the Moose C<traits> keyword.  As Moose attributes
+have an ordering, this order also 
 
- has 'somechild' =>
-    metaclass => 'PRANG::Element',
-    ...
+Where it makes sense, as much as possible is set up from the regular
+Moose definition of the attribute.  So, for instance, the name of the
+element expected at that stage 
 
-But PRANG::Graph exports a convenient shorthand for you to use.
-
-If you like, you can also set the 'xmlns' and 'xml_nodeName' attribute
-property, to override the default behaviour, which is to assume that
-the XML element name matches the Moose attribute name, and that the
-XML namespace of the element is that of the I<value> (ie,
+If you like, you can also set the C<xmlns> and C<xml_nodeName>
+attribute property, to override the default behaviour, which is to
+assume that the XML element name matches the Moose attribute name, and
+that the XML namespace of the element is that of the I<value> (ie,
 C<$object-E<gt>somechild-E<gt>xmlns>.
 
 The B<order> of declaring element attributes is important.  They
