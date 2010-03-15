@@ -32,9 +32,11 @@ with simple XML elements and attributes.
 
 =over 4
 
-=item L<PRANG::Cookbook::Note> - Shows a simple example of a note which
-requires some elements and adds some optional elements later on. Also shows how
-to use attributes with some basic validation.
+=item L<PRANG::Cookbook::Note>
+
+Shows a simple example of a note which requires some elements and adds
+some optional elements later on. Also shows how to use attributes with
+some basic validation.
 
 =back
 
@@ -46,10 +48,12 @@ of different nodes.
 
 =over 4
 
-=item L<PRANG::Cookbook::Library> - shows a simple library which has one book
-in it, then any number of books. Adds to this the fact that the library holds
-CDs too, so this is made generic such that it holds items, where each item can
-be a book or a CD.
+=item L<PRANG::Cookbook::Library>
+
+shows a simple library which has one book in it, then any number of
+books. Adds to this the fact that the library holds CDs too, so this
+is made generic such that it holds items, where each item can be a
+book or a CD.
 
 =back
 
