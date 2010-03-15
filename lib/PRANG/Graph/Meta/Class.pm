@@ -94,6 +94,7 @@ method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::
 			$context->exception("unknown xmlns prefix '$prefix'");
 		}
 		my $xmlns = $context->get_xmlns($prefix);
+		$xmlns //= "";
 		my $meta_att = $attributes->{$xmlns}{"*"} ||
 			$attributes->{$xmlns}{$attr->localname};
 
