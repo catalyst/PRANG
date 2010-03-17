@@ -20,6 +20,7 @@ has 'class' =>
 	isa => "Moose::Meta::Class|Moose::Meta::Role",
 	is => "ro",
 	required => 1,
+	handles => [qw(marshall_in_element to_libxml)],
 	;
 
 our %marshallers;  # could use MooseX::NaturalKey?

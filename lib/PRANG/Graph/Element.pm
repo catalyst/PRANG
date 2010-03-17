@@ -81,10 +81,13 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	if ( $self->has_nodeClass ) {
 		# general nested XML support
 		my $marshaller = $ctx->base->get($self->nodeClass);
+		my $new_ctx = $ctx->next_ctx(
+			$node->namespaceURI,
+			$node->localname,
+		       );
 		my $value = ( $marshaller ? $marshaller->marshall_in_element(
 			$node,
-			$ctx->xsi,
-			$ctx->xpath."/".$node->nodeName,
+			$new_ctx,
 		       )
 				      : $node );
 		$ctx->element_ok(1);
