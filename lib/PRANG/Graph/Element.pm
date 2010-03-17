@@ -162,7 +162,7 @@ method expected( PRANG::Graph::Context $ctx ) {
 		.">";
 }
 
-method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item $value?, Int $slot?, Str $name? ) {
+method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item :$value, Int :$slot, Str :$name ) {
 	$value //= do {
 		my $accessor = $self->attrName;
 		$item->$accessor;

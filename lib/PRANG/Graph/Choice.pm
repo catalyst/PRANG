@@ -89,7 +89,7 @@ method expected( PRANG::Graph::Context $ctx ) {
 
 our $REGISTRY = Moose::Util::TypeConstraints::get_type_constraint_registry();
 
-method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item $value?, Int $slot? ) {
+method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item :$value, Int :$slot ) {
 
 	my $an = $self->attrName;
 	$value //= $item->$an;
@@ -125,7 +125,9 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 				     $choice->nodeName eq "*") {
 				$choice->output(
 					$item,$node,$ctx,
-					$value,$slot,$name,
+					value => $value,
+					(defined $slot ? (slot => $slot) : ()),
+					name => $name,
 				       );
 				last;
 			}

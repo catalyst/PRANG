@@ -80,7 +80,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 	if ( $self->has_max and $self->max == 1 ) {
 		# this is an 'optional'-type thingy
 		if ( defined $val ) {
-			$self->child->output($item,$node,$ctx,$val);
+			$self->child->output($item,$node,$ctx,value => $val);
 		}
 	}
 	else {
@@ -97,7 +97,9 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 			for ( my $i = 0; $i <= $#$val; $i++) {
 				$ctx->quant_found($i+1);
 				$self->child->output(
-					$item,$node,$ctx,$val->[$i],$i,
+					$item,$node,$ctx,
+					value => $val->[$i],
+					slot => $i,
 				       );
 			}
 		}
