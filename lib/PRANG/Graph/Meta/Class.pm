@@ -209,7 +209,7 @@ method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx 
 	my @ns_attr = $node->getNamespaces;
 
 	if ( @ns_attr ) {
-		$ctx->add_xmlns($_->declaredPrefix => $_->declaredURI)
+		$ctx->add_xmlns($_->declaredPrefix//"" => $_->declaredURI)
 			for @ns_attr;
 	}
 
