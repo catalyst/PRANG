@@ -13,6 +13,18 @@ has_element "colon" =>
 	is => "ro",
 	isa => "Str",
 	;
+has_element "apostrophe" =>
+	is => "ro",
+	isa => "Ampersand",
+	xml_required => 0,
+	;
+
+has_element "pipe" =>
+	is => "ro",
+	isa => "Fingernails",
+	xml_required => 0,
+	;
+
 with "PRANG::Graph", "PRANG::Graph::Class";
 
 package Ampersand;
@@ -25,10 +37,6 @@ has_element "interpunct" =>
 	is => "ro",
 	isa => "Int",
 	predicate => "has_interpunct",
-	;
-has_element "apostrophe" =>
-	is => "ro",
-	isa => "Octothorpe",
 	;
 
 package Caret;
@@ -83,6 +91,7 @@ with "PRANG::Graph::Class";
 has_element "asterism" =>
 	is => "ro",
 	isa => "ArrayRef[Caret|Pilcrow|Str]",
+	xml_min => 0,
 	xml_nodeName => {
 		"space" => "Caret",
 		"underscore" => "Pilcrow",
