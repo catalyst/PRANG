@@ -117,7 +117,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 	}
 	if ( !defined $name ) {
 		$DB::single = 1;
-		die "epic fail";
+		$ctx->exception("don't know what to serialize $value to for slot ".$self->attrName);
 	}
 	if ( length $name ) {
 		for my $choice ( @{ $self->choices } ) {
