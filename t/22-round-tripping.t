@@ -66,8 +66,10 @@ for my $test ( sort @yaml_tests ) {
 
 		my $object_2 = XMLTests::parse_test(
 			"Octothorpe", $xml, $test,
-		       );
-		skip "re-parse failed", 1 if !$object_2;
+		       ) or do {
+			       diag("tried to parse:\n".$xml);
+			       skip "re-parse failed", 1;
+		       };
 
 		is_deeply($object_2, $object,
 			  "$test - round-tripped from YAML to XML and back OK")
