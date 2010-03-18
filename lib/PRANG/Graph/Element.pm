@@ -224,6 +224,8 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 				}
 			}
 			else {
+				$ctx->exception("tried to serialize unblessed reference")
+					if !blessed $value;
 				$m->to_libxml($value, $nn, $ctx);
 			}
 		}
