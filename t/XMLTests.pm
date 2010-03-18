@@ -6,7 +6,7 @@ use Scriptalicious;
 use File::Find;
 use FindBin qw($Bin);
 use strict;
-use YAML qw(LoadFile Load Dump);
+use YAML qw(Load Dump);
 
 our $grep;
 getopt_lenient( "test-grep|t=s" => \$grep );
@@ -38,7 +38,14 @@ sub read_xml {
 
 sub read_yaml {
 	my $test = shift;
-	LoadFile "$Bin/$test";
+	open YAML, "<$Bin/$test";
+	binmode YAML, ":utf8";
+	my $yaml = do {
+		local($/);
+		<YAML>;
+	};
+	close YAML;
+	Load $yaml;
 }
 
 sub parse_test {
