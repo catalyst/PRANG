@@ -30,11 +30,6 @@ This recipe series gives you a good overview of some of advanced of PRANG's
 capabilites. Showing how to do lists of nodes and then lists of any of a number
 of different nodes.
 
-You should probably read L<PRANG::Manual> first though at the moment, that
-manual does not exist.
-
-...
-
 =head1 CONCLUSION
 
 ...

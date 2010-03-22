@@ -20,8 +20,10 @@ recipes are small and self-explanatory but the general layout of each series
 shows firstly a simple example with explanations followed by further
 enhancements.
 
-You should probably read L<PRANG::Manual> first though at the moment, that
-manual does not exist.
+Each component of PRANG has a man page describing it, and collectively
+these form the PRANG manual.  However, the cookbook is designed to
+give quick examples to get up to speed with what you need to know to
+effectively use PRANG.
 
 =head1 RECIPES
 
@@ -59,11 +61,15 @@ book or a CD.
 
 =head2 Advanced PRANG
 
-Discuss with SamV what to put here.
+The CPAN releases L<XML::SRS> and L<XML::EPP> are implementations of
+real-world XML standards using PRANG.  The first versions of these
+will be released shortly after the inaugral PRANG release.
 
 =head1 AUTHOR
 
 Andrew Chilton, E<lt>andy@catalyst dot net dot nz<gt>
+
+Edited by Sam Vilain, L<samv@cpan.org>
 
 =head1 COPYRIGHT & LICENSE
 

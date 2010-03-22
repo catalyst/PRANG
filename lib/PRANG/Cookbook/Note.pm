@@ -74,9 +74,6 @@ PRANG::Cookbook::Note - Basic PRANG Features
 This recipe series gives you a good overview of PRANG's capabilites starting
 with simple XML elements and attributes.
 
-You should probably read L<PRANG::Manual> first though at the moment, that
-manual does not exist.
-
 ...
 
 =head1 CONCLUSION

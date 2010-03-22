@@ -243,8 +243,8 @@ Log a ticket on L<http://rt.cpan.org/>
 Development commissioned by NZ Registry Services, and carried out by
 Catalyst IT - L<http://www.catalyst.net.nz/>
 
-Copyright 2009, NZ Registry Services.  This module is licensed under
-the Artistic License v2.0, which permits relicensing under other Free
-Software licenses.
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
 
 =cut
