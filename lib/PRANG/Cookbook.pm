@@ -83,4 +83,6 @@ may be used under the terms of the Artistic License 2.0.  Note that this
 license is compatible with both the GNU GPL and Artistic licenses.  A copy of
 this license is supplied with the distribution in the file COPYING.txt.
 
+This license applies to all Cookbook files shipped with PRANG.
+
 =cut
