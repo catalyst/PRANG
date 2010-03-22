@@ -114,7 +114,7 @@ for my $failtest ( $doc->findnodes("//fail/*") ) {
 		#base => PRANG::Marshaller->get($class),
 		prefix => "",
 	       );
-	my %rv = eval { $class->new(
+	my $rv = eval { $class->new(
 		$class->meta->accept_childnodes( \@nodes, $context )
 	       ) };
 	my $exception = "$@";
