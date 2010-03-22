@@ -39,9 +39,6 @@ my $doc = $parser->parse_string(<<XML);
       <interpunct lang="en">2</interpunct>
       <apostrophe><colon /></apostrophe>
     </Ampersand>
-    <Ampersand desc="missing required element" error="Node incomplete; expecting: .apostrophe">
-      <interpunct>2</interpunct> 
-    </Ampersand>
     <Caret desc="alternation required, nothing given" error="Node incomplete; expecting: .parens.+braces.">
     </Caret>
     <Caret desc="single alternation required, passed multiple" error="Single child node expected">
