@@ -8,7 +8,7 @@
 # If not, see <http://www.perlfoundation.org/artistic_license_2_0>
 
 use strict;
-use warnings;
+no warnings; $SIG{__WARN__} = sub {};
 use Test::More;
 
 BEGIN {
@@ -53,11 +53,9 @@ for my $module (@modules) {
 				delete $naked{$_} for m{(\w+)}g;
 			}
 		}
-		$rating = 1 - (
-			( scalar keys %naked ) / (
-				$pc->covered + ( @naked - scalar keys %naked )
-			)
-		);
+		my $num = $pc->covered + ( @naked - scalar keys %naked );
+		$rating = 1 - ($num ? ( ( scalar keys %naked ) / $num )
+				       : 0 );
 		@naked = keys %naked;
 	} ## end if (@naked)
 	if ( defined $rating ) {
