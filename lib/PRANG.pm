@@ -14,13 +14,13 @@ PRANG - XML graph engine - XML to Moose objects and back!
 
 =head1 SYNOPSIS
 
- # common role for nodes in your XML language
+ # step 1. define a common role for nodes in your XML language
  package XML::Language::Node;
  use Moose::Role;
  sub xmlns { "http://example.com/language/1.0" }
  with 'PRANG::Graph::Class';
 
- # defining the language
+ # step 2. define the root node(s) of your language
  package XML::Language;
  use Moose;
  use PRANG::Graph;
@@ -37,7 +37,7 @@ PRANG - XML graph engine - XML to Moose objects and back!
       ;
  with 'PRANG::Graph', 'XML::Language::Node';
 
- # defining an element
+ # step 3. define further elements in your schema
  package XML::Language::Lust;
  use Moose;
  use PRANG::Graph;
@@ -61,7 +61,8 @@ PRANG - XML graph engine - XML to Moose objects and back!
       ;
  with 'XML::Language::Node';
 
- # the above could parse:
+ # step 4a.  parse!
+ my $object = XML::Language->parse(<<XML);
  <envy laziness="Very">
    <lust gluttony="127">
      <anger>You wouldn't like me when I'm angry</anger>
@@ -71,6 +72,7 @@ PRANG - XML graph engine - XML to Moose objects and back!
      </lust>
    </lust>
  </envy>
+ XML;
 
  # Parsing the above would give you the same structure as this:
  XML::Language->new(
@@ -86,9 +88,13 @@ PRANG - XML graph engine - XML to Moose objects and back!
          ],
      );
 
+ # step 4b.  emit!
+ print $object->to_xml;
+
 =head1 DESCRIPTION
 
-This is an B<XML Graph> engine.
+PRANG is an B<XML Graph> engine, which provides B<post-schema
+validation objects> (PSVO).
 
 It is designed for implementing XML languages for which a description
 of the valid sets of XML documents is available - for example, a DTD,
@@ -97,14 +103,19 @@ L<XML::Toolkit>), your class structure I<is> your XML Graph.
 
 XML namespaces are supported, and the module tries to make many XML
 conventions as convenient as possible in the generated classes.  This
-includes XML data (elements with no attributes and textual contents),
+includes XML data (elements with no attributes and textnode contents),
 and presence elements (empty elements with no attributes which
 indicate something).  It also supports mixed and unprocessed portions
 of the XML, and "pluggable" specifications.
 
 Currently, these must be manually constructed as in the example -
 details on this are to be found on the L<PRANG::Graph::Meta::Element>
-perldoc.
+and L<PRANG::Graph::Meta::Attr> perldoc.  There is also a cookbook of
+examples - see L<PRANG::Cookbook>.
+
+However, eventually it should be possible to automatically process
+schema documents to produce a class structure (see L</KNOWN
+LIMITATIONS>).
 
 Once the L<PRANG::Graph> has been built, you can:
 
@@ -118,9 +129,29 @@ L<XML::LibXML>, and constructs a corresponding set of Moose objects.
 A shortcut is available via the C<parse> method on the starting point
 of the graph (indicated by using the role 'L<PRANG::Graph>').
 
+You can also parse documents which have multiple start nodes, by
+defining a role which the concrete instances use.
+
+eg, for the example in the SYNOPSIS; define a role
+'XML::Language::Family' - the root node will be parsed by the class
+with a matching C<root_element> (and C<xmlns>) value.
+
+ package XML::Language::Family;
+ use Moose::Role;
+ with 'PRANG::Graph';
+
+ package XML::Language;
+ use Moose;
+ with 'XML::Language::Family';
+
+ # later ...
+ my $marshaller = PRANG::Marshaller->get("XML::Language::Family");
+ my $object = $marshaller->parse($xml);
+
 =item B<marshall XML out>
 
-A L<PRANG::Graph> structure also has a C<to_xml> method, 
+A L<PRANG::Graph> structure also has a C<to_xml> method, which emits
+XML.
 
 =back
 
@@ -151,11 +182,6 @@ can create a patch for any of these features which meets the coding
 standards, they are very likely to be accepted.  The authors will
 provide guidance and/or assistance through this process, time and
 patience permitting.
-
-=head2 Attribute Traits rather than Attribute Metaclasses
-
-This is a valid complaint and the author hopes to address this in a
-subsequent release.
 
 =head2 Creating XML Graphs from Schema documents
 
@@ -214,13 +240,11 @@ Log a ticket on L<http://rt.cpan.org/>
 
 =head1 AUTHOR AND LICENCE
 
-All code in the L<Net::SSLeay::OO> distribution is written by Sam
-Vilain, L<sam.vilain@catalyst.net.nz>.  Development commissioned by NZ
-Registry Services.
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
 
 Copyright 2009, NZ Registry Services.  This module is licensed under
 the Artistic License v2.0, which permits relicensing under other Free
 Software licenses.
 
 =cut
-
