@@ -261,7 +261,7 @@ that when you C<use PRANG::Graph>, there is an implied;
 
 Which is something like;
 
-  PRANG::Graph::Meta::Class->meta->apply(__PACKAGE__->meta->meta);
+  PRANG::Graph::Meta::Class->meta->apply(__PACKAGE__->meta);
 
 That sets up the metaclass to be capable of being used by the
 marshalling machinery.  This machinery expects Moose attributes which
@@ -273,7 +273,7 @@ L<PRANG::Graph::Meta::Element> classes.
 Applying the L<PRANG::Graph> role happens separately, and delivers a
 separate set of super-powers.  It is roughly equivalent to;
 
-  PRANG::Graph->meta->apply(__PACKAGE__->meta);
+  PRANG::Graph->meta->apply(__PACKAGE__);
 
 So, the key difference between these two aspects are the source
 package, and the destination meta-object; in one, it is the class, in

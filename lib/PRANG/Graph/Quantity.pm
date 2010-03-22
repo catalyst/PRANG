@@ -109,3 +109,72 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 with 'PRANG::Graph::Node';
 
 1;
+
+__END__
+
+=head1 NAME
+
+PRANG::Graph::Quantity - a bounded quantity of graph nodes
+
+=head1 SYNOPSIS
+
+See L<PRANG::Graph::Meta::Element> source and
+L<PRANG::Graph::Node> for examples and information.
+
+=head1 DESCRIPTION
+
+This graph node specifies that the XML graph at this point has a
+quantity of text nodes, elements or element choices depending on the
+type of entries in the B<child> property.
+
+If the quantity is always 1, that is, the element is required and may
+only appear one, then the element does not have one of these objects
+in their graph.
+
+=head1 ATTRIBUTES
+
+=over
+
+=item B<PRANG::Graph::Node child>
+
+The B<child> property provides the next portion of the XML Graph.
+Depending on the type of entry, it will accept and emit nodes in a
+particular way.
+
+Entries must be one of L<PRANG::Graph::Choice>,
+L<PRANG::Graph::Element>, or L<PRANG::Graph::Text>.
+
+=item B<Int min>
+
+=item B<Int max>
+
+Bounds on the number of times this graph node will match.
+
+=item B<attrName>
+
+Used when emitting; specifies the method to call to retrieve the item
+to be output.
+
+=back
+
+=head1 SEE ALSO
+
+L<PRANG::Graph::Meta::Class>, L<PRANG::Graph::Meta::Element>,
+L<PRANG::Graph::Context>, L<PRANG::Graph::Node>
+
+Lower order L<PRANG::Graph::Node> types:
+
+L<PRANG::Graph::Choice>, L<PRANG::Graph::Element>,
+L<PRANG::Graph::Text>
+
+=head1 AUTHOR AND LICENCE
+
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
+
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+=cut
+

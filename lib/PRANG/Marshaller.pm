@@ -205,3 +205,58 @@ method to_xml( PRANG::Graph $item ) {
 
 1;
 
+__END__
+
+=head1 NAME
+
+PRANG::Marshaller - entry point for PRANG XML marshalling machinery
+
+=head1 SYNOPSIS
+
+ my $marshaller = PRANG::Marshaller->get($class_or_role);
+
+ my $object = $marshaller->parse($xml);
+
+ my $xml = $marshaller->to_xml($object);
+
+=head1 DESCRIPTION
+
+The B<PRANG::Marshaller> currently serves two major functions;
+
+=over
+
+=item 1.
+
+A place-holder for role-based marshalling (ie, marshalling documents
+with multiple root element types)
+
+=item 2.
+
+A place for document-scoped information on emitting to be held (ie,
+mapping XML namespace prefixes to URIs and generating namespace
+prefixes).
+
+=back
+
+This class is a bit of a stop-gap measure; it started out as the only
+place where any XML marshalling happened, and gradually parts have
+been moved into metaclass methods, in packages such as
+L<PRANG::Graph::Meta::Class>, L<PRANG::Graph::Meta::Element> and
+L<PRANG::Graph::Node> implementations.
+
+=head1 SEE ALSO
+
+L<PRANG>, L<PRANG::Graph::Meta::Class>,
+L<PRANG::Graph::Meta::Element>, L<PRANG::Graph::Node>
+
+=head1 AUTHOR AND LICENCE
+
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
+
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+=cut
+

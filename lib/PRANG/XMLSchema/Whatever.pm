@@ -91,3 +91,53 @@ method xmlns() {
 with 'PRANG::Graph::Class';
 
 1;
+
+=head1 NAME
+
+PRANG::XMLSchema::Whatever - node type for nested anything
+
+=head1 SYNOPSIS
+
+ package My::XML::Element::Type;
+ use Moose;
+ use PRANG::Graph;
+
+ has 'error_fragment' =>
+    is => "rw",
+    isa => "PRANG::XMLSchema::Whatever",
+    ;
+
+=head1 DESCRIPTION
+
+Some schema allow sections of responses to be schema-free; typically
+this is used for error responses which are allowed to include the
+errant section of XML.
+
+Fortunately, PRANG is flexible enough that this is quite easy to do.
+The result of the operation is a nested set of
+PRANG::XMLSchema::Whatever objects, which have two properties
+C<contents> and C<attributes>, which store the sub-elements and
+attributes of the element at that point.  There is also the attribute
+C<nodenames> which stores the node names of nodes.  Once it is
+supported, there will also be an attribute indicating the XML
+namespaces of attributes and elements (currently they will not
+round-trip successfully).
+
+This API is somewhat experimental, and may be broken down into various
+versions of 'whatever' - see the source for more.
+
+=head1 SEE ALSO
+
+L<PRANG>, L<PRANG::Graph::Meta::Attr>, L<PRANG::Graph::Meta::Element>
+
+=head1 AUTHOR AND LICENCE
+
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
+
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+=cut
+

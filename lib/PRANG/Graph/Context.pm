@@ -10,20 +10,6 @@ BEGIN {
 	class_type "XML::LibXML::Element";
 }
 
-# this is a data class, it basically is like a loop counter for
-# parsing (or emitting).  Except instead of walking over a list, it
-# 'walks' over a tree of a certain, bound shape.
-
-# The shape of the XML Graph at each node is limited to:
-#
-#  Seq -> Quant -> Choice -> Element -> ( Text | Null )
-#
-#  (any of the above may be absent)
-#
-# There are a few assumptions that nodes only connect as above, and
-# not just in this class.
-
-# These variables allow us to remember where we were.
 has 'seq_pos' =>
 	is => "rw",
 	isa => "Int",
@@ -295,3 +281,141 @@ sub build_error {
 use overload '""' => \&build_error;
 
 1;
+
+__END__
+
+=head1 NAME
+
+PRANG::Graph::Context - parse/emit state for Marshalling operations
+
+=head1 SYNOPSIS
+
+ my $context = PRANG::Graph::Context->new(
+        base => PRANG::Marshaller->get($class),
+        xpath => "/nodename",
+    );
+
+=head1 DESCRIPTION
+
+This is a data class, it basically is like a loop counter for parsing
+(or emitting).  Except instead of walking over a list, it 'walks' over
+a tree of a certain, bound shape.
+
+The shape of the XML Graph at each node is limited to:
+
+  Seq -> Quant -> Choice -> Element -> ( Text | Null )
+
+(any of the above may be absent)
+
+There are assumptions that nodes only connect as above, and not just
+in this class.
+
+These state in this object allows the code to remember where it is.  A
+new instance is created for each node which may have children for the
+parsing efforts for that node.
+
+=head1 ATTRIBUTES
+
+=over
+
+=item B<seq_pos>
+
+=item B<quant_found>
+
+=item B<chosen>
+
+=item B<element_ok>
+
+The above four properties are state information for any
+L<PRANG::Graph::Seq>, L<PRANG::Graph::Quant>, L<PRANG::Graph::Choice>
+or L<PRANG::Graph::Element> objects which exist in the graph for a
+given class.  As the nodes always connect in a particular order,
+setting one value will clear all of the values for the settings which
+follow.
+
+=item B<xpath>
+
+The XML location of the current node.  Used for helpful error messages.
+
+=item B<xsi>
+
+=item B<rxsi>
+
+These attributes contain mappings from XML prefixes to namespace URIs
+and vice versa.  They should not be modified, as they are
+copy-on-write from the parent Context objects.
+
+=item B<old_xsi>
+
+The B<xsi> attribute from the parent object.  Used for C<prefix_new>
+
+=item B<xsi_virgin>
+
+Unset the first time a prefix is defined.
+
+=back
+
+=head1 METHODS
+
+This API is probably subject to quite some change.  It is mainly
+provided for assisting understanding with internal code.
+
+=head2 B<$ctx-E<gt>exception("message", $node?, $skip_ok?)>
+
+Raise a context-sensitive exception via C<die>.  The XPath that the
+current node was constructed with is appended with the nodename of the
+passed node to provide an XML path for the error.
+
+Where parsing or emitting errors happen with one of these objects
+around, it should always be used for reporting the error.  The error
+is a structured object (of type C<PRANG::Graph::Context::Error>) which
+knows how to stringify into a readable error message.
+
+=head2 B<next_ctx( Maybe[Str] $xmlns, Str $newnode_name, $thing? ) returns PRANG::Graph::Context>
+
+This returns a new C<PRANG::Graph::Context> object, for the next level
+of parsing.
+
+=head2 B<get_xmlns( Str $prefix ) returns Str>
+
+Returns the XML namespace associated with the passed prefix.
+
+=head2 B<get_prefix( Str $xmlns, Object $thing?, XML::LibXML::Element $victim? ) returns Str>
+
+Used for emitting.  This is an alternative to reading the C<rxsi> hash
+attribute directly.  It returns the prefix for the given namespace URI
+(C<$xmlns>), and if it is not already defined it will figure out based
+on the type of C<$thing> what prefix to use, and add XML namespace
+nodes to the C<$victim> XML namespace node.  If the C<$thing> does not
+specify a default XML namespace prefix, then one is chosen for it.
+
+=head2 B<add_xmlns( Str $prefix, Str $xmlns )>
+
+Used for parsing.  This associates the given prefix with the given XML
+namespace URI.
+
+=head2 B<prefix_new( Str $prefix )>
+
+This tells you whether or not the passed prefix was declared with this
+Context or not.  Used for emitting.
+
+=head1 SEE ALSO
+
+L<PRANG::Graph::Meta::Class>, L<PRANG::Graph::Meta::Attr>,
+L<PRANG::Graph::Meta::Element>, L<PRANG::Marshaller>,
+
+Implementations:
+
+L<PRANG::Graph::Seq>, L<PRANG::Graph::Quant>, L<PRANG::Graph::Choice>,
+L<PRANG::Graph::Element>, L<PRANG::Graph::Text>
+
+=head1 AUTHOR AND LICENCE
+
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
+
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+=cut

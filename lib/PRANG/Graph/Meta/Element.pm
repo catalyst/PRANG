@@ -390,15 +390,14 @@ for marking your class' attributes as XML I<elements>.  For marking
 them as XML I<attributes>, see L<PRANG::Graph::Meta::Attr>.
 
 Non-trivial elements - and this means elements which contain more than
-a single data element within - are mapped to Moose classes.  The child
-elements that are allowed within that class correspond to the
+a single TextNode element within - are mapped to Moose classes.  The
+child elements that are allowed within that class correspond to the
 attributes marked with the C<PRANG::Element> trait, either via
-C<has_element> or the Moose C<traits> keyword.  As Moose attributes
-have an ordering, this order also 
+C<has_element> or the Moose C<traits> keyword.
 
 Where it makes sense, as much as possible is set up from the regular
-Moose definition of the attribute.  So, for instance, the name of the
-element expected at that stage 
+Moose definition of the attribute.  This includes the XML node name,
+the type constraint, and also the predicate.
 
 If you like, you can also set the C<xmlns> and C<xml_nodeName>
 attribute property, to override the default behaviour, which is to
@@ -408,7 +407,8 @@ C<$object-E<gt>somechild-E<gt>xmlns>.
 
 The B<order> of declaring element attributes is important.  They
 implicitly define a "sequence".  To specify a "choice", you must use a
-union sub-type - see below.
+union sub-type - see below.  Care must be taken with bundling element
+attributes into roles as ordering when composing is not defined.
 
 The B<predicate> property of the attribute is also important.  If you
 do not define C<predicate>, then the attribute is considered
@@ -419,10 +419,8 @@ The B<isa> property (B<type constraint>) you set via 'isa' is
 I<required>.  The behaviour for major types is described below.  The
 module knows about sub-typing, and so if you specify a sub-type of one
 of these types, then the behaviour will be as for the type on this
-list.
-
-B<note:> this man page is I<B<OUT OF DATE>> in subtle ways.  Use
-the source, Luke - until it is corrected.
+list.  Only a limited subset of higher-order/parametric/structured
+types are permitted as described.
 
 =over 4
 
@@ -459,13 +457,17 @@ as a TextNode; eg
 If the attribute is an Object subtype (ie, a Class), then the element
 is serialised according to the definition of the Class defined.
 
-eg, with
+eg, with;
 
-   class CD {
+   {
+       package CD;
+       use Moose; use PRANG::Graph;
        has_element 'author' => qw( is rw isa Person );
        has_attr 'name' => qw( is rw isa Str );
    }
-   class Person {
+   {
+       package Person;
+       use Moose; use PRANG::Graph;
        has_attr 'group' => qw( is rw isa Bool );
        has_attr 'name' => qw( is rw isa Str );
        has_element 'deceased' => qw( is rw isa Bool );
@@ -478,7 +480,8 @@ Then the object;
     author => Person->new(
        group => 0,
        name => "Tupac Shakur",
-       deceased => 1)
+       deceased => 1,
+       )
   );
 
 Would serialise to (assuming that there is a L<PRANG::Graph> document
@@ -490,13 +493,50 @@ type with C<cd> as a root element):
     </author>
   </cd>
 
+=item B<ArrayRef sub-type>
+
+An C<ArrayRef> sub-type indicates that the element may occur multiple
+times at this point.  Bounds may be specified directly - the
+C<xml_min> and C<xml_max> attribute properties.
+
+Higher-order types are supported; in fact, to not specify the type of
+the elements of the array is a big no-no.
+
+If C<xml_nodeName> is specified, it refers to the items; no array
+container node is expected.
+
+For example;
+
+  has_attr 'name' =>
+     is => "rw",
+     isa => "Str",
+     ;
+  has_attr 'releases' =>
+     is => "rw",
+     isa => "ArrayRef[CD]",
+     xml_min => 0,
+     xml_nodeName => "cd",
+     ;
+
+Assuming that this property appeared in the definition for 'artist',
+and that CD C<has_attr 'title'...>, it would let you parse:
+
+  <artist>
+    <name>The Headless Chickens</name>
+    <cd title="Stunt Clown">...<cd>
+    <cd title="Body Blow">...<cd>
+    <cd title="Greedy">...<cd>
+  </artist>
+
+You cannot (currently) Union an ArrayRef type with other simple types.
+
 =item B<Union types>
 
 Union types are special; they indicate that any one of the types
 indicated may be expected next.  By default, the name of the element
 is still the name of the Moose attribute, and if the case is that a
 particular element may just be repeated any number of times, this is
-find.
+fine.
 
 However, this can be inconvenient in the typical case where the
 alternation is between a set of elements which are allowed in the
@@ -510,7 +550,7 @@ When marshalling IN, we need to know what element names are allowable,
 and potentially which sub-type to expect for a particular element
 name.
 
-The following scenarios arise;
+After applying much DWIMery, the following scenarios arise;
 
 =over
 
@@ -532,27 +572,28 @@ to proceed.
 It is an error if types are repeated in the map.  The empty string can
 be used as a node name for text nodes, otherwise they are not allowed.
 
-=item B<more element names than types>
+This case is made of win because no extra attributes are required to
+help the marshaller; the type of the data is enough.
 
-This can happen for two reasons: one is that the schema that this
-element definition comes from is re-using types.  Another is that you
-are just accepting XML without validation (eg, XMLSchema's
-C<processContents="skip"> property).  In this case, there needs to be
-another attribute which records the names of the node.
+An example of this in practice;
 
-  has_element 'message' =>
-      is => "rw",
-      isa => "my::unionType",
-      xml_nodeName => {
-          "nodename" => "TypeA",
-          "somenode" => "TypeB",
-          "someother" => "TypeB",
-      },
-      xml_nodeName_attr => "message_name",
-      ;
+  subtype "My::XML::Language::choice0"
+     => as join("|", map { "My::XML::Language::$_" }
+                  qw( CD Store Person ) );
 
-If any node name is allowed, then you can simply pass in C<*> as an
-C<xml_nodeName> value.
+  has_element 'things' =>
+     is => "rw",
+     isa => "ArrayRef[My::XML::Language::choice0]",
+     xml_nodeName => +{ map {( lc($_) => $_ )} qw(CD Store Person) },
+     ;
+
+This would allow the enclosing class to have a 'things' property,
+which contains all of the elements at that point, which can be C<cd>,
+C<store> or C<person> elements.
+
+In this case, it may be preferrable to pass a role name as the element
+type, and let this module evaluate construct the C<xml_nodeName> map
+itself.
 
 =item B<more types than element names>
 
@@ -575,6 +616,30 @@ In this case, you must supply a namespace map, too.
           "claptrap" => "uri:type:C",
       },
       ;
+
+B<FIXME:> this is currently unimplemented.
+
+=item B<more element names than types>
+
+This can happen for two reasons: one is that the schema that this
+element definition comes from is re-using types.  Another is that you
+are just accepting XML without validation (eg, XMLSchema's
+C<processContents="skip"> property).  In this case, there needs to be
+another attribute which records the names of the node.
+
+  has_element 'message' =>
+      is => "rw",
+      isa => "my::unionType",
+      xml_nodeName => {
+          "nodename" => "TypeA",
+          "somenode" => "TypeB",
+          "someother" => "TypeB",
+      },
+      xml_nodeName_attr => "message_name",
+      ;
+
+If any node name is allowed, then you can simply pass in C<*> as an
+C<xml_nodeName> value.
 
 =item B<more namespaces than types>
 
@@ -602,6 +667,8 @@ elements.
       xmlns => "*",
       ;
 
+B<FIXME:> this is currently unimplemented.
+
 =item B<unknown/extensible element names and types>
 
 These are indicated by specifying a role.  At the time that the
@@ -615,12 +682,16 @@ L<PRANG::Graph::Class>, the following actions are taken:
 =item L<PRANG::Graph> types
 
 Treated as if there is an C<xml_nodeName> entry for the class, from
-the C<root_element> value for the class to the type.
+the C<root_element> value for the class to the type.  B<FIXME>: to
+also include the XML namespace of the class.
 
 For writing extensible schemas, this is generally the role you want to
 inherit.
 
 =item L<PRANG::Graph::Class> types
+
+B<FIXME:> this entry may be out of date, please ignore for the time
+being.
 
 You must supply C<xml_nodeName_attr>.  This type will never be used on
 marshall in; however, it will happily work on the way out.
@@ -641,38 +712,20 @@ eg
 
 =back
 
-=item B<ArrayRef sub-type>
+=back
 
-An C<ArrayRef> sub-type indicates that the element may occur multiple
-times at this point.  Currently, bounds may be specified directly -
-the C<xml_min> and C<xml_max> attribute properties.
+=head1 SEE ALSO
 
-If C<xml_nodeName> is specified, it is applied to I<items> in the
-array ref.
+L<PRANG::Graph::Meta::Attr>, L<PRANG::Graph::Meta::Element>,
+L<PRANG::Graph::Node>
 
-Higher-order types are supported; in fact, to not specify the type of
-the elements of the array is a big no-no.
+=head1 AUTHOR AND LICENCE
 
-When you have "choice" nodes in your XML graph, and these choices are
-named, then you can specify a sub-type which is that list of types.
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
 
-eg
-
-  subtype "My::XML::Language::choice0"
-     => as join("|", map { "My::XML::Language::$_" }
-                  qw( CD Store Person ) );
-
-  has_element 'things' =>
-     is => "rw",
-     isa => "ArrayRef[My::XML::Language::choice0]",
-     xml_nodeName => sub { lc(ref($_)) },
-     ;
-
-This would allow the enclosing class to have a 'things' property,
-which contains all of the elements at that point, which can be C<cd>,
-C<store> or C<person> elements.
-
-You cannot (currently) Union an ArrayRef type with other simple types.
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
 
 =cut
-

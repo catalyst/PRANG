@@ -143,3 +143,75 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 with 'PRANG::Graph::Node';
 
 1;
+
+__END__
+
+=head1 NAME
+
+PRANG::Graph::Choice - accept multiple discrete node types
+
+=head1 SYNOPSIS
+
+See L<PRANG::Graph::Meta::Element> source and
+L<PRANG::Graph::Node> for examples and information.
+
+=head1 DESCRIPTION
+
+This graph node specifies that the XML graph at this point may be one
+of a list of text nodes or elements, depending on the type of entries
+in the B<choices> property.
+
+If there is only one type of node allowed then the element does not
+have one of these objects in their graph.
+
+=head1 ATTRIBUTES
+
+=over
+
+=item B<ArrayRef[PRANG::Graph::Node] choices>
+
+This property provides the next portion of the XML Graph.  Depending
+on the type of entry, it will accept and emit nodes of a particular
+type.
+
+Entries must be one of L<PRANG::Graph::Element>, or
+L<PRANG::Graph::Text>.
+
+=item B<HashRef[Str|Moose::Meta::TypeConstraint] type_map>
+
+This map is used for emitting.  It maps from the localname of the XML
+node to the type which that localname is appropriate for.  This map
+also needs to include the XML namespace, that it doesn't is currently a bug.
+
+=item B<Str name_attr>
+
+Used when emitting; avoid type-based selection and instead retrieve
+the name of the XML node from this attribute.
+
+=item B<attrName>
+
+Used when emitting; specifies the method to call to retrieve the item
+to be output.
+
+=back
+
+=head1 SEE ALSO
+
+L<PRANG::Graph::Meta::Class>, L<PRANG::Graph::Meta::Element>,
+L<PRANG::Graph::Context>, L<PRANG::Graph::Node>
+
+Lower order L<PRANG::Graph::Node> types:
+
+L<PRANG::Graph::Element>, L<PRANG::Graph::Text>
+
+=head1 AUTHOR AND LICENCE
+
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
+
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+=cut
+

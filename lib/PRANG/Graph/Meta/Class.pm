@@ -288,3 +288,98 @@ package Moose::Meta::Class::Custom::Trait::PRANG;
 sub register_implementation { "PRANG::Graph::Meta::Class" }
 
 1;
+
+__END__
+
+=head1 NAME
+
+PRANG::Graph::Meta::Class - metaclass metarole for PRANG-enabled classes
+
+=head1 SYNOPSIS
+
+ package MyClass;
+ use Moose;
+ use PRANG::Graph;
+
+ # - or -
+ package MyClass;
+ use Moose -traits => ["PRANG"];
+
+ # - or -
+ package MyClass;
+ use Moose;
+ PRANG::Graph::Meta::Class->meta->apply(__PACKAGE__->meta);
+
+=head1 DESCRIPTION
+
+This role effectively defines class properties and methods for PRANG
+classes' meta objects.  ie, the methods it defines are all to be found
+in C<YourClass-E<gt>meta>, not C<YourClass>.
+
+The 
+
+=head1 ATTRIBUTES
+
+=over
+
+=item B<HashRef[HashRef[PRANG::Graph::Meta::Attr]] xml_attr>
+
+This read-only property maps from XML namespace and localname to a
+L<PRANG::Graph::Meta::Attr> object, defining the type of that
+attribute and other things described on its perldoc.
+
+The first time it is accessed, it is built - so be sure to carry out
+any run-time meta magic before parsing or emitting objects of that
+type.
+
+=item B<ArrayRef[PRANG::Graph::Meta::Element] xml_elements>
+
+This contains an ordered list of all of the XML elements which exist
+in this class.  See L<PRANG::Graph::Meta::Element>.
+
+Like C<xml_attr>, the first time it is accessed it is built.  There
+are currently some problems with ordering and role composition; as the
+ordering of elements is returned from a moose accessor, but when
+composing roles into classes, they are applied in any order.
+
+=item B<PRANG::Graph::Node graph>
+
+The C<graph> property is the acceptor and emitter for the child nodes
+of this class.  See L<PRANG::Graph::Node> for the low-down.  This is
+constructed by a transform on the B<xml_elements> property.
+
+=back
+
+=head1 METHODS
+
+=head2 B<accept_attributes(\@node_attr, $ctx)>
+
+=head2 B<accept_childnodes(\@childNodes, $ctx)>
+
+=head2 B<marshall_in_element($node, $ctx)>
+
+These methods are the parsing machinery, their API is quite subject to
+change.
+
+=head2 B<add_xml_attr($item, $node, $ctx)>
+
+=head2 B<to_libxml($item, $node, $ctx)>
+
+Similarly, these are the emitting methods.
+
+=head1 SEE ALSO
+
+L<PRANG::Graph::Meta::Attr>, L<PRANG::Graph::Meta::Element>,
+L<PRANG::Graph::Node>
+
+=head1 AUTHOR AND LICENCE
+
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
+
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+=cut
+

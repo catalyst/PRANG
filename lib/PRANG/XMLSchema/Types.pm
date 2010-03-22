@@ -174,3 +174,44 @@ subtype "PRANG::XMLSchema::unsignedByte"
 
 
 1;
+
+=head1 NAME
+
+PRANG::XMLSchema::Types - type registry for XML Schema-related types
+
+=head1 SYNOPSIS
+
+ package My::Class;
+ use Moose;
+ use PRANG::Graph;
+ use PRANG::XMLSchema::Types;
+
+ has_attr 'foo' =>
+    is => "ro",
+    isa => "PRANG::XMLSchema::unsignedShort",
+    ;
+
+=head1 DESCRIPTION
+
+This module is a collection of types which make working with XML
+Schema specifications easier.  See the source for the complete list.
+
+These might be moved into a separate namespace, but if you include
+this module you will get aliases for wherever these XML Schema types
+end up.
+
+=head1 SEE ALSO
+
+L<PRANG>, L<PRANG::Graph::Meta::Attr>, L<PRANG::Graph::Meta::Element>
+
+=head1 AUTHOR AND LICENCE
+
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
+
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+=cut
+

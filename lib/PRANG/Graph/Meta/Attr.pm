@@ -48,8 +48,8 @@ PRANG::Graph::Meta::Attr - metaclass metarole for XML attributes
 =head1 DESCRIPTION
 
 When defining a class, you mark attributes which correspond to XML
-attributes.  To do this in a way that the PRANG::Marshaller can use
-when marshalling to XML and back, make the attributes have this
+attributes.  To do this in a way that the PRANG marshalling machinery
+can use when converting to XML and back, make the attributes have this
 metaclass.
 
 You could do this in principle with:
@@ -66,5 +66,20 @@ the XML attribute name matches the Moose attribute name, and that the
 XML namespace of the attribute matches that of the class in which it
 is defined.
 
-=cut
+If you set the C<xml_required> property, then it is an error for the
+property not to be set when parsing or emitting.
 
+=head1 SEE ALSO
+
+L<PRANG::Graph::Meta::Class>, L<PRANG::Graph::Meta::Element>
+
+=head1 AUTHOR AND LICENCE
+
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
+
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+=cut

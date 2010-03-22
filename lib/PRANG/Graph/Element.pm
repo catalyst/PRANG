@@ -243,3 +243,81 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 with 'PRANG::Graph::Node';
 
 1;
+
+__END__
+
+=head1 NAME
+
+PRANG::Graph::Element - accept a particular type of element
+
+=head1 SYNOPSIS
+
+See L<PRANG::Graph::Meta::Element> source and
+L<PRANG::Graph::Node> for examples and information.
+
+=head1 DESCRIPTION
+
+This graph node specifies that the XML graph at this point must accept
+a particular type of element.
+
+If the element only has only simple types (eg Str, Bool), it will not
+have one of these objects in its graph.
+
+Along with L<PRANG::Graph::Text>, this graph node is the only type
+which may actually consume input XML nodes or emit them on output.
+The other node types merely change the state in the
+L<PRANG::Graph::Context> object.
+
+=head1 ATTRIBUTES
+
+=over
+
+=item B<Str xmlns>
+
+If set, then the XML namespace of this element is expected to be the
+value passed (or absent).  This is generally not set if the namespace
+of this portion of the graph is the same as the parent class.
+
+=item B<nodeName>
+
+This map is used for emitting and generating error messages.  Also, if
+set to C<*> it has special meaning when parsing.  Specifies the name
+of the node.
+
+=item B<nodeName_attr>
+
+If set, instances have an attribute which stores the name of the XML
+element.
+
+=item B<Str nodeClass>
+
+This specifies the next type of element; during parsing and emitting,
+recursion to the meta-object of this class occurs.
+
+This will be undefined if the attribute has C<Bool> type; node
+presence is true and absence is false.
+
+=item B<attrName>
+
+Used when emitting; specifies the method to call to retrieve the item
+to be output.  Also used when parsing, to return the Moose attribute
+slot for construction.
+
+=back
+
+=head1 SEE ALSO
+
+L<PRANG::Graph::Meta::Class>, L<PRANG::Graph::Meta::Element>,
+L<PRANG::Graph::Context>, L<PRANG::Graph::Node>
+
+=head1 AUTHOR AND LICENCE
+
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
+
+Copyright 2009, 2010, NZ Registry Services.  This module is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+=cut
+

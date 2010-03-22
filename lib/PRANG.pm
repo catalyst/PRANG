@@ -148,6 +148,9 @@ with a matching C<root_element> (and C<xmlns>) value.
  my $marshaller = PRANG::Marshaller->get("XML::Language::Family");
  my $object = $marshaller->parse($xml);
 
+B<note> the C<PRANG::Marshaller> API will probably go away in a future
+release, once the "parse" role method is made to work correctly.
+
 =item B<marshall XML out>
 
 A L<PRANG::Graph> structure also has a C<to_xml> method, which emits
