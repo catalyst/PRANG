@@ -6,4 +6,5 @@ Makefile$
 ^debian/
 -stamp$
 perltidy.pl
+cover_db
 \.perltidyrc
