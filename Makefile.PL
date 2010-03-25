@@ -16,5 +16,8 @@ license         ('artistic');
 
 requires        ("perl" => 5.010);
 requires        ("Moose" => 0.92);
+requires        ("XML::LibXML" => 1.65);
+requires        ("MooseX::Method::Signatures" => 0.17);
+test_requires   ("XML::Compare" => 0.02);
 
 &WriteAll;
