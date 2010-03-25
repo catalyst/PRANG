@@ -217,7 +217,10 @@ method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx 
 	my @init_args = $self->accept_attributes( \@node_attr, $ctx );
 
 	# now process elements
-	my @childNodes = $node->nonBlankChildNodes;
+	my @childNodes = grep {
+		!($_->isa("XML::LibXML::Comment") or
+			$_->isa("XML::LibXML::Text") and $_->data =~ /\A\s+\Z/)
+	} $node->childNodes;
 
 	push @init_args, $self->accept_childnodes( \@childNodes, $ctx );
 

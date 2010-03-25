@@ -104,7 +104,11 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 		}
 		if ( $self->has_contents ) {
 			# simple types, eg Int, Str
-			my (@childNodes) = $node->nonBlankChildNodes;
+			my (@childNodes) = grep {
+                		!($_->isa("XML::LibXML::Comment") or
+                        		$_->isa("XML::LibXML::Text") and $_->data =~ /\A\s+\Z/)
+ 			} $node->childNodes;
+
 			if ( @childNodes > 1 ) {
 				# we could maybe merge CDATA nodes...
 				$ctx->exception(
