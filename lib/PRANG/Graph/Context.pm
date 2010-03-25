@@ -234,8 +234,10 @@ method show_node {
 				$_->name."='".$_->value."'"
 			} $node->attributes);
 		}
-		my @nodes = grep { !$_->isa("XML::LibXML::Comment") }
-			$node->nonBlankChildNodes;
+		my @nodes = grep {
+			!( $_->isa("XML::LibXML::Comment") or
+				$_->isa("XML::LibXML::Text") and $_->data =~ /\A\s+\Z/
+			) } $node->childNodes;
 		if ( @nodes > 1 and grep { !$_->isa("XML::LibXML::Element") }
 			     @nodes ) {
 			$extra .= ">(mixed context)";

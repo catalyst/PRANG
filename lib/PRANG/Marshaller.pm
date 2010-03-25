@@ -5,7 +5,7 @@ use Moose;
 use MooseX::Method::Signatures;
 use Moose::Util::TypeConstraints;
 
-use XML::LibXML 1.70;
+use XML::LibXML 1.69;
 use PRANG::Util qw(types_of);
 
 BEGIN {
@@ -54,9 +54,7 @@ method get($inv: Str $class) {
 
 method parse( Str $xml ) {
 
-	my $dom = XML::LibXML->load_xml(
-		string => $xml,
-	       );
+	my $dom = XML::LibXML->new->parse_string($xml);
 
 	my $rootNode = $dom->documentElement;
 	my $rootNodeNS = $rootNode->namespaceURI;
