@@ -96,9 +96,9 @@ method parse( Str $xml ) {
 
 	my $context = PRANG::Graph::Context->new(
 		base => $self,
-		xpath => "/".$rootNode->nodeName,
+		xpath => "",
 		xsi => $xsi,
-		prefix => ($rootNode->prefix||""),
+		prefix => "",
 	       );
 
 	my $rv = $self->class->marshall_in_element(

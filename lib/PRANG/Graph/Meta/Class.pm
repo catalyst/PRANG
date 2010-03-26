@@ -213,8 +213,12 @@ method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx 
 			for @ns_attr;
 	}
 
+	my $new_ctx = $ctx->next_ctx(
+		$node->namespaceURI,
+		$node->localname,
+	       );
 
-	my @init_args = $self->accept_attributes( \@node_attr, $ctx );
+	my @init_args = $self->accept_attributes( \@node_attr, $new_ctx );
 
 	# now process elements
 	my @childNodes = grep {
@@ -222,7 +226,7 @@ method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx 
 			$_->isa("XML::LibXML::Text") and $_->data =~ /\A\s+\Z/)
 	} $node->childNodes;
 
-	push @init_args, $self->accept_childnodes( \@childNodes, $ctx );
+	push @init_args, $self->accept_childnodes( \@childNodes, $new_ctx );
 
 	my $value = eval { $self->name->new( @init_args ) };
 	if ( !$value ) {
