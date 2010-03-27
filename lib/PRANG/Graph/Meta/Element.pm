@@ -177,6 +177,11 @@ method build_graph_node() {
 		for my $user ( @users ) {
 			if ( $user->does("PRANG::Graph") ) {
 				my $root_element = $user->root_element;
+				if ( exists $nodeName->{$root_element} ) {
+					$self->error(
+"Both '$user' and '$nodeName->{$root_element}' plug-in type specify $root_element root_element, not supported",
+					       );
+				}
 				$nodeName->{$root_element} = $user;
 			}
 			elsif ( $user->does("PRANG::Graph::Class") ) {
