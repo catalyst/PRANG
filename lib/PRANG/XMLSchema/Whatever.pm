@@ -83,10 +83,7 @@ has_attr 'attributes' =>
 	predicate => 'has_attributes',
 	;
 
-method xmlns() {
-	# ... meep?
-	"";
-}
+sub xmlns { }   # API FIXME - should be able to specify 'any' namespace
 
 with 'PRANG::Graph::Class';
 
