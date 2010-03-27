@@ -1,0 +1,2 @@
+MANIFEST.SKIP merge=union
+.gitignore merge=union
