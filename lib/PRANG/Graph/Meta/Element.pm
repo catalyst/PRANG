@@ -227,7 +227,7 @@ method build_graph_node() {
 				die "'$class' can't marshall in; did you 'with' the 'PRANG::Graph::Class' role?";
 			}
 			if ( ($class->xmlns||"") ne ($xmlns||"") ) {
-				push @xmlns, (xmlns => $class->xmlns);
+				push @xmlns, (xmlns => ($class->xmlns||""));
 			}
 		}
 		my (@names) = grep { $nodeName->{$_} eq $class }
