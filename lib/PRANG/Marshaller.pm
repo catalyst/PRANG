@@ -21,6 +21,14 @@ has 'class' =>
 	is => "ro",
 	required => 1,
 	handles => [qw(marshall_in_element to_libxml)],
+	trigger => sub {
+		my $self = shift;
+		my $class = $self->class;
+		if ( !$class->can("marshall_in_element") ) {
+			$class = $class->name if ref $class;
+			die "Can't marshall $class; didn't 'use PRANG::Graph' ?";
+		}
+	},
 	;
 
 our %marshallers;  # could use MooseX::NaturalKey?
