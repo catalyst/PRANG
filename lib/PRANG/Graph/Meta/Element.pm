@@ -224,7 +224,7 @@ method build_graph_node() {
 				}
 			}
 			if ( !$class->meta->can("marshall_in_element") ) {
-				die "'$class' can't marshall in; did you 'with' the 'PRANG::Graph::Class' role?";
+				die "'$class' can't marshall in; did you 'use PRANG::Graph'?";
 			}
 			if ( ($class->xmlns||"") ne ($xmlns||"") ) {
 				push @xmlns, (xmlns => ($class->xmlns||""));
