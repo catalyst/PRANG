@@ -212,6 +212,22 @@ has_attr "suspension_points" =>
 	xml_required => 0,
 	;
 
+# test the "more types than element names" case in the docs (no extra
+# attributes required, but namespaces vital)
+has_element "broken_bar" =>
+	is => "ro",
+	isa => "Ampersand|Caret",
+	xml_required => 0,
+	xml_nodeName => {
+		"trumpery:broken_bar" => "Ampersand",
+		"rubble:broken_bar" => "Caret",
+	},
+	xml_nodeName_prefix => {
+		"trumpery" => "uri:type:A",
+		"rubble" => "uri:type:B",
+	},
+	;
+
 with "PRANG::Graph::Class";
 
 # Copyright (C) 2009, 2010  NZ Registry Services
