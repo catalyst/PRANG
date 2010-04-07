@@ -28,6 +28,12 @@ has_element "pipe" =>
 	xml_required => 0,
 	;
 
+has_element "section_mark" =>
+	is => "ro",
+	isa => "SectionMark",
+	xml_required => 0,
+	;
+
 with "PRANG::Graph", "PRANG::Graph::Class";
 
 package Ampersand;
@@ -121,6 +127,24 @@ has_attr "currency" =>
 has_element "fishhooks" =>
 	is => "ro",
 	isa => "Deaeresis",
+	;
+
+with "PRANG::Graph::Class";
+
+package SectionMark;
+
+use Moose;
+use PRANG::Graph;
+sub xmlns {}
+
+# test mixed XML
+has_element "double_angle_quotes" =>
+	is => "ro",
+	isa => "ArrayRef[Ampersand|Str]",
+	xml_nodeName => {
+		"" => "Str",
+		"interrobang" => "Ampersand",
+	},
 	;
 
 with "PRANG::Graph::Class";
