@@ -141,11 +141,19 @@ sub xmlns {}
 # test mixed XML
 has_element "double_angle_quotes" =>
 	is => "ro",
-	isa => "ArrayRef[Ampersand|Str]",
+	isa => "ArrayRef[Ampersand|Str|SectionMark]",
 	xml_nodeName => {
 		"" => "Str",
 		"interrobang" => "Ampersand",
+                "section_mark" => "SectionMark",
 	},
+	;
+
+has_attr "suspension_points" =>
+	is => "ro",
+	isa => "Str",
+	xmlns => "uri:type:C",
+	xml_required => 0,
 	;
 
 with "PRANG::Graph::Class";

@@ -63,8 +63,9 @@ But L<PRANG::Graph> exports a convenient shorthand for you to use.
 If you like, you can also set the C<xmlns> and C<xml_name> attribute
 property, to override the default behaviour, which is to assume that
 the XML attribute name matches the Moose attribute name, and that the
-XML namespace of the attribute matches that of the class in which it
-is defined.
+XML namespace of the attribute is empty.  Note if you specify the
+C<xmlns> for an attribute, it I<must> have that namespace set, or it
+is not the same attribute.
 
 If you set the C<xml_required> property, then it is an error for the
 property not to be set when parsing or emitting.
