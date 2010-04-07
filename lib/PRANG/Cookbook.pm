@@ -2,6 +2,7 @@
 package PRANG::Cookbook;
 
 use Moose::Role;
+use PRANG::Graph;
 
 BEGIN { with 'PRANG::Graph', 'PRANG::Cookbook::Node'; };
 
