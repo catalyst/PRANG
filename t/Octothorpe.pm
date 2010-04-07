@@ -3,6 +3,9 @@ use Moose;
 sub xmlns {}
 sub root_element { "Octothorpe" }
 use PRANG::Graph;
+# class tests mixed graph structure:
+#   Seq -> Quant -> Element
+#   Seq -> Element
 has_element "hyphen" =>
 	is => "ro",
 	isa => "Bool",
@@ -32,7 +35,7 @@ use Moose;
 sub xmlns {}
 use PRANG::Graph;
 with "PRANG::Graph::Class";
-
+# class tests: Quant -> Element
 has_element "interpunct" =>
 	is => "ro",
 	isa => "Int",
@@ -44,7 +47,9 @@ use Moose;
 sub xmlns {}
 use PRANG::Graph;
 with "PRANG::Graph::Class";
-
+# class tests:
+#    Choice -> Element
+#    Choice -> Element -> Text
 has_element "solidus" =>
 	is => "ro",
 	isa => "Octothorpe|Int",
@@ -59,7 +64,9 @@ use Moose;
 sub xmlns {}
 use PRANG::Graph;
 with "PRANG::Graph::Class";
-
+# class tests:
+#    Quant -> Choice -> Element
+#    Quant -> Choice -> Text
 has_element "bullet" =>
 	is => "ro",
 	isa => "ArrayRef[Str|Int]",
@@ -76,6 +83,7 @@ sub xmlns {}
 use PRANG::Graph;
 with "PRANG::Graph::Class";
 
+#    Quant -> Element
 has_element "backslash" =>
 	is => "ro",
 	isa => "ArrayRef[Asteriks]",
@@ -88,6 +96,7 @@ sub xmlns {}
 use PRANG::Graph;
 with "PRANG::Graph::Class";
 
+#    Quant -> Choice with type/nodeName mapping
 has_element "asterism" =>
 	is => "ro",
 	isa => "ArrayRef[Caret|Pilcrow|Str]",
@@ -103,6 +112,7 @@ package Fingernails;
 use Moose;
 sub xmlns {}
 use PRANG::Graph;
+#    Seq -> Element
 has_attr "currency" =>
 	is => "ro",
 	isa => "Str",
