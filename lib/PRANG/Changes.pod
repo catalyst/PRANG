@@ -1,0 +1,46 @@
+
+=head1 PRANG CHANGES
+
+This POD file documents a summary of the changes in PRANG.  For the
+full list of changes, refer to the git history.
+
+=head2 VERSION 0.03 - 7 Apr 2010
+
+=over
+
+=item *
+
+Some error message enhancements for from various forms of API
+misunderstanding.
+
+=item *
+
+more missing dependencies added.
+
+=back
+
+=head2 VERSION 0.02 - 25 Mar 2010
+
+=over
+
+=item *
+
+Back-port to work on pre-1.70 XML::LibXML
+
+=item *
+
+some missing dependencies added.
+
+=back
+
+=head1 SEE ALSO
+
+L<PRANG>
+
+=head1 COPYRIGHT
+
+Copyright 2010, NZ Registry Services.  This documentation is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+=cut
