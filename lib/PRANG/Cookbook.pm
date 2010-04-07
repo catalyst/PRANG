@@ -68,7 +68,7 @@ will be released shortly after the inaugral PRANG release.
 
 =head1 AUTHOR
 
-Andrew Chilton, E<lt>andy@catalyst dot net dot nz<gt>
+Andrew Chilton, E<lt>andy@catalyst dot net dot nzE<gt>
 
 Edited by Sam Vilain, L<samv@cpan.org>
 
