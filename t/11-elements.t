@@ -10,7 +10,7 @@ use t::Octothorpe;
 
 my $parser = XML::LibXML->new;
 my $doc = $parser->parse_string(<<XML);
-<tests>
+<tests xmlns:A="uri:type:A">
   <ok>
     <Octothorpe><colon/></Octothorpe>
     <Octothorpe><emdash/><colon></colon></Octothorpe>
@@ -22,6 +22,7 @@ my $doc = $parser->parse_string(<<XML);
     </Ampersand>
     <Caret><braces>2</braces></Caret>
     <Caret><parens></parens></Caret>
+    <Octothorpe><colon/><A:section_mark/></Octothorpe>
   </ok>
   <fail>
     <Octothorpe desc="missing a required element" error="Node incomplete; expecting: .colon">
@@ -61,6 +62,11 @@ XML
 }
 
 my $test_num = 1;
+my $xsi = {
+	"" => "",
+	map { $_->declaredPrefix => $_->declaredURI }
+		$doc->documentElement->attributes,
+};
 
 for my $oktest ( $doc->findnodes("//ok/*") ) {
 	next unless $oktest->isa("XML::LibXML::Element");
@@ -68,7 +74,7 @@ for my $oktest ( $doc->findnodes("//ok/*") ) {
 	my $class = $oktest->localname;
 	my $context = PRANG::Graph::Context->new(
 		xpath => "//ok/$class\[position()=$test_num]",
-		xsi => { "" => "" },
+		xsi => $xsi,
 		base => (bless{},"Dummy::Marshaller"),
 		#base => PRANG::Marshaller->get($class),
 		prefix => "",

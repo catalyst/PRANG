@@ -32,6 +32,7 @@ has_element "section_mark" =>
 	is => "ro",
 	isa => "SectionMark",
 	xml_required => 0,
+	xmlns => "uri:type:A",
 	;
 
 with "PRANG::Graph", "PRANG::Graph::Class";
