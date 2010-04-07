@@ -104,7 +104,8 @@ for my $oktest ( $doc->findnodes("//ok/*") ) {
 		   #diag("expected: ".$oktest->toString);
 		   #diag("got: ".$node->toString);
 	   #};
-	#$test_num++;
+
+	$test_num++;
 }
 
 $test_num = 1;
