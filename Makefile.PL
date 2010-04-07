@@ -13,6 +13,7 @@ abstract        ("Moose XML Processor");
 author          ("Catalyst SRS Team <team-srs\@catalyst.net.nz>");
 version_from     "lib/PRANG.pm";
 license         ('artistic');
+no_index	directory => 'doc';
 
 requires        ("perl" => 5.010);
 requires        ("Moose" => 0.92);
