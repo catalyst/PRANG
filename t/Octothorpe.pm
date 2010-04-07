@@ -189,6 +189,43 @@ has "percent_sign_type" =>
 	is => "ro",
 	;
 
+# test the "more namespaces than types" case - extra attribute
+# required to record the xml namespace
+has_element "prime" =>
+	is => "ro",
+	isa => "Ampersand",
+	xml_required => 0,
+	xml_nodeName => {
+		"trumpery:single_quotes" => "Ampersand",
+		"rubble:single_quotes" => "Ampersand",
+	},
+	xml_nodeName_prefix => {
+		"trumpery" => "uri:type:A",
+		"rubble" => "uri:type:B",
+	},
+	xmlns_attr => "prime_ns",
+	;
+
+has "prime_ns" =>
+	is => "ro",
+	;
+
+# test the "more types than element names" case in the docs (no extra
+# attributes required, but namespaces vital)
+has_element "broken_bar" =>
+	is => "ro",
+	isa => "Ampersand|Caret",
+	xml_required => 0,
+	xml_nodeName => {
+		"trumpery:broken_bar" => "Ampersand",
+		"rubble:broken_bar" => "Caret",
+	},
+	xml_nodeName_prefix => {
+		"trumpery" => "uri:type:A",
+		"rubble" => "uri:type:B",
+	},
+	;
+
 # test the "more element names than types" case - extra attribute
 # required to record the node name.  This one should always go at
 # the end of the class as it will happily eat all following elements
@@ -210,22 +247,6 @@ has_attr "suspension_points" =>
 	isa => "Str",
 	xmlns => "uri:type:C",
 	xml_required => 0,
-	;
-
-# test the "more types than element names" case in the docs (no extra
-# attributes required, but namespaces vital)
-has_element "broken_bar" =>
-	is => "ro",
-	isa => "Ampersand|Caret",
-	xml_required => 0,
-	xml_nodeName => {
-		"trumpery:broken_bar" => "Ampersand",
-		"rubble:broken_bar" => "Caret",
-	},
-	xml_nodeName_prefix => {
-		"trumpery" => "uri:type:A",
-		"rubble" => "uri:type:B",
-	},
 	;
 
 with "PRANG::Graph::Class";
