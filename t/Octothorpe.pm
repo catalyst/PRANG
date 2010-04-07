@@ -35,6 +35,12 @@ has_element "section_mark" =>
 	xmlns => "uri:type:A",
 	;
 
+has_element "curly_brackets" =>
+	is => "ro",
+	isa => "CurlyBrackets",
+	xml_required => 0,
+	;
+
 with "PRANG::Graph", "PRANG::Graph::Class";
 
 package Ampersand;
@@ -179,11 +185,52 @@ has_element "double_angle_quotes" =>
 	},
 	;
 
+# test the "more element names than types" case - extra attribute
+# required to record the node name.
+has_element "percent_sign" =>
+	is => "ro",
+	isa => "Ampersand",
+	xml_required => 0,
+	xml_nodeName => {
+		"degree" => "Ampersand",
+		"period" => "Ampersand",
+	},
+	xml_nodeName_attr => "percent_sign_type",
+	;
+
+has "percent_sign_type" =>
+	is => "ro",
+	;
+
 has_attr "suspension_points" =>
 	is => "ro",
 	isa => "Str",
 	xmlns => "uri:type:C",
 	xml_required => 0,
+	;
+
+with "PRANG::Graph::Class";
+
+package CurlyBrackets;
+
+use Moose;
+use PRANG::Graph;
+sub xmlns {}
+
+# test the "more element names than types" case - extra attribute
+# required to record the node name.  This one should always go at
+# the end of the class as it will happily eat all following elements
+# (also should be kept in mind when trying to write invalid tests)
+has_element "square_brackets" =>
+	is => "ro",
+	isa => "ArrayRef[Ampersand]",
+	xml_required => 0,
+	xml_nodeName => "*",
+	xml_nodeName_attr => "square_brackets_type",
+	;
+
+has "square_brackets_type" =>
+	is => "ro",
 	;
 
 with "PRANG::Graph::Class";
