@@ -55,7 +55,7 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 		my $wanted_xmlns = ($self->xmlns||"");
 		if ( $wanted_xmlns ne "*" and
 			     $got_xmlns ne $wanted_xmlns ) {
-			$ctx->exception("invalid XML namespace", $node, 1);
+			return;
 		}
 	}
 	# this is bad for processContents=skip + namespace="##other"
@@ -72,8 +72,22 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	my $ret_nodeName;
 	if ( !defined ($ret_nodeName = $self->node_ok($node, $ctx)) ) {
+
+		# ok, not right, so figure out what we did want, in
+		# the context of the incoming document.
+		my $wanted_xmlns = ($self->xmlns||"");
+		my $wanted_prefix = $ctx->get_prefix($wanted_xmlns);
+
+		my $nodeName = $self->nodeName;
+		if ( $wanted_prefix ne "" ) {
+			$nodeName = "$wanted_prefix:$nodeName";
+			if ( $ctx->prefix_new($wanted_prefix) ) {
+				$nodeName .= " xmlns:$wanted_prefix="
+					."\"$wanted_xmlns\"";
+			}
+		}
 		$ctx->exception(
-		"invalid element; expected '".$self->nodeName."'",
+		"invalid element; expected '$nodeName'",
 			$node, 1,
 		       );
 	}
