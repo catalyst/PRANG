@@ -41,9 +41,11 @@ has 'xml_max' =>
 	predicate => "has_xml_max",
 	;
 
-has '+isa' =>
-	required => 1,
-	;
+# FIXME: see commitlog, core Moose should get support for this again
+#        (perhaps)
+#has '+isa' =>
+#	required => 1,
+#	;
 
 has 'graph_node' =>
 	is => "rw",
@@ -85,7 +87,10 @@ method build_graph_node() {
 		$expect_one = 1;
 	}
 
-	my $t_c = $self->type_constraint;
+	my $t_c = $self->type_constraint
+		or $self->error(
+		"No type constraint on attribute; did you specify 'isa'?",
+		       );
 
 	# check to see whether ArrayRef was specified
 	if ( $t_c->is_a_type_of("ArrayRef") ) {
