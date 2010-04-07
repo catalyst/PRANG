@@ -20,5 +20,6 @@ requires        ("Set::Object" => 1.09);
 requires        ("XML::LibXML" => 1.65);
 requires        ("MooseX::Method::Signatures" => 0.17);
 test_requires   ("XML::Compare" => 0.02);
+test_requires   ("Scriptalicious" => 0);
 
 &WriteAll;
