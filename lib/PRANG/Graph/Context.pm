@@ -240,7 +240,7 @@ method show_node {
 			) } $node->childNodes;
 		if ( @nodes > 1 and grep { !$_->isa("XML::LibXML::Element") }
 			     @nodes ) {
-			$extra .= ">(mixed context)";
+			$extra .= ">(mixed content)";
 		}
 		elsif (@nodes and $nodes[0]->isa("XML::LibXML::Element")) {
 			$extra .= "><!-- ".@nodes
