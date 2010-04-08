@@ -115,16 +115,39 @@ has_element "asterism" =>
 	},
 	;
 
+# test attribute name wildcarding
+has_attr "currency" =>
+	is => "ro",
+	isa => "HashRef[Str]",
+	xml_name => "*",
+	;
+
+# test attribute namespace wildcarding
+has_attr "period" =>
+	is => "ro",
+	isa => "ArrayRef[Str]",
+	xmlns => "*",
+	xmlns_attr => "period_ns",
+	;
+
+has "period_ns" => is => "ro";
+
 package Fingernails;
 use Moose;
 sub xmlns {}
 use PRANG::Graph;
-#    Seq -> Element
+#    Class tests: Seq -> Element
+
+# test attribute xmlns wildcarding
 has_attr "currency" =>
 	is => "ro",
 	isa => "Str",
 	xml_name => "dollar_sign",
 	;
+has 'currency_ns' =>
+	is => "ro",
+	;
+
 has_element "fishhooks" =>
 	is => "ro",
 	isa => "Deaeresis",

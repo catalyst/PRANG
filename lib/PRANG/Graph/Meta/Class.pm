@@ -113,32 +113,68 @@ sub as_item($) {
 method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::Context $context ) {
 
 	my $attributes = $self->xml_attr;
-	my @rv;
+	my %rv;
 	# process attributes
 	for my $attr ( @$node_attr ) {
 		my $prefix = $attr->prefix;
 		if ( !defined $prefix ) {
-			$prefix = $context->prefix||"";
+			$prefix = "";
 		}
-		if ( !exists $context->xsi->{$prefix} ) {
+		if ( length $prefix and !exists $context->xsi->{$prefix} ) {
 			$context->exception("unknown xmlns prefix '$prefix'");
 		}
 		my $xmlns = $context->get_xmlns($prefix);
 		$xmlns //= "";
-		my $meta_att = $attributes->{$xmlns}{"*"} ||
-			$attributes->{$xmlns}{$attr->localname};
+		my $meta_att = $attributes->{$xmlns}{$attr->localname};
+		my $xmlns_att_name;
+		my $_xmlns_att_name = sub {
+			$xmlns_att_name = $meta_att->xmlns_attr
+				or $context->exception(
+			"xmlns wildcarded, but no xmlns_attr set on "
+				.$self->name." property '"
+					.$meta_att->att_name."'",
+			       );
+		};
 
 		if ( $meta_att ) {
 			# sweet, it's ok
 			my $att_name = $meta_att->name;
-			push @rv, $att_name, $attr->value;
+			add_to_list($rv{$att_name}, $attr->value);
+		}
+		elsif ( $meta_att = $attributes->{"*"}{$attr->localname} ) {
+			# wildcard xmlns only; need to store the xmlns
+			# in another attribute.  Also, multiple values
+			# may appear with different xml namespaces.
+			my $att_name = $meta_att->name;
+			$_xmlns_att_name->();
+			add_to_list($rv{$att_name}, $attr->value);
+			add_to_list($rv{$xmlns_att_name}, $xmlns);
+		}
+		elsif ( $meta_att = $attributes->{$xmlns}{"*"} ) {
+			# wildcard attribute name.  This attribute gets
+			# HashRef treatment.
+			$rv{$meta_att->name}{$attr->localname} = $attr->value;
+		}
+		elsif ( $meta_att = $attributes->{"*"}{"*"} ) {
+			# wildcard attribute name and namespace.  Both
+			# attributes gets the joy of HashRef[ArrayRef[Str]|Str]
+			my $att_name = $meta_att->name;
+			$_xmlns_att_name->();
+			add_to_list(
+				$rv{$att_name}{$attr->localname},
+				$attr->value,
+			       );
+			add_to_list(
+				$rv{$xmlns_att_name}{$attr->localname},
+				$xmlns
+			       );
 		}
 		else {
 			# fail.
 			$context->exception("invalid attribute '".$attr->name."'");
 		}
 	};
-	@rv;
+	(%rv);
 }
 
 method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph::Context $context ) {
@@ -246,9 +282,7 @@ method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx 
 
 method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx ) {
 	my $attributes = $self->xml_attr;
-	my $node_prefix = $node->prefix||"";
 	while ( my ($xmlns, $att) = each %$attributes ) {
-		my $prefix;
 		while ( my ($attName, $meta_att) = each %$att ) {
 			my $is_optional;
 			my $obj_att_name = $meta_att->name;
@@ -263,27 +297,82 @@ method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Con
 			# here, but I consider that to break
 			# encapsulation
 			my $value = $item->$obj_att_name;
+			my $xml_att_name = $attName;
+			if ( $meta_att->has_xml_name ) {
+				my $method = $meta_att->has_xmlns_attr;
+				$xml_att_name = $attName;
+			}
+			if ( $meta_att->has_xmlns_attr ) {
+				my $method = $meta_att->xmlns_attr;
+				$xmlns = $item->$method;
+			}
 			if ( !defined $value ) {
 				die "could not serialize $item; slot "
 					.$meta_att->name." empty"
 						unless $is_optional;
+				next;
 			}
-			else {
-				if ( !defined $prefix ) {
+
+			my $emit_att = sub {
+				my ($xmlns, $name, $value) = @_;
+				my $prefix;
+				if ( $xmlns ) {
 					$prefix = $ctx->get_prefix(
 						$xmlns, $item, $node,
-					       );
-					if ( $prefix eq $node_prefix ) {
-						$prefix = "";
-					}
-					elsif ( $prefix ne "" ) {
-						$prefix .= ":";
-					}
+					       ) . ":";
+				}
+				else {
+					$prefix = "";
 				}
 				$node->setAttribute(
-					$prefix.$attName,
-					$value,
+					$prefix.$name, $value,
 				       );
+			};
+
+			my $do_array = sub {
+				my $att_name = shift;
+				my $array = shift;
+				my $xmlns = shift;
+				for ( my $i = 0; $i <= $#$array; $i++ ) {
+					$emit_att->(
+						$xmlns&&$xmlns->[$i],
+						$att_name,
+						$array->[$i],
+					       );
+				}
+			};
+
+			if ( ref $value eq "HASH" ) {
+				# wildcarded attribute name case
+				while ( my ($att, $val) = each %$value ) {
+					my $att_xmlns;
+					if ( $xmlns ) {
+						$att_xmlns = $xmlns->{$att};
+					}
+					# now, we can *still* have arrays here..
+					if ( ref $val eq "ARRAY" ) {
+						$do_array->(
+							$att, $val,
+							$att_xmlns,
+						       );
+					}
+					else {
+						$emit_att->(
+							$att_xmlns,
+							$att, $val,
+						       );
+					}
+				}
+			}
+			elsif ( ref $value eq "ARRAY" ) {
+				$do_array->(
+					$xml_att_name,
+					$value,
+					$xmlns,
+				       );
+			}
+			else {
+				$emit_att->( $xmlns, $xml_att_name, $value );
 			}
 		}
 	}

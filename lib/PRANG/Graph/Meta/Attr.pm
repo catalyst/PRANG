@@ -21,6 +21,12 @@ has 'xml_required' =>
 	predicate => "has_xml_required",
 	;
 
+has 'xmlns_attr' =>
+	is => "rw",
+	isa => "Str",
+	predicate => "has_xmlns_attr",
+	;
+
 package Moose::Meta::Attribute::Custom::Trait::PRANG::Attr;
 sub register_implementation {
 	"PRANG::Graph::Meta::Attr";
@@ -69,6 +75,13 @@ is not the same attribute.
 
 If you set the C<xml_required> property, then it is an error for the
 property not to be set when parsing or emitting.
+
+Setting the C<xmlns> attribute to C<*> will allow any XML namespace to
+be set for that attribute.  In this case, you should also set the
+C<xmlns_attr> property, which should refer to another attribute which
+will record which XML namespace URI was passed in.  This introduces a
+potential ambiguity; the same attribute may be passed in multiple
+times, with different XML namespaces.
 
 =head1 SEE ALSO
 

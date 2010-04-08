@@ -80,7 +80,13 @@ has_attr 'attributes' =>
 	isa => "HashRef[Str]",
 	xmlns => "*",
 	xml_name => "*",
+	xmlns_attr => "attributes_ns",
 	predicate => 'has_attributes',
+	;
+
+has 'attributes_ns' =>
+	is => "rw",
+	isa => "HashRef[Str]",
 	;
 
 sub xmlns { }   # API FIXME - should be able to specify 'any' namespace
