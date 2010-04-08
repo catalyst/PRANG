@@ -161,6 +161,13 @@ use Moose;
 use PRANG::Graph;
 sub xmlns {}
 
+# This class tests:
+#     Seq -> Quant -> Choice -> Element
+#      \                   `--> Element
+#       \                  `--> Text
+#        `-> Quant -> Choice -> Element
+#                          `--> Element
+
 # test mixed XML
 has_element "double_angle_quotes" =>
 	is => "ro",

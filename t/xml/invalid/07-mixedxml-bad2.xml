@@ -1,5 +1,5 @@
 <!-- FIXME: that error should indicate that more than just a text node is OK -->
-<!-- error: /\bexpected text node at .Octothorpe.section_mark/ -->
+<!-- error: /unexpected element at .Octothorpe.section_mark .*<interpunct/ -->
 <Octothorpe>
   <colon/>
   <section_mark>
