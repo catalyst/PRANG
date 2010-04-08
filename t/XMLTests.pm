@@ -15,7 +15,8 @@ sub find_tests {
 	my $group = shift;
 	my @tests;
 	find(sub {
-		     if ( m{\.(?:x|ya)ml$} && (!$grep||m{$grep}) ) {
+		     if ( m{\.(?:x|ya)ml$} &&
+				  (!$grep||$File::Find::name=~m{$grep}) ) {
 			     my $name = $File::Find::name;
 			     $name =~ s{^\Q$Bin\E/}{} or die;
 			     push @tests, $name;
