@@ -1,4 +1,4 @@
-<!-- error: /unexpected text node/ -->
+<!-- error: /unexpected .* expecting .optionally up to 1 of.*<interpunct>.* /Octothorpe/curly_brackets/tra .at text node: '13'/ -->
 <Octothorpe xmlns:A="uri:type:A" xmlns:C="uri:type:C">
   <colon/>
   <curly_brackets>

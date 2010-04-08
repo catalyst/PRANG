@@ -187,19 +187,21 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 		@$childNodes;
 	while ( my $input_node = shift @nodes ) {
 		next if $input_node->nodeType == XML_COMMENT_NODE;
-		if ( my ($key, $value, $name) =
-			     $graph->accept($input_node, $context) ) {
+		my ($key, $value, $name) =
+			$graph->accept($input_node, $context);
+		if ( !$key ) {
+			my (@what) = $graph->expected($context);
 			$context->exception(
-				"internal error: missing key",
+				"unexpected node: expecting @what",
 				$input_node,
-			       ) unless $key;
-			add_to_list($init_args{$key}, $value);
-			if ( defined $name ) {
-				add_to_list(
-					$init_arg_names{$key},
-					$name,
-				       );
-			}
+			       );
+		}
+		add_to_list($init_args{$key}, $value);
+		if ( defined $name ) {
+			add_to_list(
+				$init_arg_names{$key},
+				$name,
+			       );
 		}
 	}
 

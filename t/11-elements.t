@@ -15,10 +15,9 @@ my $doc = $parser->parse_string(<<XML);
     <Octothorpe><colon/></Octothorpe>
     <Octothorpe><emdash/><colon></colon></Octothorpe>
     <Octothorpe><colon>Larry Gets the colon</colon></Octothorpe>
-    <Ampersand><apostrophe/></Ampersand>
+    <Ampersand/>
     <Ampersand>
         <interpunct>2</interpunct>
-        <apostrophe><colon/></apostrophe>
     </Ampersand>
     <Caret><braces>2</braces></Caret>
     <Caret><parens></parens></Caret>
@@ -34,7 +33,7 @@ my $doc = $parser->parse_string(<<XML);
       <emdash foo="bar"><colon>x</colon></emdash>
     </Octothorpe>
     <Ampersand desc="bad value for Int xml data element" error="Attribute .interpunct. does not pass the type constraint">
-      <interpunct>two</interpunct><apostrophe><colon /></apostrophe>
+      <interpunct>two</interpunct>
     </Ampersand>
     <Ampersand desc="attribute passed on xml data element" error="Superfluous attributes on XML data node">
       <interpunct lang="en">2</interpunct>
