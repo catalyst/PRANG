@@ -11,10 +11,13 @@ use strict;
 use FindBin qw($Bin);
 use lib $Bin;
 
+use Scriptalicious;
 use Octothorpe;
 use XMLTests;
 use XML::Compare;
 use YAML;
+
+getopt;
 
 our @xml_tests = XMLTests::find_tests "xml/valid";
 
@@ -54,6 +57,7 @@ for my $test ( sort @xml_tests ) {
 		   "$test - round-tripped from XML to data and back OK")
 			or do {
 				diag("Error: $@");
+				diag("XML was: ".$xml_2);
 			};
 	}
 }

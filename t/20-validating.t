@@ -9,9 +9,11 @@ use strict;
 use FindBin qw($Bin);
 use lib $Bin;
 
+use Scriptalicious;
 use Octothorpe;
 use XMLTests;
 
+getopt;
 our @valid_tests = XMLTests::find_tests "xml/valid";
 
 our @invalid_tests = XMLTests::find_tests "xml/invalid";
