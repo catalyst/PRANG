@@ -68,9 +68,15 @@ has_element 'contents' =>
 	xml_nodeName => { "" => "Str", "*" => "PRANG::XMLSchema::Whatever" },
 	xml_nodeName_attr => "nodenames",
 	xmlns => "*",
+	xmlns_attr => "nodenames_ns",
 	;
 
 has 'nodenames' =>
+	is => "rw",
+	isa => "ArrayRef[Maybe[Str]]",
+	;
+
+has 'nodenames_ns' =>
 	is => "rw",
 	isa => "ArrayRef[Maybe[Str]]",
 	;

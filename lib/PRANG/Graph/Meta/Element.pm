@@ -11,6 +11,12 @@ has 'xmlns' =>
 	predicate => "has_xmlns",
 	;
 
+has 'xmlns_attr' =>
+	is => "rw",
+	isa => "Str",
+	predicate => "has_xmlns_attr",
+	;
+
 has 'xml_nodeName' =>
 	is => "rw",
 	isa => "Str|HashRef",
@@ -21,6 +27,13 @@ has 'xml_nodeName_attr' =>
 	is => "rw",
 	isa => "Str",
 	predicate => "has_xml_nodeName_attr",
+	;
+
+has 'xmlns_attr' =>
+	is => "rw",
+	isa => "Str",
+	required => 0,
+	predicate => "has_xmlns_attr",
 	;
 
 has 'xml_required' =>
@@ -673,8 +686,8 @@ elements.
       isa => "ArrayRef[PRANG::XMLSchema::Whatever|Str]",
       xml_nodeName => { "" => "Str", "*" => "PRANG::XMLSchema::Whatever" },
       xml_nodeName_attr => "nodenames",
-      xml_nodeName_xmlns_attr => "nodenames_xmlns",
       xmlns => "*",
+      xmlns_attr => "nodenames_xmlns",
       ;
 
 B<FIXME:> this is currently unimplemented.
