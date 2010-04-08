@@ -226,10 +226,25 @@ has_element "broken_bar" =>
 	},
 	;
 
+# test two things;
+#   - the use of "*" as an XML namespace (and xmlns_attr)
+#   - the "whatever" mapping - the most generic nested type, combining
+#     all of the above features at once
+has_element "parentheses" =>
+	is => "ro",
+	isa => "PRANG::XMLSchema::Whatever",
+	xmlns => "*",
+	xmlns_attr => "parentheses_ns",
+	xml_required => 0,
+	;
+
+has 'parentheses_ns' =>
+	is => "ro",
+	;
+
 # test the "more element names than types" case - extra attribute
 # required to record the node name.  This one should always go at
 # the end of the class as it will happily eat all following elements
-# (also should be kept in mind when trying to write invalid tests)
 has_element "square_brackets" =>
 	is => "ro",
 	isa => "ArrayRef[Ampersand]",

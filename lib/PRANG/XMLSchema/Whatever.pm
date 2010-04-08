@@ -95,7 +95,7 @@ has 'attributes_ns' =>
 	isa => "HashRef[Str]",
 	;
 
-sub xmlns { }   # API FIXME - should be able to specify 'any' namespace
+sub xmlns { "*" }
 
 with 'PRANG::Graph::Class';
 
