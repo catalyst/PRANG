@@ -80,6 +80,36 @@ method build_graph( ) {
 	}
 }
 
+sub add_to_list($$) {
+	if ( !defined $_[0] ) {
+		$_[0] = $_[1];
+	}
+	else {
+		if ( (ref($_[0])||"") ne "ARRAY" ) {
+			$_[0] = [ $_[0] ];
+		}
+		push @{ $_[0] }, $_[1];
+	}
+}
+
+sub as_listref($) {
+	if ( ref($_[0]) eq "ARRAY" ) {
+		$_[0]
+	}
+	else {
+		[ $_[0] ];
+	}
+}
+
+sub as_item($) {
+	if ( ref($_[0]) eq "ARRAY" ) {
+		die scalar(@{$_[0]})." item(s) found where 1 expected";
+	}
+	else {
+		$_[0];
+	}
+}
+
 method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::Context $context ) {
 
 	my $attributes = $self->xml_attr;
@@ -127,26 +157,12 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 				"internal error: missing key",
 				$input_node,
 			       ) unless $key;
-			my $meta_att;
-			# this is long-winded, but lets the fast path avoid
-			# too many temporary arrays.
-			if ( exists $init_args{$key} ) {
-				if ( !ref $init_args{$key} or
-					     ref $init_args{$key} ne "ARRAY" ) {
-					$init_args{$key} = [$init_args{$key}];
-					$init_arg_names{$key} = [$init_arg_names{$key}]
-						if exists $init_arg_names{$key};
-				}
-				push @{$init_args{$key}}, $value;
-				if (defined $name) {
-					my $idx = $#{$init_args{$key}};
-					$init_arg_names{$key}[$idx] = $name;
-				}
-			}
-			else {
-				$init_args{$key} = $value;
-				$init_arg_names{$key} = $name
-					if defined $name;
+			add_to_list($init_args{$key}, $value);
+			if ( defined $name ) {
+				add_to_list(
+					$init_arg_names{$key},
+					$name,
+				       );
 			}
 		}
 	}
@@ -162,37 +178,24 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 	for my $element ( @{ $self->xml_elements } ) {
 		my $key = $element->name;
 		next unless exists $init_args{$key};
+		my $expect;
 		if ( $element->has_xml_max and $element->xml_max == 1 ) {
-			# expect item
-			if ( $element->has_xml_nodeName_attr and
-				     exists $init_arg_names{$key} ) {
-				push @rv, $element->xml_nodeName_attr =>
-					delete $init_arg_names{$key};
-			}
-			if (ref $init_args{$key} and
-				    ref $init_args{$key} eq "ARRAY" ) {
-				$context->exception(
-"internal error: we ended up multiple values set for '$key' attribute",
-				       );
-			}
-			push @rv, $key => delete $init_args{$key}
+			$expect = \&as_item;
 		}
 		else {
-			# expect list
-			if ( !ref $init_args{$key} or
-				     ref $init_args{$key} ne "ARRAY" ) {
-				$init_args{$key} = [$init_args{$key}];
-				$init_arg_names{$key} = [$init_arg_names{$key}]
-					if exists $init_arg_names{$key};
-			}
-			if ( $element->has_xml_nodeName_attr and
-				     exists $init_arg_names{$key} ) {
-				push @rv,
-					$element->xml_nodeName_attr =>
-						delete $init_arg_names{$key}
-			}
-			push @rv, $key => delete $init_args{$key};
+			$expect = \&as_listref;
 		}
+		push @rv, eval {
+			( ( ( $element->has_xml_nodeName_attr and
+				      exists $init_arg_names{$key} )
+				    ? ( $element->xml_nodeName_attr =>
+						$expect->($init_arg_names{$key})) : ()
+					       ),
+			  $key => $expect->(delete $init_args{$key}),
+			 );
+		} or $context->exception(
+			"internal error: processing '$key' attribute: $@",
+		       );
 	}
 	if (my @leftovers = keys %init_args) {
 		$context->exception(
