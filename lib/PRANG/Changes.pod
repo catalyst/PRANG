@@ -4,6 +4,24 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.04 - 9 Apr 2010
+
+=over
+
+=item *
+
+Much enhanced support for XML namespaces.  Tests and functionality
+added; still lacking is the "Whatever" mapping, required for crazy
+XMLSchema stuff like C<E<gt>any namespace="##any"
+processContents="skip"/E<lt>> - this will be supported in the next
+release.
+
+=item *
+
+Various bug fixes, more rejection of invalid input, and so on.
+
+=back
+
 =head2 VERSION 0.03 - 7 Apr 2010
 
 =over
