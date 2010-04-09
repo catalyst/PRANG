@@ -24,6 +24,12 @@ has 'type_map' =>
 	predicate => "has_type_map",
 	;
 
+has 'type_map_prefix' =>
+	is => "ro",
+	isa => "HashRef[Str]",
+	predicate => "has_type_map_prefix",
+	;
+
 has 'name_attr' =>
 	is => "ro",
 	isa => "Str",
@@ -116,21 +122,37 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		}
 	}
 	if ( !defined $name ) {
-		$DB::single = 1;
 		$ctx->exception("don't know what to serialize $value to for slot ".$self->attrName);
 	}
 	if ( length $name ) {
+		my $xmlns;
+		if ( $self->has_type_map_prefix and $name =~ /(.*):(.*)/) {
+			$name = $2;
+			$xmlns = $self->type_map_prefix->{$1};
+		}
+		my $found;
 		for my $choice ( @{ $self->choices } ) {
-			if ( $choice->nodeName eq $name or
-				     $choice->nodeName eq "*") {
-				$choice->output(
-					$item,$node,$ctx,
-					value => $value,
-					(defined $slot ? (slot => $slot) : ()),
-					name => $name,
-				       );
-				last;
+			if ( $xmlns ) {
+				next unless $choice->has_xmlns;
+				next unless $choice->xmlns eq $xmlns or
+					$choice->xmlns eq "*";
 			}
+			next unless $choice->nodeName eq $name or
+				$choice->nodeName eq "*";
+			$found++;
+			$choice->output(
+				$item,$node,$ctx,
+				value => $value,
+				(defined $slot ? (slot => $slot) : ()),
+				name => $name,
+			       );
+			last;
+		}
+		if ( !$found ) {
+			$ctx->exception(
+	"don't know what to serialize $value to for slot ".$self->attrName
+	." (looked for $name node".($xmlns?" xmlns='$xmlns'":"").")",
+			       );
 		}
 	}
 	else {

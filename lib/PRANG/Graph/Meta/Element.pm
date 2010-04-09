@@ -17,6 +17,12 @@ has 'xml_nodeName' =>
 	predicate => "has_xml_nodeName",
 	;
 
+has 'xml_nodeName_prefix' =>
+	is => "rw",
+	isa => "HashRef[Str]",
+	predicate => "has_xml_nodeName_prefix",
+	;
+
 has 'xml_nodeName_attr' =>
 	is => "rw",
 	isa => "Str",
@@ -250,9 +256,23 @@ method build_graph_node() {
 	: "(nothing)" );
 		}
 
+		my $prefix_map;
+		if ( $self->has_xml_nodeName_prefix ) {
+			$prefix_map = $self->xml_nodeName_prefix;
+		}
 		for my $name ( @names ) {
+			my @effective_xmlns;
+			if ( $prefix_map and $name =~ /^(\w+):(\w+)/ ) {
+				my $xmlns = $prefix_map->{$1}
+					or die "unknown prefix '$1' used on attribute ".$self->name." of ".eval{$self->associated_class->name};
+				@effective_xmlns = (xmlns => $xmlns);
+				$name = $2;
+			}
+			else {
+				@effective_xmlns = @xmlns;
+			}
 			push @expect, PRANG::Graph::Element->new(
-				@xmlns,
+				@effective_xmlns,
 				attrName => $self->name,
 				nodeClass => $class,
 				nodeName => $name,
@@ -313,6 +333,8 @@ method build_graph_node() {
 			  ( name_attr => $self->xml_nodeName_attr ) : ()),
 		 (($self->has_xml_nodeName and ref $self->xml_nodeName) ?
 			  ( type_map => {%{$self->xml_nodeName}} ) : ()),
+		 (($self->has_xml_nodeName_prefix and ref $self->xml_nodeName_prefix) ?
+			  ( type_map_prefix => {%{$self->xml_nodeName_prefix}} ) : ()),
 		);
 
 	if ( @expect > 1 ) {

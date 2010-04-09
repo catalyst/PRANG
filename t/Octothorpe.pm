@@ -202,6 +202,22 @@ has "percent_sign_type" =>
 	is => "ro",
 	;
 
+# test the "more types than element names" case in the docs (no extra
+# attributes required, but namespaces vital)
+has_element "broken_bar" =>
+	is => "ro",
+	isa => "Ampersand|Caret",
+	xml_required => 0,
+	xml_nodeName => {
+		"trumpery:broken_bar" => "Ampersand",
+		"rubble:broken_bar" => "Caret",
+	},
+	xml_nodeName_prefix => {
+		"trumpery" => "uri:type:A",
+		"rubble" => "uri:type:B",
+	},
+	;
+
 has_attr "suspension_points" =>
 	is => "ro",
 	isa => "Str",
