@@ -10,6 +10,36 @@ has 'attrName' =>
 	isa => "Str",
 	;
 
+has 'nodeName_attr' =>
+	is => "rw",
+	;
+
+has 'xmlns_attr' =>
+	is => "rw",
+	;
+
+has 'extra' =>
+	is => "ro",
+	isa => "ArrayRef",
+	lazy => 1,
+	default => sub {
+		my $self = shift;
+		my @extra;
+		if ( $self->nodeName_attr ) {
+			push @extra, "";
+		}
+		else {
+			push @extra, undef;
+		}
+		if ( $self->xmlns_attr ) {
+			push @extra, "";
+		}
+		elsif ( !defined $extra[0] ) {
+			pop @extra;
+		}
+		\@extra;
+	};
+
 method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	( $node->nodeType == XML_TEXT_NODE or
 		  $node->nodeType == XML_CDATA_SECTION_NODE )
@@ -18,10 +48,10 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 
 method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	if ( $node->nodeType == XML_TEXT_NODE ) {
-		($self->attrName, $node->data);
+		($self->attrName, $node->data, @{$self->extra});
 	}
 	elsif ( $node->nodeType == XML_CDATA_SECTION_NODE ) {
-		($self->attrName, $node->data);
+		($self->attrName, $node->data, @{$self->extra});
 	}
 	else {
 		$ctx->exception("expected text node", $node);

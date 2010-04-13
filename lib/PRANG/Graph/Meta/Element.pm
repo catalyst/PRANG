@@ -412,7 +412,11 @@ method build_graph_node() {
 				       );
 			}
 			else {
-				push @name_attr, name_attr => $self->xml_nodeName_attr;
+				my $attr = $self->xml_nodeName_attr;
+				push @name_attr, name_attr => $attr;
+				for my $x ( @expect ) {
+					$x->nodeName_attr($attr);
+				}
 			}
 		}
 		else {
@@ -427,7 +431,11 @@ method build_graph_node() {
 				       );
 			}
 			else {
-				push @name_attr, xmlns_attr => $self->xmlns_attr;
+				my $attr = $self->xmlns_attr;
+				push @name_attr, xmlns_attr => $attr;
+				for my $x ( @expect ) {
+					$x->xmlns_attr($attr);
+				}
 			}
 		}
 		else {

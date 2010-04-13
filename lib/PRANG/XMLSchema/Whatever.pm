@@ -69,6 +69,7 @@ has_element 'contents' =>
 	xml_nodeName_attr => "nodenames",
 	xmlns => "*",
 	xmlns_attr => "nodenames_ns",
+	xml_min => 0,
 	;
 
 has 'nodenames' =>
@@ -83,7 +84,7 @@ has 'nodenames_ns' =>
 
 has_attr 'attributes' =>
 	is => "rw",
-	isa => "HashRef[Str]",
+	isa => "HashRef[Str|ArrayRef[Str]]",
 	xmlns => "*",
 	xml_name => "*",
 	xmlns_attr => "attributes_ns",
@@ -92,7 +93,7 @@ has_attr 'attributes' =>
 
 has 'attributes_ns' =>
 	is => "rw",
-	isa => "HashRef[Str]",
+	isa => "HashRef[Str|ArrayRef[Str]]",
 	;
 
 sub xmlns { }   # API FIXME - should be able to specify 'any' namespace

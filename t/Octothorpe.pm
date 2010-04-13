@@ -41,6 +41,12 @@ has_element "curly_brackets" =>
 	xml_required => 0,
 	;
 
+has_element "question_mark" =>
+	is => "ro",
+	isa => "PRANG::XMLSchema::Whatever",
+	xml_required => 0,
+	;
+
 with "PRANG::Graph";
 
 package Ampersand;

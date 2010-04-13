@@ -68,22 +68,21 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 		}
 	}
 	my ($ret_nodeName, $ret_xmlns) = ("", "");
+	my $wanted_nodeName = $self->nodeName;
+	if ( $wanted_nodeName ne "*" and $wanted_nodeName ne $node->localname ) {
+		return;
+	}
 	if ( $self->has_nodeName_attr ) {
 		$ret_nodeName = $node->localname;
 	}
 	if ( $self->has_xmlns_attr ) {
 		$ret_xmlns = $got_xmlns;
 	}
-	if ( !$ret_nodeName and $node->localname ne $self->nodeName ) {
-		return;
+	if ( wantarray ) {
+		return ($ret_nodeName, $ret_xmlns);
 	}
 	else {
-		if ( wantarray ) {
-			return ($ret_nodeName, $ret_xmlns);
-		}
-		else {
-			return $ret_nodeName;
-		}
+		return $ret_nodeName;
 	}
 }
 
@@ -222,6 +221,9 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 	};
 	if ( ref $name ) {
 		$name = $name->[$slot];
+	}
+	if ( ref $xmlns ) {
+		$xmlns = $xmlns->[$slot];
 	}
 
 	my $nn;
