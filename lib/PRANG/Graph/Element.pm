@@ -248,8 +248,14 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		$node->appendChild($nn);
 		# now proceed with contents...
 		if ( my $class = $self->nodeClass ) {
-			my $m = $ctx->base->get($class);
+			my $m;
+			if ( eval { $value->isa($class) }) {
+				$m = $ctx->base->get($class);
+			}
 			if ( !$m and blessed $value ) {
+				# this actually indicates a type
+				# error.  currently it is required for
+				# the Whatever mapping.
 				$m = PRANG::Marshaller->get(ref $value);
 			}
 			if ( !$m and $value->isa("XML::LibXML::Element") ) {

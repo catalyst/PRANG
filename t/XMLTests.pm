@@ -46,7 +46,13 @@ sub read_yaml {
 		<YAML>;
 	};
 	close YAML;
-	Load $yaml;
+	my $obj = Load($yaml);
+	if ( wantarray ) {
+		return ($obj, $yaml);
+	}
+	else {
+		return $obj;
+	}
 }
 
 sub parse_test {

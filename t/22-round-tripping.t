@@ -63,7 +63,7 @@ for my $test ( sort @xml_tests ) {
 }
 
 for my $test ( sort @yaml_tests ) {
-	my $object = XMLTests::read_yaml($test);
+	my ($object, $yaml) = XMLTests::read_yaml($test);
  SKIP:{
 		my $xml = XMLTests::emit_test($object, $test);
 		skip "emit failed", 2 if !$xml;
@@ -74,6 +74,9 @@ for my $test ( sort @yaml_tests ) {
 			       diag("tried to parse:\n".$xml);
 			       skip "re-parse failed", 1;
 		       };
+
+		skip "round-trip test skipped for this case", 1
+			if $yaml =~ /NO_ROUNDTRIP/;
 
 		is_deeply($object_2, $object,
 			  "$test - round-tripped from YAML to XML and back OK")
