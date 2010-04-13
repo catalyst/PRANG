@@ -6,7 +6,6 @@ use Moose::Role;
 use PRANG::Graph::Context;
 
 use PRANG::Graph::Node;
-use PRANG::Graph::Class;
 use PRANG::Graph::Element;
 use PRANG::Graph::Text;
 use PRANG::Graph::Seq;

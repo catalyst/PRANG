@@ -97,8 +97,6 @@ has 'attributes_ns' =>
 
 sub xmlns { }   # API FIXME - should be able to specify 'any' namespace
 
-with 'PRANG::Graph::Class';
-
 1;
 
 =head1 NAME

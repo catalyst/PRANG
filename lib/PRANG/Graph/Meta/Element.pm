@@ -813,22 +813,12 @@ B<FIXME:> this is currently unimplemented.
 
 These are indicated by specifying a role.  At the time that the
 L<PRANG::Graph::Node> is built for the attribute, the currently
-available implementors of these roles are checked, and depending on
-whether they implement L<PRANG::Graph> or merely
-L<PRANG::Graph::Class>, the following actions are taken:
+available implementors of these roles are checked, which must all
+implement L<PRANG::Graph>.
 
-=over
-
-=item L<PRANG::Graph> types
-
-Treated as if there is an C<xml_nodeName> entry for the class, from
-the C<root_element> value for the class to the type.  B<FIXME>: to
-also include the XML namespace of the class.
-
-For writing extensible schemas, this is generally the role you want to
-inherit.
-
-=back
+They Treated as if there is an C<xml_nodeName> entry for the class,
+from the C<root_element> value for the class to the type.  This allows
+writing extensible schemas.
 
 =back
 

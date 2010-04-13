@@ -41,12 +41,11 @@ has_element "curly_brackets" =>
 	xml_required => 0,
 	;
 
-with "PRANG::Graph", "PRANG::Graph::Class";
+with "PRANG::Graph";
 
 package Ampersand;
 use Moose;
 use PRANG::Graph;
-with "PRANG::Graph::Class";
 # class tests: Quant -> Element
 has_element "interpunct" =>
 	is => "ro",
@@ -57,7 +56,6 @@ has_element "interpunct" =>
 package Caret;
 use Moose;
 use PRANG::Graph;
-with "PRANG::Graph::Class";
 # class tests:
 #    Choice -> Element
 #    Choice -> Element -> Text
@@ -73,7 +71,6 @@ has_element "solidus" =>
 package Asteriks;
 use Moose;
 use PRANG::Graph;
-with "PRANG::Graph::Class";
 # class tests:
 #    Quant -> Choice -> Element
 #    Quant -> Choice -> Text
@@ -90,7 +87,6 @@ has_element "bullet" =>
 package Pilcrow;
 use Moose;
 use PRANG::Graph;
-with "PRANG::Graph::Class";
 
 #    Quant -> Element
 has_element "backslash" =>
@@ -102,7 +98,6 @@ has_element "backslash" =>
 package Deaeresis;
 use Moose;
 use PRANG::Graph;
-with "PRANG::Graph::Class";
 
 #    Quant -> Choice with type/nodeName mapping
 has_element "asterism" =>
@@ -152,8 +147,6 @@ has_element "fishhooks" =>
 	is => "ro",
 	isa => "Deaeresis",
 	;
-
-with "PRANG::Graph::Class";
 
 package SectionMark;
 
@@ -237,8 +230,6 @@ has_attr "suspension_points" =>
 	xml_required => 0,
 	;
 
-with "PRANG::Graph::Class";
-
 package CurlyBrackets;
 
 use Moose;
@@ -260,7 +251,7 @@ has "square_brackets_type" =>
 	is => "ro",
 	;
 
-with "PRANG::Graph::Class";
+1;
 
 # Copyright (C) 2009, 2010  NZ Registry Services
 #

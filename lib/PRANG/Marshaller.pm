@@ -48,7 +48,7 @@ method get($inv: Str $class) {
 	};
 	my $meta = $class->meta;
 	if ( $meta->does_role("PRANG::Graph") or
-		     $meta->does_role("PRANG::Graph::Class")
+		     $meta->meta->does_role("PRANG::Graph::Meta::Class")
 		    ) {
 		$marshallers{$class} ||= do {
 			$inv->new( class => $class->meta );
