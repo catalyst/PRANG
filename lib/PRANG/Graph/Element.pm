@@ -60,7 +60,11 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 
 	if ( $self->has_xmlns or
 		     ($node->prefix||"") ne ($ctx->prefix||"") ) {
-		$got_xmlns = ($ctx->xsi->{$node->prefix||""}||"");
+		my $prefix = $node->prefix//"";
+		$got_xmlns = $ctx->xsi->{$prefix};
+		if ( !defined $got_xmlns ) {
+			$got_xmlns = $node->getAttribute("xmlns".(length $prefix?":$prefix":""));
+		}
 		my $wanted_xmlns = ($self->xmlns||"");
 		if ( $got_xmlns and $wanted_xmlns ne "*" and
 			     $got_xmlns ne $wanted_xmlns ) {
