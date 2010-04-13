@@ -221,16 +221,9 @@ method build_graph_node() {
 				}
 				$nodeName->{$plugin_nodeName} = $user;
 			}
-			elsif ( $user->does("PRANG::Graph::Class") ) {
-				if ( !$self->has_xml_nodeName_attr ) {
-					$self->error(
-"Can't use role(s) @expect_role; no xml_nodeName_attr",
-					       );
-				}
-			}
 			else {
 				$self->error(
-"Can't use role(s) @expect_role; no mapping",
+"Can't use one or more of role(s) @expect_role; ".$user->name." needs to consume role PRANG::Graph (hint: did you forget to \"with 'PRANG::Graph';\"?)",
 					);
 			}
 			push @expect_type, $user;
@@ -834,26 +827,6 @@ also include the XML namespace of the class.
 
 For writing extensible schemas, this is generally the role you want to
 inherit.
-
-=item L<PRANG::Graph::Class> types
-
-B<FIXME:> this entry may be out of date, please ignore for the time
-being.
-
-You must supply C<xml_nodeName_attr>.  This type will never be used on
-marshall in; however, it will happily work on the way out.
-
-This can be used when you have slots which may be unprocessed,
-L<PRANG::XMLSchema::Whatever> object structures, B<or> real
-L<PRANG::Graph::Class> instances.
-
-eg
-
-  has 'maybe_parsed' =>
-      is => "rw",
-      isa => "PRANG::Graph::Whatever|PRANG::Graph::Class",
-      xml_nodeName_attr => "maybe_parsed_name",
-      ;
 
 =back
 
