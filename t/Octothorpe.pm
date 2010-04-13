@@ -218,6 +218,25 @@ has_element "broken_bar" =>
 	},
 	;
 
+has_element "prime" =>
+	is => "ro",
+	isa => "Ampersand",
+	xml_required => 0,
+	xml_nodeName => {
+		"trumpery:single_quotes" => "Ampersand",
+		"rubble:single_quotes" => "Ampersand",
+	},
+	xml_nodeName_prefix => {
+		"trumpery" => "uri:type:A",
+		"rubble" => "uri:type:B",
+	},
+	xmlns_attr => "prime_ns",
+	;
+
+has "prime_ns" =>
+	is => "ro",
+	;
+
 has_attr "suspension_points" =>
 	is => "ro",
 	isa => "Str",

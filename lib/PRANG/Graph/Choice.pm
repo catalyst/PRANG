@@ -30,10 +30,28 @@ has 'type_map_prefix' =>
 	predicate => "has_type_map_prefix",
 	;
 
+has 'xml_nodeName' =>
+	is => "ro",
+	isa => "Str",
+	predicate => "has_xml_nodeName",
+	;
+
 has 'name_attr' =>
 	is => "ro",
 	isa => "Str",
 	predicate => "has_name_attr",
+	;
+
+has 'xmlns_attr' =>
+	is => "ro",
+	isa => "Str",
+	predicate => "has_xmlns_attr",
+	;
+
+has 'xmlns' =>
+	is => "ro",
+	isa => "Str",
+	predicate => "has_xmlns",
 	;
 
 method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
@@ -62,15 +80,16 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	my $name = $node->isa("XML::LibXML::Text") ? ""
 		: $node->localname;
 	my $xmlns = length($name) && $node->namespaceURI;
-	my ($key, $val, $x);
+	my ($key, $val, $x, $ns);
 	for my $choice ( @{ $self->choices } ) {
 		$num++;
 		if ( defined $choice->node_ok($node, $ctx) ) {
-			($key, $val, $x) = $choice->accept($node, $ctx);
+			($key, $val, $x, $ns) = $choice->accept($node, $ctx);
 		}
 		if ( $key ) {
 			$ctx->chosen($num);
-			return ($key, $val, $x||eval{$choice->nodeName}||"");
+			return ($key, $val, $x||eval{$choice->nodeName}||"",
+				$ns);
 		}
 	}
 	return ();
@@ -99,12 +118,27 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 
 	my $an = $self->attrName;
 	$value //= $item->$an;
-	my $name;
-	if ( $self->has_name_attr ) {
-		my $x = $self->name_attr;
-		$name = $item->$x;
-		if ( defined $slot ) {
-			$name = $name->[$slot];
+	my ($name, $xmlns);
+	if ( $self->has_name_attr || $self->has_xmlns_attr ) {
+		if ( $self->has_name_attr ) {
+			my $x = $self->name_attr;
+			$name = $item->$x;
+			if ( defined $slot ) {
+				$name = $name->[$slot];
+			}
+		}
+		else {
+			$name = $self->xml_nodeName // $an;
+		}
+		if ( $self->has_xmlns_attr ) {
+			my $attr_getter = $self->xmlns_attr;
+			$xmlns = $item->$attr_getter;
+			if ( defined $slot ) {
+				$xmlns = $xmlns->[$slot];
+			}
+		}
+		else {
+			$xmlns = $self->xmlns // "";
 		}
 	}
 	elsif ( $self->has_type_map ) {
@@ -125,7 +159,6 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		$ctx->exception("don't know what to serialize $value to for slot ".$self->attrName);
 	}
 	if ( length $name ) {
-		my $xmlns;
 		if ( $self->has_type_map_prefix and $name =~ /(.*):(.*)/) {
 			$name = $2;
 			$xmlns = $self->type_map_prefix->{$1};
@@ -145,13 +178,14 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 				value => $value,
 				(defined $slot ? (slot => $slot) : ()),
 				name => $name,
+				(defined $xmlns ? (xmlns => $xmlns) : ()),
 			       );
 			last;
 		}
 		if ( !$found ) {
 			$ctx->exception(
 	"don't know what to serialize $value to for slot ".$self->attrName
-	." (looked for $name node".($xmlns?" xmlns='$xmlns'":"").")",
+	." (looked for '$name' node".($xmlns?" xmlns='$xmlns'":"").")",
 			       );
 		}
 	}

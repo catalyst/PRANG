@@ -36,6 +36,12 @@ has 'nodeName_attr' =>
 	predicate => "has_nodeName_attr",
 	;
 
+has 'xmlns_attr' =>
+	is => "rw",
+	isa => "Str",
+	predicate => "has_xmlns_attr",
+	;
+
 has 'attrName' =>
 	is => "ro",
 	isa => "Str",
@@ -50,28 +56,40 @@ has 'contents' =>
 
 method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	return unless $node->nodeType == XML_ELEMENT_NODE;
-	if ( ($node->prefix||"") ne ($ctx->prefix||"") ) {
-		my $got_xmlns = ($ctx->xsi->{$node->prefix||""}||"");
+	my $got_xmlns;
+
+	if ( $self->has_xmlns or
+		     ($node->prefix||"") ne ($ctx->prefix||"") ) {
+		$got_xmlns = ($ctx->xsi->{$node->prefix||""}||"");
 		my $wanted_xmlns = ($self->xmlns||"");
-		if ( $wanted_xmlns ne "*" and
+		if ( $got_xmlns and $wanted_xmlns ne "*" and
 			     $got_xmlns ne $wanted_xmlns ) {
 			return;
 		}
 	}
-	# this is bad for processContents=skip + namespace="##other"
-	my $ret_nodeName = $self->nodeName eq "*" ?
-		$node->localname : "";
+	my ($ret_nodeName, $ret_xmlns) = ("", "");
+	if ( $self->has_nodeName_attr ) {
+		$ret_nodeName = $node->localname;
+	}
+	if ( $self->has_xmlns_attr ) {
+		$ret_xmlns = $got_xmlns;
+	}
 	if ( !$ret_nodeName and $node->localname ne $self->nodeName ) {
 		return;
 	}
 	else {
-		return $ret_nodeName;
+		if ( wantarray ) {
+			return ($ret_nodeName, $ret_xmlns);
+		}
+		else {
+			return $ret_nodeName;
+		}
 	}
 }
 
 method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
-	my $ret_nodeName;
-	if ( !defined ($ret_nodeName = $self->node_ok($node, $ctx)) ) {
+	my ($ret_nodeName, $xmlns) = $self->node_ok($node, $ctx);
+	if ( !defined $ret_nodeName ) {
 
 		# ok, not right, so figure out what we did want, in
 		# the context of the incoming document.
@@ -101,7 +119,7 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 		       )
 				      : $node );
 		$ctx->element_ok(1);
-		return ($self->attrName => $value, $ret_nodeName);
+		return ($self->attrName => $value, $ret_nodeName, $xmlns);
 	}
 	else {
 		# XML data types
@@ -136,7 +154,7 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 				       );
 			}
 			$ctx->element_ok(1);
-			return ($self->attrName => $value, $ret_nodeName);
+			return ($self->attrName => $value, $ret_nodeName, $xmlns);
 		}
 		else {
 			# boolean
@@ -147,7 +165,7 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	       				);
 			}
 			$ctx->element_ok(1);
-			return ($self->attrName => 1, $ret_nodeName);
+			return ($self->attrName => 1, $ret_nodeName, $xmlns);
 		}
 	}
 }
@@ -176,7 +194,7 @@ method expected( PRANG::Graph::Context $ctx ) {
 		.">";
 }
 
-method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item :$value, Int :$slot, Str :$name ) {
+method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item :$value, Int :$slot, Str :$name, Str :$xmlns ) {
 	$value //= do {
 		my $accessor = $self->attrName;
 		$item->$accessor;
@@ -193,6 +211,15 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 			$self->nodeName;
 		}
 	};
+	$xmlns //= do {
+		if ( $self->has_xmlns_attr ) {
+			my $attr = $self->xmlns_attr;
+			$item->$attr;
+		}
+		else {
+			$self->xmlns // "";
+		}
+	};
 	if ( ref $name ) {
 		$name = $name->[$slot];
 	}
@@ -201,13 +228,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 	my $doc = $node->ownerDocument;
 	my $newctx;
 	if ( length $name ) {
-		my ($xmlns, $prefix, $new_prefix);
-		if ( $self->has_xmlns ) {
-			$xmlns = $self->xmlns;
-			if ( $xmlns eq "*" ) {
-				$xmlns = $value->xmlns;
-			}
-		}
+		my ($prefix, $new_prefix);
 		$ctx = $ctx->next_ctx( $xmlns, $name, $value );
 		$prefix = $ctx->prefix;
 		my $new_nodeName = ($prefix ? "$prefix:" : "") . $name;

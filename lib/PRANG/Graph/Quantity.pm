@@ -34,7 +34,7 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	my $found = $ctx->quant_found;
 	my $ok = defined $self->child->node_ok($node, $ctx);
 	return if not $ok;
-	my ($key, $value, $x) = $self->child->accept($node, $ctx)
+	my ($key, $value, $x, $ns) = $self->child->accept($node, $ctx)
 		or $ctx->exception(
 			"internal error: node ok, but then not accepted?",
 			$node,
@@ -44,7 +44,7 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	if ( $self->has_max and $found > $self->max ) {
 		$ctx->exception("node appears too many times", $node);
 	}
-	($key, $value, $x);
+	($key, $value, $x, $ns);
 }
 
 method complete( PRANG::Graph::Context $ctx ) {

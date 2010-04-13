@@ -12,16 +12,16 @@ has 'members' =>
 
 method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	my $pos = $ctx->seq_pos;
-	my ($key, $val, $x, $member);
+	my ($key, $val, $x, $ns, $member);
 	do {
 		$member = $self->members->[$pos-1]
 			or $ctx->exception("unexpected element", $node);
-		($key, $val, $x) = $member->accept($node, $ctx);
+		($key, $val, $x, $ns) = $member->accept($node, $ctx);
 		if (!$key or !$member->accept_many ) {
 			$ctx->seq_pos(++$pos);
 		}
 	} until ($key);
-	($key, $val, $x);
+	($key, $val, $x, $ns);
 }
 
 method complete( PRANG::Graph::Context $ctx ) {

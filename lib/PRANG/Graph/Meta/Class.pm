@@ -180,14 +180,14 @@ method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::
 method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph::Context $context ) {
 	my $graph = $self->graph;
 
-	my (%init_args, %init_arg_names);
+	my (%init_args, %init_arg_names, %init_arg_xmlns);
 	my @rv;
 	my @nodes = grep { !( $_->isa("XML::LibXML::Text")
 				      and $_->data =~ /\A\s*\Z/) }
 		@$childNodes;
 	while ( my $input_node = shift @nodes ) {
 		next if $input_node->nodeType == XML_COMMENT_NODE;
-		my ($key, $value, $name) =
+		my ($key, $value, $name, $xmlns) =
 			$graph->accept($input_node, $context);
 		if ( !$key ) {
 			my (@what) = $graph->expected($context);
@@ -201,6 +201,12 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 			add_to_list(
 				$init_arg_names{$key},
 				$name,
+			       );
+		}
+		if ( defined $xmlns ) {
+			add_to_list(
+				$init_arg_xmlns{$key},
+				$xmlns,
 			       );
 		}
 	}
@@ -228,6 +234,11 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 				      exists $init_arg_names{$key} )
 				    ? ( $element->xml_nodeName_attr =>
 						$expect->($init_arg_names{$key})) : ()
+					       ),
+			  ( ( $element->has_xmlns_attr and
+				      exists $init_arg_xmlns{$key} )
+				    ? ( $element->xmlns_attr =>
+						$expect->($init_arg_xmlns{$key})) : ()
 					       ),
 			  $key => $expect->(delete $init_args{$key}),
 			 );

@@ -11,6 +11,12 @@ has 'xmlns' =>
 	predicate => "has_xmlns",
 	;
 
+has 'xmlns_attr' =>
+	is => "rw",
+	isa => "Str",
+	predicate => "has_xmlns_attr",
+	;
+
 has 'xml_nodeName' =>
 	is => "rw",
 	isa => "Str|HashRef",
@@ -159,6 +165,9 @@ method build_graph_node() {
 	my $node;
 	my $nodeName = $self->has_xml_nodeName ?
 		$self->xml_nodeName : $self->name;
+	my $nodeName_prefix = $self->has_xml_nodeName_prefix ?
+		$self->xml_nodeName_prefix : {};
+	my $nodeName_r_prefix = { reverse %$nodeName_prefix };
 
 	my $expect_concrete = ($expect_bool||0) +
 		($expect_simple||0) + @expect_type;
@@ -181,19 +190,36 @@ method build_graph_node() {
 		}
 	}
 
+	my $prefix_xx;
 	# plug-in type classes.
 	if ( @expect_role ) {
 		my @users = map { $_->name } types_of(@expect_role);
-		$nodeName = {} if !ref $nodeName;
+		if ( $nodeName and !ref $nodeName ) {
+			$self->error(
+"Str value for xml_nodeName incompatible with specifying a role type "
+	."constraint"
+			);
+		}
+		$nodeName ||= {};
 		for my $user ( @users ) {
 			if ( $user->does("PRANG::Graph") ) {
-				my $root_element = $user->root_element;
-				if ( exists $nodeName->{$root_element} ) {
+				my $plugin_nodeName = $user->root_element;
+				my $xmlns;
+				if ( $xmlns = $user->xmlns ) {
+					if ( not exists $nodeName_r_prefix->{$xmlns} ) {
+						$prefix_xx ||= "a";
+						$prefix_xx++ while exists $nodeName_prefix->{$prefix_xx};
+						$nodeName_prefix->{$prefix_xx} = $xmlns;
+						$nodeName_r_prefix->{$xmlns} = $prefix_xx;
+					}
+					$plugin_nodeName = "$nodeName_r_prefix->{$xmlns}:$plugin_nodeName";
+				}
+				if ( exists $nodeName->{$plugin_nodeName} ) {
 					$self->error(
-"Both '$user' and '$nodeName->{$root_element}' plug-in type specify $root_element root_element, not supported",
+"Both '$user' and '$nodeName->{$plugin_nodeName}' plug-in type specify $plugin_nodeName".($xmlns ? " (xmlns $xmlns)" : "").", conflict",
 					       );
 				}
-				$nodeName->{$root_element} = $user;
+				$nodeName->{$plugin_nodeName} = $user;
 			}
 			elsif ( $user->does("PRANG::Graph::Class") ) {
 				if ( !$self->has_xml_nodeName_attr ) {
@@ -208,17 +234,28 @@ method build_graph_node() {
 					);
 			}
 			push @expect_type, $user;
+			$expect_concrete++;
 		}
 		$self->xml_nodeName({%$nodeName});
+		if ( !$self->has_xml_nodeName_prefix and keys %$nodeName_prefix ) {
+			$self->xml_nodeName_prefix($nodeName_prefix);
+		}
 	}
-	if ( !ref $nodeName and $expect_concrete ) {
+	if (!$expect_concrete) {
+		$self->error(
+			"no type(s) specified (or, role evaluated to nothing)",
+		       )
+	}
+
+	if ( !ref $nodeName ) {
 		my $expected = $expect_bool ? "Bool" :
 			$expect_simple ? "Str" : $expect_type[0];
 		$nodeName = { $nodeName => $expected };
+		$self->xml_nodeName($nodeName);
 	}
-	elsif ( $expect_concrete ) {
-		$nodeName = { %$nodeName };
-	}
+
+	# we will be using 'delete' with nodeName, so copy it
+	$nodeName = {%$nodeName};
 
 	my @expect;
 	for my $class ( @expect_type ) {
@@ -243,6 +280,9 @@ method build_graph_node() {
 		}
 		my (@names) = grep { $nodeName->{$_} eq $class }
 			keys %$nodeName;
+		if ( $self->has_xmlns_attr ) {
+			push @xmlns, (xmlns_attr => $self->xmlns_attr);
+		}
 
 		if ( !@names ) {
 			die "type '$class' specified as allowed on '"
@@ -256,16 +296,13 @@ method build_graph_node() {
 	: "(nothing)" );
 		}
 
-		my $prefix_map;
-		if ( $self->has_xml_nodeName_prefix ) {
-			$prefix_map = $self->xml_nodeName_prefix;
-		}
 		for my $name ( @names ) {
-			my @effective_xmlns;
-			if ( $prefix_map and $name =~ /^(\w+):(\w+)/ ) {
-				my $xmlns = $prefix_map->{$1}
+			my @effective_xmlns = @xmlns;
+			if ( $nodeName_prefix and $name =~ /^(\w+):(\w+)/ ) {
+				my $xmlns = $nodeName_prefix->{$1}
 					or die "unknown prefix '$1' used on attribute ".$self->name." of ".eval{$self->associated_class->name};
-				@effective_xmlns = (xmlns => $xmlns);
+				push @effective_xmlns,
+					xmlns => $xmlns;
 				$name = $2;
 			}
 			else {
@@ -325,17 +362,94 @@ method build_graph_node() {
 		}
 	}
 
-	# FIXME - sometimes, xml_nodeName_attr is not needed, and
-	# setting it breaks things - it's only needed if the nodeName
-	# map is ambiguous.
-	my @name_attr =
-		(($self->has_xml_nodeName_attr ? 
-			  ( name_attr => $self->xml_nodeName_attr ) : ()),
-		 (($self->has_xml_nodeName and ref $self->xml_nodeName) ?
-			  ( type_map => {%{$self->xml_nodeName}} ) : ()),
-		 (($self->has_xml_nodeName_prefix and ref $self->xml_nodeName_prefix) ?
-			  ( type_map_prefix => {%{$self->xml_nodeName_prefix}} ) : ()),
-		);
+	# determine if we need explicit attributes to record the
+	# nodename and/or XML namespace.
+
+	# first rule.  If multiple prefix:nodeName entries map to the
+	# same type, then we would have an ambiguous type map, and
+	# therefore need at least one of name_attr and xmlns_attr
+	my $have_ambiguous;
+	my (%seen_types, %seen_xmlns, %seen_localname);
+	my $fixed_xmlns = $self->xmlns;
+	my $use_prefixes = $self->has_xml_nodeName_prefix;
+	if ( $fixed_xmlns and $use_prefixes ) {
+		$self->error("specify only one of 'xmlns' / 'xml_nodeName_prefix' (note: latter may be implied by use of roles)");
+	}
+	while ( my ($element_fullname, $class) = each %{$self->xml_nodeName}) {
+		my ($xmlns, $localname);
+		if ( $use_prefixes ) {
+			(my $prefix, $localname) =
+				($element_fullname =~ /^(?:(\w+):)?(\w+|\*)/);
+			$prefix //= "";
+			$xmlns = $nodeName_prefix->{$prefix}//"";
+		}
+		else {
+			$localname = $element_fullname;
+			$xmlns = $fixed_xmlns//"";
+		}
+
+		$localname //= "";
+		$seen_localname{$localname}++;
+		$seen_xmlns{$xmlns}++;
+
+		$have_ambiguous++ if $localname eq "*";
+		$have_ambiguous++ if $xmlns eq "*";
+
+		my $ent = [ $xmlns, $localname ];
+		if ( my $aref = $seen_types{$class} ) {
+			$have_ambiguous++;
+			push @$aref, $ent;
+		}
+		else {
+			$seen_types{$class} = [ $ent ];
+		}
+	}
+
+	# if all nodes have the same localname, we can use just
+	# xmlns_attr.  if all nodes have the same xmlns, we can use
+	# just name_attr
+	my @name_attr;
+	if ( $have_ambiguous ) {
+		if ( keys %seen_localname > 1 or $seen_localname{"*"} ) {
+			if ( !$self->has_xml_nodeName_attr ) {
+				$self->error(
+"xml_nodeName map ambiguities or wildcarding imply need for "
+	."xml_nodeName_attr, but none given",
+				       );
+			}
+			else {
+				push @name_attr, name_attr => $self->xml_nodeName_attr;
+			}
+		}
+		else {
+			push @name_attr, xml_nodeName => (keys %seen_localname)[0]//"";
+		}
+
+		if ( keys %seen_xmlns > 1 or $seen_xmlns{"*"} ) {
+			if ( !$self->has_xmlns_attr ) {
+				$self->error(
+"xml_nodeName map ambiguities or wildcarding imply need for "
+	."xmlns_attr, but none given",
+				       );
+			}
+			else {
+				push @name_attr, xmlns_attr => $self->xmlns_attr;
+			}
+		}
+		else {
+			push @name_attr, xmlns => (keys %seen_xmlns)[0]//"";
+		}
+	}
+	elsif ( $self->has_xmlns_attr or $self->has_xml_nodeName_attr ) {
+		$self->error("unnecessary use of xmlns_attr / xml_nodeName_attr");
+	}
+	elsif ( $self->has_xml_nodeName ) {
+		push @name_attr, type_map => {%{$self->xml_nodeName}};
+		if ( $self->has_xml_nodeName_prefix ) {
+			push @name_attr, type_map_prefix =>
+				{%{$self->xml_nodeName_prefix}};
+		}
+	}
 
 	if ( @expect > 1 ) {
 		$node = PRANG::Graph::Choice->new(
@@ -695,8 +809,8 @@ elements.
       isa => "ArrayRef[PRANG::XMLSchema::Whatever|Str]",
       xml_nodeName => { "" => "Str", "*" => "PRANG::XMLSchema::Whatever" },
       xml_nodeName_attr => "nodenames",
-      xml_nodeName_xmlns_attr => "nodenames_xmlns",
       xmlns => "*",
+      xmlns_attr => "nodenames_xmlns",
       ;
 
 B<FIXME:> this is currently unimplemented.
