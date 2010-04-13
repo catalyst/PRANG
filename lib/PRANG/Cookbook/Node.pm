@@ -4,8 +4,6 @@ package PRANG::Cookbook::Node;
 use Moose::Role;
 with 'PRANG::Graph::Class';
 
-sub xmlns { }  # no namespaces required.
-
 1;
 
 =pod
@@ -21,7 +19,7 @@ PRANG::Cookbook::Node - Baseclass for nodes in the Cookbook series
  use Moose::Role;
  with 'PRANG::Graph::Class';
  
- sub xmlns { }  # no namespaces required.
+ sub xmlns { }  # no namespaces required (optional)
  
  1;
 

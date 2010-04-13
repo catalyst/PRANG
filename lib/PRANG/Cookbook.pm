@@ -4,6 +4,8 @@ package PRANG::Cookbook;
 use Moose::Role;
 use PRANG::Graph;
 
+sub xmlns { }
+
 BEGIN { with 'PRANG::Graph', 'PRANG::Cookbook::Node'; };
 
 1;

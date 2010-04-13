@@ -6,6 +6,4 @@ package PRANG::Graph::Class;
 
 use Moose::Role;
 
-requires 'xmlns';
-
 1;

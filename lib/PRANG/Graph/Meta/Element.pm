@@ -205,7 +205,7 @@ method build_graph_node() {
 			if ( $user->does("PRANG::Graph") ) {
 				my $plugin_nodeName = $user->root_element;
 				my $xmlns;
-				if ( $xmlns = $user->xmlns ) {
+				if ( $xmlns = eval { $user->xmlns }//"" ) {
 					if ( not exists $nodeName_r_prefix->{$xmlns} ) {
 						$prefix_xx ||= "a";
 						$prefix_xx++ while exists $nodeName_prefix->{$prefix_xx};
@@ -264,18 +264,19 @@ method build_graph_node() {
 			push @xmlns, (xmlns => $self->xmlns);
 		}
 		else {
-			my $xmlns = $self->associated_class->name->xmlns;
-			if ( !$class->can("xmlns") ) {
+			my $xmlns = eval { $self->associated_class->name->xmlns } // "";
+			if ( !eval{ $class->meta->can("marshall_in_element") } ) {
 				my $ok = eval "use $class; 1";
 				if ( !$ok ) {
 					die "problem auto-including class '$class'; exception is: $@";
 				}
 			}
-			if ( !$class->meta->can("marshall_in_element") ) {
+			if ( !eval{ $class->meta->can("marshall_in_element") } ) {
 				die "'$class' can't marshall in; did you 'use PRANG::Graph'?";
 			}
-			if ( ($class->xmlns||"") ne ($xmlns||"") ) {
-				push @xmlns, (xmlns => ($class->xmlns||""));
+			my $class_xmlns = eval { $class->xmlns } // "";
+			if ( $class_xmlns ne $xmlns ) {
+				push @xmlns, (xmlns => $class_xmlns);
 			}
 		}
 		my (@names) = grep { $nodeName->{$_} eq $class }

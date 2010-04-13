@@ -45,7 +45,6 @@ with "PRANG::Graph", "PRANG::Graph::Class";
 
 package Ampersand;
 use Moose;
-sub xmlns {}
 use PRANG::Graph;
 with "PRANG::Graph::Class";
 # class tests: Quant -> Element
@@ -57,7 +56,6 @@ has_element "interpunct" =>
 
 package Caret;
 use Moose;
-sub xmlns {}
 use PRANG::Graph;
 with "PRANG::Graph::Class";
 # class tests:
@@ -74,7 +72,6 @@ has_element "solidus" =>
 
 package Asteriks;
 use Moose;
-sub xmlns {}
 use PRANG::Graph;
 with "PRANG::Graph::Class";
 # class tests:
@@ -92,7 +89,6 @@ has_element "bullet" =>
 
 package Pilcrow;
 use Moose;
-sub xmlns {}
 use PRANG::Graph;
 with "PRANG::Graph::Class";
 
@@ -105,7 +101,6 @@ has_element "backslash" =>
 
 package Deaeresis;
 use Moose;
-sub xmlns {}
 use PRANG::Graph;
 with "PRANG::Graph::Class";
 
@@ -140,7 +135,6 @@ has "period_ns" => is => "ro";
 
 package Fingernails;
 use Moose;
-sub xmlns {}
 use PRANG::Graph;
 #    Class tests: Seq -> Element
 
@@ -165,7 +159,6 @@ package SectionMark;
 
 use Moose;
 use PRANG::Graph;
-sub xmlns {}
 
 # This class tests:
 #     Seq -> Quant -> Choice -> Element
@@ -250,7 +243,6 @@ package CurlyBrackets;
 
 use Moose;
 use PRANG::Graph;
-sub xmlns {}
 
 # test the "more element names than types" case - extra attribute
 # required to record the node name.  This one should always go at
