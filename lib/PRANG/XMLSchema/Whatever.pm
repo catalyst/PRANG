@@ -96,8 +96,6 @@ has 'attributes_ns' =>
 	isa => "HashRef[Str|ArrayRef[Str]]",
 	;
 
-sub xmlns { }   # API FIXME - should be able to specify 'any' namespace
-
 1;
 
 =head1 NAME
