@@ -332,7 +332,10 @@ method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Con
 				if ( $xmlns ) {
 					$prefix = $ctx->get_prefix(
 						$xmlns, $item, $node,
-					       ) . ":";
+					       );
+					if ( length $prefix ) {
+						$prefix .= ":";
+					}
 				}
 				else {
 					$prefix = "";
