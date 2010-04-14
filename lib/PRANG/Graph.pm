@@ -3,6 +3,7 @@ package PRANG::Graph;
 
 use Moose::Role;
 
+use PRANG;
 use PRANG::Graph::Context;
 
 use PRANG::Graph::Node;

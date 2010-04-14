@@ -4,7 +4,19 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
-=head2 VERSION 0.05 - 13 Apr 2010
+=head2 VERSION 0.06 - 14 Apr 2010
+
+=over
+
+=item *
+
+Correct the handling of attributes with no prefix.  They should always
+be considered to have no namespace, even if a default xmlns is
+defined, apparently.
+
+=back
+
+=head2 VERSION 0.05 - 14 Apr 2010
 
 =over
 
