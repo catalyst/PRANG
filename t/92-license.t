@@ -11,7 +11,8 @@ use FindBin qw($Bin);
 use File::Find;
 
 find(   sub {
-		if (m{\.(pm|pl|t)$}) {
+		if (m{\.(pm|pl|t)$} and
+			    $File::Find::name !~ m{\bcookbook\b}i) {
 			open FILE, "<", $_ or die $!;
 			while (<FILE>) {
 				m{Copyright} && do {

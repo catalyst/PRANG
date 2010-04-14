@@ -25,7 +25,7 @@ plan skip_all => 'set TEST_POD or TEST_ALL to enable this test'
 	unless $ENV{TEST_POD}
 		or $ENV{TEST_ALL};
 
-my @modules = all_modules;
+my @modules = grep { !m{Cookbook} } all_modules;
 
 plan tests => scalar @modules;
 
