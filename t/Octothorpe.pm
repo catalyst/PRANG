@@ -253,6 +253,14 @@ has_attr "suspension_points" =>
 	xml_required => 0,
 	;
 
+has_attr "quotation_dash" =>
+	is => "ro",
+	isa => "Str",
+	xmlns => "uri:type:A",
+	xml_required => 0,
+	xml_name => "quotation_dash",
+	;
+
 package CurlyBrackets;
 
 use Moose;
