@@ -194,13 +194,13 @@ method build_graph_node() {
 	# plug-in type classes.
 	if ( @expect_role ) {
 		my @users = map { $_->name } types_of(@expect_role);
-		if ( $nodeName and !ref $nodeName ) {
+		if ( $self->has_xml_nodeName and !ref $self->xml_nodeName ) {
 			$self->error(
 "Str value for xml_nodeName incompatible with specifying a role type "
 	."constraint"
 			);
 		}
-		$nodeName ||= {};
+		$nodeName = {} if !ref $nodeName;
 		for my $user ( @users ) {
 			if ( $user->does("PRANG::Graph") ) {
 				my $plugin_nodeName = $user->root_element;
@@ -216,7 +216,7 @@ method build_graph_node() {
 				}
 				if ( exists $nodeName->{$plugin_nodeName} ) {
 					$self->error(
-"Both '$user' and '$nodeName->{$plugin_nodeName}' plug-in type specify $plugin_nodeName".($xmlns ? " (xmlns $xmlns)" : "").", conflict",
+"Both '$user' and '$nodeName->{$plugin_nodeName}' plug-in type specify nodename $plugin_nodeName".($xmlns ? " (xmlns $xmlns)" : "").", conflict",
 					       );
 				}
 				$nodeName->{$plugin_nodeName} = $user;

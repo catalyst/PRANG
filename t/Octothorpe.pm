@@ -47,7 +47,18 @@ has_element "question_mark" =>
 	xml_required => 0,
 	;
 
+has_element "number_sign" =>
+	is => "ro",
+	isa => "InvertedQuestionMark",
+	xml_required => 0,
+	;
+
 with "PRANG::Graph";
+
+package InvertedQuestionMark;
+use Moose::Role;
+with 'PRANG::Graph';
+sub xmlns {}
 
 package Ampersand;
 use Moose;
@@ -58,6 +69,9 @@ has_element "interpunct" =>
 	isa => "Int",
 	predicate => "has_interpunct",
 	;
+
+sub root_element { "ampersand" }
+with 'InvertedQuestionMark';
 
 package Caret;
 use Moose;
@@ -73,6 +87,9 @@ has_element "solidus" =>
 		"parens" => "Octothorpe",
 	},
 	;
+
+sub root_element { "caret" }
+with 'InvertedQuestionMark';
 
 package Asteriks;
 use Moose;
