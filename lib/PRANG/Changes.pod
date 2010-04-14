@@ -4,6 +4,36 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.05 - 13 Apr 2010
+
+=over
+
+=item *
+
+XML namespaces support is now much more complete; lots of cases,
+including wildcarding of both the node name and the XML namespace now
+work.  This is powerful enough to successfully round-trip crazy XML
+Schema specifications such as C<E<lt>any namespace="##any"
+processContents="skip"/E<gt>>
+
+=item *
+
+L<PRANG::Graph::Class> has been deprecated / ripped out.  It was a
+hang-over from the time before C<use PRANG::Graph;> set up the
+metaclass trait.
+
+=item *
+
+It is no longer required to specify the C<xmlns> method, if you do not
+wish to use namespaces.
+
+=item *
+
+Specifying a role as a type now works, so long as the role is used by
+only L<PRANG::Graph> types.
+
+=back
+
 =head2 VERSION 0.04 - 9 Apr 2010
 
 =over

@@ -47,9 +47,9 @@ some basic validation.
 
 =head2 Intermediate PRANG
 
-This recipe series gives you a good overview of some of advanced of PRANG's
-capabilites. Showing how to do lists of nodes and then lists of any of a number
-of different nodes.
+This recipe series (ie, L<PRANG::Cookbook>) gives you a good overview
+of some of advanced of PRANG's capabilites. Showing how to do lists of
+nodes and then lists of any of a number of different nodes.
 
 =over 4
 

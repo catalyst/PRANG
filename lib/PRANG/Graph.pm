@@ -186,8 +186,33 @@ the parser encounters this, it sees which loaded classes implement
 that role, and then builds the map from element name to class.
 
 The classes should implement the C<PRANG::Graph> role, effectively
-defining a document type.  More details, examples and tests to follow
-in a subsequent release.
+defining a document type.
+
+The effect of specifying a role as a type is to immediate search all
+I<loaded packages> to see which consume the specified role.
+
+Given the example in the previous section, if you used:
+
+ has_element 'some_attr' =>
+     is => "ro",
+     isa => "XML::Language::Family",
+     ;
+
+It would be the same as:
+
+ has_element 'some_attr' =>
+     is => "ro",
+     isa => "XML::Language::One|XML::Language::Two",
+     xml_nodeName => {
+         one => "XML::Language::One",
+         two => "XML::Language::Two",
+     },
+     ;
+
+Otherwise, the requirements are the same as for regular element
+definition as described in L<PRANG::Graph::Meta::Element>.  In
+particular, two types cannot share the same C<xmlns> I<and>
+C<root_element>; that would be ambiguous.
 
 =head1 EXPORTS
 
