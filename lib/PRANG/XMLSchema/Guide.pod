@@ -449,5 +449,80 @@ We are now up to
 
  rfc5732: useful coercions for Address
 
+=head2 CHOOSING GOOD CLASS NAMES
+
+It's good to be somewhat systematic about the conversion of type names
+from your schema to class names.  But frequently the type names in the
+XML Schema will not be adequate for such use.
+
+So, the rules I tend to use for sanitising type names are;
+
+=over
+
+=item *
+
+Remove any redundant C<Type> or similar prefix/suffix
+
+=item *
+
+If the type name contains an abbreviation, consider un-abbreviating it
+if it is short enough.
+
+=item *
+
+If the resulting class ends up in CamelCase, consider if there is an
+alternative single word which summarises the notion better, or use
+deeper namespaces where it makes sense (see next rule).
+
+If the type is only ever used with a single element name, then the
+name of that element is also a candidate for a good name for the
+class.
+
+=item *
+
+Consider making types corresponding to actions on entities, live in
+C<Namespace::Entity::Action>, rather than C<Namespace::ActionEntity>.
+
+=back
+
+One of the things to remember is that XML Schema type names are not
+normally visible to people working with the XML directly.  Less care
+may be placed on making them understandable, than merely making them
+unique tokens useful enough for a standards maintainer to work with.
+
+Where it does not cause any conflicts, consider exporting aliases to
+the raw XML Schema type names into the package which you are using,
+using C<subtype> (from L<Moose::Util::TypeConstraints>).  For the
+example schema, I know this will always be safe as the types always
+end in C<Type>.
+
+This is normally as simple as using something like this at the end of
+your class definition:
+
+ use Moose::Util::TypeConstraints;
+ subtype "XML::EPP::Host::chgType" => as __PACKAGE__;
+
+The above I used in the class I called L<XML::EPP::Host::Change>.
+
+In general, you can use these subtypes for type constraints (ie, C<isa
+=E<gt>) fields on attributes) instead of the Perl package name.
+However currently for C<xml_nodeName> maps this does not work and the
+real class name must be given.  This may be fixed in a later release.
+
+In any case, you need to make sure that the class which defines the
+subtype is loaded before you define an attribute which uses that type;
+or Moose will convert it to an C<-E<gt>isa> type constraint.
+
+Also, don't use this trick for types which got converted into roles
+(as C<mNameType> and C<sNameType> were in the example) or you might
+get yourself into trouble later; if roles are used in type defintions,
+they imply plug-in like operation where all of the classes which
+implement that role are allowed (and they all have to be
+L<PRANG::Graph> consumers).
+
+This point corresponds to git commit:
+
+ rfc5732: add subtype definitions at the end of corresponding files
+
 =cut
 
