@@ -194,5 +194,171 @@ Win!  This point corresponds to the git commit called;
 
 In C<XMP-EPP.git>
 
+Now I will deal with the C<createType>;
+
+ <!--
+ Child elements of the <create> command.
+ -->
+  <complexType name="createType">
+    <sequence>
+      <element name="name" type="eppcom:labelType"/>
+      <element name="addr" type="host:addrType"
+       minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+
+C<eppcom:labelType> is already defined.  So, I can refer to it:
+
+ package XML::EPP::Host::Create;
+ use Moose;
+ use PRANG::Graph;
+ sub root_element { "create" }
+
+ with
+      'XML::EPP::Host::RQ',
+      'XML::EPP::Host::Node',
+      ;
+
+ has_element 'name' =>
+    is => "ro",
+    isa => "XML::EPP::Common::labelType",
+    ;
+
+C<addrType> is not yet there to be added to XML::EPP::Host::Create.
+So, convert it first; here is the definition:
+
+ <complexType name="addrType">
+   <simpleContent>
+     <extension base="host:addrStringType">
+       <attribute name="ip" type="host:ipType"
+        default="v4"/>
+     </extension>
+   </simpleContent>
+ </complexType>
+
+Ah!  C<simpleContent>!  But wait!  It has an attribute, so we can't
+use that mapping.  Blast.
+
+=head1 CONVERTING C<simpleType> TYPES
+
+Let's do C<addrStringType> first.
+
+  <simpleType name="addrStringType">
+    <restriction base="token">
+      <minLength value="3"/>
+      <maxLength value="45"/>
+    </restriction>
+  </simpleType>
+
+Ok, this one is a simpler case - takes the C<token> type defined in
+the XML Schema spec, and restricts its... length... really?  Oh well,
+whatever - if that's what it says that's what it says.
+
+The convention I use is to put all simpletypes in the namespace of the
+entire module, with the type from the XSD file after it.  So, in
+L<XML::EPP::Host> we write:
+
+ use Moose::Util::TypeConstraints;
+ use PRANG::XMLSchema::Types;
+ subtype "XML::EPP::Host::addrStringType"
+    => as "PRANG::XMLSchema::token"
+    => where { length $_ >= 3 and length $_ <= 45 };
+
+I also do the C<host:ipType>:
+
+ <simpleType name="ipType">
+   <restriction base="token">
+     <enumeration value="v4"/>
+     <enumeration value="v6"/>
+   </restriction>
+ </simpleType>
+
+Can become simply:
+
+ enum "XML::EPP::Host::ipType" => qw(v4 v6);
+
+Depending on the exact ordering of loading your classes, you might
+find that you need to lift your C<subtype> and C<enum> definitions
+into C<BEGIN> blocks.  They must always be defined before an attribute
+which uses them is defined, otherwise Moose will create an
+C<-E<gt>isa> type constraint, not a C<Str> sub-type type constraint.
+
+Now, with these definitions in place I can get back to the
+C<addrType>.
+
+=head2 CONVERTING C<simpleContent> TYPES TO CLASSES
+
+C<simpleContent> means a node with no element children, however it can
+have attributes and textual content.  These must be converted to
+classes.
+
+ <!--
+ Child elements of the <create> command.
+ -->
+  <complexType name="createType">
+    <sequence>
+      <element name="name" type="eppcom:labelType"/>
+      <element name="addr" type="host:addrType"
+       minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+
+Becomes the following:
+
+ package XML::EPP::Host::Address;
+ use Moose;
+ use PRANG::Graph;
+ with 'XML::EPP::Host::Node';
+ has_element "name" =>
+     is => "ro",
+     isa => "XML::EPP::Host::addrStringType",
+     xml_nodeName => "",
+     coerce => 1,
+     ;
+
+ has_attr "ip" =>
+      is => "ro",
+      isa => "XML::EPP::Host::ipType",
+      default => "v4",
+      ;
+
+Specifying an C<xml_nodeName> on an element, of the empty string
+refers to a text node as the contents.  Specifying the C<coerce =E<gt>
+1> option will allow values which can be safely transformed to the
+correct type transparently be converted.  In this case, it is to pick
+up the default rule in L<PRANG::XMLSchema::Types> which trims
+whitespace from C<PRANG::XMLSchema::token> nodes.
+
+Right, now I can pop the stack and finish the C<Create> class:
+
+ <element name="addr" type="host:addrType"
+          minOccurs="0" maxOccurs="unbounded"/>
+
+Becomes:
+
+ has_element 'addr' =>
+      is => "ro",
+      isa => "ArrayRef[XML::EPP::Host::Address]",
+      xml_min => 0,
+      ;
+
+With that, we should hopefully be able to parse the RFC C<create>
+command:
+
+ denix:~/src/XML-EPP$ perl -Mlib=lib t/22-xml-rfc5732-host.t -t 05
+ 1..3
+ ok 1 - 22-xml-rfc5732-host/rfc-examples/05-create-command.xml - parsed OK
+ ok 2 - 22-xml-rfc5732-host/rfc-examples/05-create-command.xml - emitted OK (36ms)
+ ok 3 - 22-xml-rfc5732-host/rfc-examples/05-create-command.xml - XML output same
+ denix:~/src/XML-EPP$ 
+
+It worked!
+
+This point is:
+
+ 
+
+=head2 
+
 =cut
 
