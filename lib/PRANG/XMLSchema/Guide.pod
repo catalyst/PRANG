@@ -505,7 +505,7 @@ your class definition:
 The above I used in the class I called L<XML::EPP::Host::Change>.
 
 In general, you can use these subtypes for type constraints (ie, C<isa
-=E<gt>) fields on attributes) instead of the Perl package name.
+=E<gt>>) fields on attributes) instead of the Perl package name.
 However currently for C<xml_nodeName> maps this does not work and the
 real class name must be given.  This may be fixed in a later release.
 
@@ -523,6 +523,135 @@ L<PRANG::Graph> consumers).
 This point corresponds to git commit:
 
  rfc5732: add subtype definitions at the end of corresponding files
+
+=head2 CHOOSING GOOD ATTRIBUTE NAMES
+
+Attribute and element names are more visible and well-known than XML
+Schema type names; so the bar for renaming them to moose attribute
+names is slightly higher as this will actually confuse people.
+
+That being said, sometimes the attribute names are just awful.  Case
+in point: C<statusType>
+
+  <attribute name="s" type="host:statusValueType"
+             use="required"/>
+
+C<s> ?  That's ... B<s>pecial?  B<s>illy?
+
+I'll call it C<status>:
+
+ has_attr "status" =>
+     is => "ro",
+     isa => "XML::EPP::Host::statusValueType",
+     required => 1,
+     xml_name => "s",
+     ;
+
+I used C<xml_name> there to refer to the name it gets in the XML.
+This works with C<has_attr>; for C<has_element>, you must use
+C<xml_nodeName>.
+
+I personally will also convert to keep in line with perl-ish
+conventions:
+
+  XML form      Perl attribute
+  Capitalized   capitalized
+  CamelCase     camel_case
+
+=head2 HANDLING C<minOccurs> AND C<maxOccurs>
+
+In the C<addRemType>, the following definition appears:
+
+   <sequence>
+     <element name="addr" type="host:addrType"
+      minOccurs="0" maxOccurs="unbounded"/>
+     <element name="status" type="host:statusType"
+      minOccurs="0" maxOccurs="7"/>
+   </sequence>
+
+The default for C<minOccurs> and C<maxOccurs> is 1 - making the
+attribute compulsary.  This is the regular case, mapped to a single
+item type.
+
+If C<maxOccurs> is more than 1, then the slot in the sequence needs to
+be represented with an ArrayRef.  Setting the type to be an ArrayRef
+type automatically makes PRANG default the C<xml_max> to be unlimited,
+so the above definition is implemented in the corresponding class
+with:
+
+ use XML::EPP::Host::Address;
+ has_element 'addr' =>
+     is => "ro",
+     isa => "ArrayRef[XML::EPP::Host::Address]",
+     xml_min => 0,
+     ;
+ use XML::EPP::Host::Status;
+ has_element 'status' =>
+     is => "ro",
+     isa => "ArrayRef[XML::EPP::Host::Status]",
+     xml_min => 0,
+     xml_max => 7,
+     ;
+
+=head2 HANDLING MULTIPLE ELEMENTS WITH THE SAME TYPE
+
+As the implementation of RFC5732 continues, we encounter the
+C<updateType>, which contains multiple element definitions with the
+same type;
+
+ <!--
+ Child elements of the <update> command.
+ -->
+  <complexType name="updateType">
+    <sequence>
+      <element name="name" type="eppcom:labelType"/>
+      <element name="add" type="host:addRemType"
+       minOccurs="0"/>
+      <element name="rem" type="host:addRemType"
+       minOccurs="0"/>
+      <element name="chg" type="host:chgType"
+       minOccurs="0"/>
+    </sequence>
+  </complexType>
+
+However, this is no problem!  In fact, this is why I<types> are mapped
+to classes and not I<elements>.
+
+I decided to name C<addRemType> the simpler C<Delta> (full name:
+L<XML::EPP::Host::Delta>).
+
+So, the definitions become:
+
+ use XML::EPP::Host::Delta;
+ has_element 'add' =>
+    is => "ro",
+    isa => "XML::EPP::Host::Delta",
+    predicate => "has_add",
+    coerce => 1,
+    ;
+ has_element 'remove' =>
+    is => "ro",
+    isa => "XML::EPP::Host::Delta",
+    predicate => "has_remove",
+    xml_nodeName => "rem",
+    coerce => 1,
+    ;
+
+Also of passing note: setting C<predicate> as in the above
+automatically implies C<xml_min =E<gt> 0>
+
+We are now up to git commit:
+
+ rfc5732: implement <update> command
+
+Here is the parser in action:
+
+ denix:~/src/XML-EPP$ perl -Mlib=lib t/22-xml-rfc5732-host.t -t 09
+ 1..3
+ ok 1 - 22-xml-rfc5732-host/rfc-examples/09-update-command.xml - parsed OK
+ ok 2 - 22-xml-rfc5732-host/rfc-examples/09-update-command.xml - emitted OK (47ms)
+ ok 3 - 22-xml-rfc5732-host/rfc-examples/09-update-command.xml - XML output same
+ denix:~/src/XML-EPP$ 
 
 =cut
 
