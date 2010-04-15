@@ -6,17 +6,24 @@ PRANG::XMLSchema::Guide - converting .xsd to PRANG by hand
 =head1 OVERVIEW
 
 With XMLSchema, you are supplied with a set of F<.xsd> files which
-define the schema.  This is specified in XML format.
+define the schema.  This is specified in XML format.  This document
+goes through conversion of a real XML Schema document, the example
+given here is the RFC 5732 EPP host mapping.
 
-The example given is the RFC 5732 EPP host mapping.
+This man page is structured so that it can be used both as a tutorial
+and a reference; for use as a reference, scan the headings and look
+for the one that corresponds to the XML Schema structure you are
+encountering.  For use as a tutorial, read from start to finish, if
+you like with the history of XML::EPP open in C<gitk> or a similar
+tool.
 
 =head1 GETTING STARTED
 
 =head2 MODULE NAMESPACE
 
 The first thing to do is to choose a namespace which your classes will
-sit on.  I like to keep each XML namespace in its own namespace, but
-choose your own convention.
+sit on.  I like to keep each XML namespace in its own package
+heirarchy in Perl.
 
  <schema targetNamespace="urn:ietf:params:xml:ns:host-1.0"
        xmlns:host="urn:ietf:params:xml:ns:host-1.0"
@@ -24,6 +31,13 @@ choose your own convention.
        xmlns:eppcom="urn:ietf:params:xml:ns:eppcom-1.0"
        xmlns="http://www.w3.org/2001/XMLSchema"
        elementFormDefault="qualified">
+
+Five namespaces are defined here; the last one, C<xmlns=...>, says the
+namespace that the schema itself is in.  C<xmlns:foo> defines what
+namespace nodes in this document with that prefix are in.  However,
+unlike regular use of XML namespaces, this affects the interpretation
+of I<values>, in particular values of the C<type=> attribute of
+various XML Schema declaration elements.
 
 The important one is C<targetNamespace> - I decide to map to the
 L<XML::EPP::Host> namespace, and so I create;
@@ -36,10 +50,14 @@ L<XML::EPP::Host> namespace, and so I create;
 
 Every class I compose this role into will get that XML namespace.
 This affects the default namespace for C<has_element> definitions that
-refer to a given type.  I also include the L<XML::EPP::Common> class
-so that all type definitions are always present.
+refer to a given type.
 
-=head2 ROOT NODE(S)
+I also include the L<XML::EPP::Common> class so that all type
+definitions are always present.  In fact, this had already been built
+to correspond to the namespace URI associated with the C<eppcom>
+prefix above.
+
+=head2 CONVERT ROOT NODE(S) TO PRANG::Graph CLASSES
 
 If your XML language can have only one main element type, then make
 the "XML::Whatever" a normal class.  If the language can have multiple
@@ -67,7 +85,9 @@ Then later:
 
 There are 5 request elements and 4 response elements which can be
 used.  In this case, I also want these objects to be types of the
-L<XML::EPP::Plugin> role.
+L<XML::EPP::Plugin> role.  This role requires the C<is_command>
+function to be defined, so I'll make a couple of convenience roles for
+that, too:
 
 So, I write:
 
@@ -90,12 +110,33 @@ And:
  sub is_command { 0 }
  1;
 
-=head2 CONVERT TOP-LEVEL I<TYPES> TO CLASSES
+To define an allowed root node, I can then use:
 
-Then move on to define each sub-type; C<sNameType> seems to indicate a
-single list of items, and C<mNameType> a list.  I decide to call these
-"Item" and "List", and to make them roles because they seem to be
-generic:
+ package XML::EPP::Host::Check;
+ use Moose;
+ use PRANG::Graph;
+ sub root_element { "check" }
+ with
+      'XML::EPP::Host::RQ',
+      'XML::EPP::Host::Node',
+      ;
+
+=head2 CONVERTING C<complexType> TYPES TO ROLES
+
+After we have the top-level definitions for each root element we can
+move on to define each sub-type.
+
+Normally C<complexType> definitions will become classes, however
+sometimes is is more appropriate to convert them to roles.  In this
+instance we are forced to, because they are used for root elements in
+this XML Schema, and at the top level of the schema, a single type
+must correspond with a single root element.
+
+In this case there is the problematic C<info> and C<delete> elements
+which share C<sNameType>.  C<sNameType> seems to indicate a single
+list of items, and C<mNameType> a list.  I decide to call these "Item"
+and "List", and to make them both roles because they seem to be
+generic; see also L</CHOOSING GOOD CLASS NAMES>
 
  package XML::EPP::Host::Item;
  # <!--
@@ -131,7 +172,8 @@ generic:
      isa => "ArrayRef[XML::EPP::Common::labelType]",
      ;
 
-Now I can make the C<check>, C<delete> and C<info> messages.
+Now I can make the C<check>, C<delete> and C<info> messages concrete
+types, each with a single C<root_element>.
 
  package XML::EPP::Host::Check;
  use Moose;
@@ -251,8 +293,8 @@ Let's do C<addrStringType> first.
   </simpleType>
 
 Ok, this one is a simpler case - takes the C<token> type defined in
-the XML Schema spec, and restricts its... length... really?  Oh well,
-whatever - if that's what it says that's what it says.
+the XML Schema spec, and restricts its... length... to 45?  really?
+Oh well, whatever - if that's what it says that's what it says.
 
 The convention I use is to put all simpletypes in the namespace of the
 entire module, with the type from the XSD file after it.  So, in
@@ -354,7 +396,7 @@ command:
 
 It worked!
 
-This point is:
+This point is the git commit:
 
  rfc5732: implement <create> host message
 
