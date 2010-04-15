@@ -1,0 +1,198 @@
+
+=head1 NAME
+
+PRANG::XMLSchema::Guide - converting .xsd to PRANG by hand
+
+=head1 OVERVIEW
+
+With XMLSchema, you are supplied with a set of F<.xsd> files which
+define the schema.  This is specified in XML format.
+
+The example given is the RFC 5732 EPP host mapping.
+
+=head1 GETTING STARTED
+
+=head2 MODULE NAMESPACE
+
+The first thing to do is to choose a namespace which your classes will
+sit on.  I like to keep each XML namespace in its own namespace, but
+choose your own convention.
+
+ <schema targetNamespace="urn:ietf:params:xml:ns:host-1.0"
+       xmlns:host="urn:ietf:params:xml:ns:host-1.0"
+       xmlns:epp="urn:ietf:params:xml:ns:epp-1.0"
+       xmlns:eppcom="urn:ietf:params:xml:ns:eppcom-1.0"
+       xmlns="http://www.w3.org/2001/XMLSchema"
+       elementFormDefault="qualified">
+
+The important one is C<targetNamespace> - I decide to map to the
+L<XML::EPP::Host> namespace, and so I create;
+
+ package XML::EPP::Host::Node;
+ use Moose::Role;
+ sub xmlns { "urn:ietf:params:xml:ns:host-1.0" }
+ use XML::EPP::Common;
+ 1;
+
+Every class I compose this role into will get that XML namespace.
+This affects the default namespace for C<has_element> definitions that
+refer to a given type.  I also include the L<XML::EPP::Common> class
+so that all type definitions are always present.
+
+=head2 ROOT NODE(S)
+
+If your XML language can have only one main element type, then make
+the "XML::Whatever" a normal class.  If the language can have multiple
+elements, use roles.  In the RFC XML Schema appendix, there are found
+the following top-level C<element> definitions:
+
+ <!--
+ Child elements found in EPP commands.
+ -->
+  <element name="check" type="host:mNameType"/>
+  <element name="create" type="host:createType"/>
+  <element name="delete" type="host:sNameType"/>
+  <element name="info" type="host:sNameType"/>
+  <element name="update" type="host:updateType"/>
+
+Then later:
+
+ <!--
+ Child response elements.
+ -->
+  <element name="chkData" type="host:chkDataType"/>
+  <element name="creData" type="host:creDataType"/>
+  <element name="infData" type="host:infDataType"/>
+  <element name="panData" type="host:panDataType"/>
+
+There are 5 request elements and 4 response elements which can be
+used.  In this case, I also want these objects to be types of the
+L<XML::EPP::Plugin> role.
+
+So, I write:
+
+ package XML::EPP::Host;
+ use Moose::Role;
+ with qw(XML::EPP::Plugin PRANG::Graph);
+ 1;
+
+And:
+
+ package XML::EPP::Host::RQ;
+ use Moose::Role;
+ with qw(XML::EPP::Host);
+ sub is_command { 1 }
+ 1;
+
+ package XML::EPP::Host::RS;
+ use Moose::Role;
+ with qw(XML::EPP::Host);
+ sub is_command { 0 }
+ 1;
+
+=head2 CONVERT TOP-LEVEL I<TYPES> TO CLASSES
+
+Then move on to define each sub-type; C<sNameType> seems to indicate a
+single list of items, and C<mNameType> a list.  I decide to call these
+"Item" and "List", and to make them roles because they seem to be
+generic:
+
+ package XML::EPP::Host::Item;
+ # <!--
+ # Child elements of the <delete> and <info> commands.
+ # -->
+ #  <complexType name="sNameType">
+ #    <sequence>
+ #      <element name="name" type="eppcom:labelType"/>
+ #    </sequence>
+ #  </complexType>
+ #
+ use Moose::Role;
+ use PRANG::Graph;
+ has_element 'value' =>
+     is => "ro",
+     isa => "XML::EPP::Common::labelType",
+     ;
+
+ package XML::EPP::Host::List;
+ use Moose::Role;
+ use PRANG::Graph;
+ # <!--
+ # Child element of commands that accept multiple names.
+ # -->
+ # <complexType name="mNameType">
+ #   <sequence>
+ #     <element name="name" type="eppcom:labelType"
+ #      maxOccurs="unbounded"/>
+ #   </sequence>
+ # </complexType>
+ has_element 'members' =>
+     is => "ro",
+     isa => "ArrayRef[XML::EPP::Common::labelType]",
+     ;
+
+Now I can make the C<check>, C<delete> and C<info> messages.
+
+ package XML::EPP::Host::Check;
+ use Moose;
+ use PRANG::Graph;
+ sub root_element { "check" }
+ with
+      'XML::EPP::Host::RQ',
+      'XML::EPP::Host::Node',
+      'XML::EPP::Host::List';
+
+ package XML::EPP::Host::Info;
+ use Moose;
+ use PRANG::Graph;
+ sub root_element { "info" }
+ with
+      'XML::EPP::Host::RQ',
+      'XML::EPP::Host::Node',
+      'XML::EPP::Host::Item';
+
+ package XML::EPP::Host::Delete;
+ use Moose;
+ use PRANG::Graph;
+ sub root_element { "delete" }
+ with
+      'XML::EPP::Host::RQ',
+      'XML::EPP::Host::Node',
+      'XML::EPP::Host::Item';
+
+That should be enough to parse these messages alone.
+
+So we go back and C<use> the message types from the C<XML::EPP::Host>
+package, and we're done:
+
+ package XML::EPP::Host;
+ use Moose::Role;
+ use XML::EPP::Host::Check;
+ use XML::EPP::Host::Delete;
+ use XML::EPP::Host::Info;
+ with qw(XML::EPP::Plugin PRANG::Graph);
+ 1;
+
+Let's try it!
+
+ denix:~/src/XML-EPP$ perl -Mlib=lib t/22-xml-rfc5732-host.t -t "0[137]"
+ 1..9
+ ok 1 - 22-xml-rfc5732-host/rfc-examples/01-check-command.xml - parsed OK
+ ok 2 - 22-xml-rfc5732-host/rfc-examples/01-check-command.xml - emitted OK (30ms)
+ ok 3 - 22-xml-rfc5732-host/rfc-examples/01-check-command.xml - XML output same
+ ok 4 - 22-xml-rfc5732-host/rfc-examples/03-info-command.xml - parsed OK
+ ok 5 - 22-xml-rfc5732-host/rfc-examples/03-info-command.xml - emitted OK (17ms)
+ ok 6 - 22-xml-rfc5732-host/rfc-examples/03-info-command.xml - XML output same
+ ok 7 - 22-xml-rfc5732-host/rfc-examples/07-delete-command.xml - parsed OK
+ ok 8 - 22-xml-rfc5732-host/rfc-examples/07-delete-command.xml - emitted OK (18ms)
+ ok 9 - 22-xml-rfc5732-host/rfc-examples/07-delete-command.xml - XML output same
+ denix:~/src/XML-EPP$ 
+
+Win!  This point corresponds to the git commit called;
+
+ rfc5732: implement <check>, <info>, <delete> commands
+
+In C<XMP-EPP.git>
+
+=cut
+
