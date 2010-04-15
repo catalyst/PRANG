@@ -17,7 +17,7 @@ encountering.  For use as a tutorial, read from start to finish, if
 you like with the history of XML::EPP open in C<gitk> or a similar
 tool.
 
-=head1 GETTING STARTED
+=head1 EXAMPLE - RFC 5732
 
 =head2 MODULE NAMESPACE
 
@@ -305,6 +305,11 @@ L<XML::EPP::Host> we write:
  subtype "XML::EPP::Host::addrStringType"
     => as "PRANG::XMLSchema::token"
     => where { length $_ >= 3 and length $_ <= 45 };
+
+Note the use of the 'token' type from the XML Schema type library,
+available in L<PRANG::XMLSchema::Types>.  There are a number of core
+XML Schema types defined in this library, if you find any which are
+missing please send a patch.
 
 I also do the C<host:ipType>:
 
@@ -653,5 +658,163 @@ Here is the parser in action:
  ok 3 - 22-xml-rfc5732-host/rfc-examples/09-update-command.xml - XML output same
  denix:~/src/XML-EPP$ 
 
-=cut
+The remaining types were implemented in two further commits;
 
+  rfc5730 - corrections to XML::EPP::Common::Reason
+  rfc5732 - implement <check> response (<chkData>)
+  rfc5732 - implement <info> and <create> responses
+  rfc5732 - implement pending action notifications (<panData>) message
+
+None of the methods used for these commits have not been touched on in
+this Guide.
+
+=head1 OTHER XMLSchema CONSTRUCTS TO BE WARY OF
+
+=head2 CONVERT C<E<lt>any namespace="##other"/E<gt>> TO ROLES
+
+The L<XML::EPP::SubCommand> class is a conversion of the
+C<readWriteType> XML Schema definition;
+
+ <!--
+ All other object-centric commands.  EPP doesn't specify the syntax or
+ semantics of object-centric command elements.  The elements MUST be
+ described in detail in another schema specific to the object.
+ -->
+   <complexType name="readWriteType">
+     <sequence>
+       <any namespace="##other"/>
+     </sequence>
+   </complexType>
+
+Each point of other-schema inclusion like this is really a type; XML
+Schema does not have the semantics to specify this.  In this case,
+L<XML::EPP::Plugin> becomes the type:
+
+ package XML::EPP::SubCommand;
+ use Moose;
+ use Moose::Util::TypeConstraints;
+ use PRANG::Graph;
+
+ use XML::EPP::Plugin;
+ has_element "payload" =>
+    is => "rw",
+    isa => "XML::EPP::Plugin",
+    ;
+
+ with "XML::EPP::Node";
+
+ subtype "XML::EPP::readWriteType"
+     => as __PACKAGE__;
+
+ 1;
+
+Once that facility is there, classes can specify that they may be
+included at that point by consuming the L<XML::EPP::Plugin> role.
+
+=head2 CONVERT C<attributeGroup> TO ROLES
+
+No examples yet, but a grouping of attributes as in an
+C<attributeGroup> can be implemented with a role that includes lots of
+C<has_attr> attributes.
+
+=head2 CONVERT C<restriction> TO TYPE CONSTRAINTS
+
+Stuff like this;
+
+  <simpleType name="pwType">
+    <restriction base="token">
+      <minLength value="6"/>
+      <maxLength value="16"/>
+    </restriction>
+  </simpleType>
+
+You can implement as:
+
+  subtype "XML::EPP::pwType"
+      as => "PRANG::XMLSchema::token",
+      where => { length >= 6 and length <= 16 };
+
+Enumerations such as this;
+
+  <simpleType name="transferOpType">
+    <restriction base="token">
+      <enumeration value="approve"/>
+      <enumeration value="cancel"/>
+      <enumeration value="query"/>
+      <enumeration value="reject"/>
+      <enumeration value="request"/>
+    </restriction>
+  </simpleType>
+
+Are much more succinctly described using the C<enum> keyword from
+L<Moose::Util::TypeConstraints>;
+
+ enum "XML::EPP::transferOpType" =>
+     qw(approve cancel query reject request);
+
+The downside of this is that you don't get the default coerce
+behaviour of PRANG::XMLSchema::token, to strip leading and trailing
+whitespace.  To do so, use a real constraint;
+
+ our @tot = qw(approve cancel query reject request);
+ subtype "XML::EPP::transferOpType"
+     => as "PRANG::XMLSchema::token",
+     => where { $_ ~~ @tot };
+
+=head2 CONVERT C<complexType> TO CLASSES
+
+This really belongs earlier in this document, it has been implied from
+the first or second system.  But here are the guidelines;
+
+=over
+
+=item *
+
+Any C<E<lt>attributeE<gt>> sections get converted to C<has_attr>
+attributes.  If the attribute specifies C<use="required">, set the
+Moose C<required =E<gt> 1> attribute property.
+
+=item *
+
+The C<E<lt>sequenceE<gt>> portion is encapsulated by the order of
+definition of C<has_element> attributes in the class.  Be warned that
+when consuming roles, the order of addition of the attributes is not
+currently defined (as of Moose version 1.00 or so).  So, be careful
+when putting more than one C<has_element> in a role.
+
+This may be fixed in a later PRANG release (if possible) or a later
+Moose version.
+
+=item *
+
+Convert each C<E<lt>elementE<gt>> node to a C<has_element> attribute.
+The type of the attribute as passed to C<isa =E<gt>> on the attribute
+should correspond to the type matching the XML Schema type definition.
+
+If the element has the C<minOccurs> or C<maxOccurs>, set C<predicate>,
+C<xml_min> and/or C<xml_max> appropriately - as well as possibly
+making the attribute an ArrayRef type - see L</HANDLING C<minOccurs>
+AND C<maxOccurs>>, above.
+
+
+=back
+
+
+=head2 MORE?
+
+There are probably more XML Schema constructs than this.  If you
+encounter difficulties, please ask for help - see L<PRANG> for
+appropriate channels for this.
+
+=head1 AUTHOR AND LICENCE
+
+This documentation was written by Sam Vilain L<samv@cpan.org>.
+
+Development commissioned by NZ Registry Services, and carried out by
+Catalyst IT - L<http://www.catalyst.net.nz/>
+
+Copyright 2010, NZ Registry Services.  This module is licensed under
+the Artistic License v2.0, which permits relicensing under other Free
+Software licenses.
+
+=cut
