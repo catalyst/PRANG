@@ -250,32 +250,49 @@ method build_graph_node() {
 	# we will be using 'delete' with nodeName, so copy it
 	$nodeName = {%$nodeName};
 
-	my @expect;
-	for my $class ( @expect_type ) {
-		my @xmlns;
-		if ( $self->has_xmlns ) {
-			push @xmlns, (xmlns => $self->xmlns);
+	# figure out the XML namespace of this node and set it on the
+	# attribute
+	my %xmlns_opts;
+	if ( $self->has_xmlns ) {
+		$xmlns_opts{xmlns} = $self->xmlns;
+	}
+	else {
+		my $xmlns = eval { $self->associated_class->name->xmlns } // "";
+		$xmlns_opts{xmlns} = $xmlns
+			if $xmlns;  # FIXME - should *always* set it!
+	}
+	if ( $self->has_xmlns_attr ) {
+		$xmlns_opts{xmlns_attr} = $self->xmlns_attr;
+	}
+	my $prefix_xmlns = sub {
+		my $name = shift;
+		if ( $nodeName_prefix and $name =~ /^(\w+):(\w+)/ ) {
+			my %this_xmlns_opts = %xmlns_opts;
+			my $xmlns = $nodeName_prefix->{$1}
+				or die "unknown prefix '$1' used on attribute ".$self->name." of ".eval{$self->associated_class->name};
+			$this_xmlns_opts{xmlns} = $xmlns;
+			($2, \%this_xmlns_opts);
 		}
 		else {
-			my $xmlns = eval { $self->associated_class->name->xmlns } // "";
-			if ( !eval{ $class->meta->can("marshall_in_element") } ) {
-				my $ok = eval "use $class; 1";
-				if ( !$ok ) {
-					die "problem auto-including class '$class'; exception is: $@";
-				}
-			}
-			if ( !eval{ $class->meta->can("marshall_in_element") } ) {
-				die "'$class' can't marshall in; did you 'use PRANG::Graph'?";
-			}
-			my $class_xmlns = eval { $class->xmlns } // "";
-			if ( $class_xmlns ne $xmlns ) {
-				push @xmlns, (xmlns => $class_xmlns);
-			}
+			($name, \%xmlns_opts);
 		}
+	};
+
+	my @expect;
+	for my $class ( @expect_type ) {
 		my (@names) = grep { $nodeName->{$_} eq $class }
 			keys %$nodeName;
-		if ( $self->has_xmlns_attr ) {
-			push @xmlns, (xmlns_attr => $self->xmlns_attr);
+
+		# auto-load the classes now... save problems later
+		if ( !eval{ $class->meta->can("marshall_in_element") } ) {
+			$DB::single = 1;
+			my $ok = eval "use $class; 1";
+			if ( !$ok ) {
+				die "problem auto-including class '$class'; (hint: did you expect '$class' to be a subtype, but forget to define it before it was used or not use BEGIN { } appropriately?); exception is: $@";
+			}
+		}
+		if ( !eval{ $class->meta->can("marshall_in_element") } ) {
+			die "'$class' can't marshall in; did you 'use PRANG::Graph'?";
 		}
 
 		if ( !@names ) {
@@ -291,22 +308,13 @@ method build_graph_node() {
 		}
 
 		for my $name ( @names ) {
-			my @effective_xmlns = @xmlns;
-			if ( $nodeName_prefix and $name =~ /^(\w+):(\w+)/ ) {
-				my $xmlns = $nodeName_prefix->{$1}
-					or die "unknown prefix '$1' used on attribute ".$self->name." of ".eval{$self->associated_class->name};
-				push @effective_xmlns,
-					xmlns => $xmlns;
-				$name = $2;
-			}
-			else {
-				@effective_xmlns = @xmlns;
-			}
+			my ($nn, $xmlns_args) =
+				$prefix_xmlns->($name);
 			push @expect, PRANG::Graph::Element->new(
-				@effective_xmlns,
+				%$xmlns_args,
 				attrName => $self->name,
 				nodeClass => $class,
-				nodeName => $name,
+				nodeName => $nn,
 			       );
 			delete $nodeName->{$name};
 		}
@@ -320,10 +328,12 @@ method build_graph_node() {
 		# 'Bool' elements are a shorthand for the element
 		# 'maybe' being there.
 		for my $name ( @names ) {
+			my ($nn, $xmlns_args) = $prefix_xmlns->($name);
 			push @expect, PRANG::Graph::Element->new(
+				%$xmlns_args,
 				attrName => $self->name,
 				attIsArray => $expect_many,
-				nodeName => $name,
+				nodeName => $nn,
 			       );
 			delete $nodeName->{$name};
 		}
@@ -346,9 +356,12 @@ method build_graph_node() {
 			}
 			else {
 				# regular XML data style
+				my ($nn, $xmlns_args) =
+					$prefix_xmlns->($name);
 				push @expect, PRANG::Graph::Element->new(
+					%$xmlns_args,
 					attrName => $self->name,
-					nodeName => $name,
+					nodeName => $nn,
 					contents => PRANG::Graph::Text->new,
 				       );
 			}
@@ -550,8 +563,8 @@ the type constraint, and also the predicate.
 If you like, you can also set the C<xmlns> and C<xml_nodeName>
 attribute property, to override the default behaviour, which is to
 assume that the XML element name matches the Moose attribute name, and
-that the XML namespace of the element is that of the I<value> (ie,
-C<$object-E<gt>somechild-E<gt>xmlns>.
+that the XML namespace of the element is that of the enclosing class
+(ie, C<$class-E<gt>xmlns>), if defined.
 
 The B<order> of declaring element attributes is important.  They
 implicitly define a "sequence".  To specify a "choice", you must use a

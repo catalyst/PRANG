@@ -50,7 +50,7 @@ L<XML::EPP::Host> namespace, and so I create;
 
 Every class I compose this role into will get that XML namespace.
 This affects the default namespace for C<has_element> definitions that
-refer to a given type.
+are defined within that class.
 
 I also include the L<XML::EPP::Common> class so that all type
 definitions are always present.  In fact, this had already been built
