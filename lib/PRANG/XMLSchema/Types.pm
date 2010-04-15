@@ -14,6 +14,16 @@ subtype "PRANG::XMLSchema::token"
 		!m{[\t\r\n]|^\s|\s$|\s\s};
 	};
 
+# automatically trim tokens if passed them.
+coerce "PRANG::XMLSchema::token"
+	=> from "Str",
+	=> via {
+		my ($x) = m/\A\s*(.*?)\s*\Z/;
+		$x =~ s{\s+}{ }g;
+		$x;
+	},
+	;
+
 # See https://rt.cpan.org/Ticket/Display.html?id=52309
 # use Regexp::Common qw/URI/;
 subtype "PRANG::XMLSchema::anyURI"
