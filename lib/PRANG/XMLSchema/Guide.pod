@@ -356,9 +356,56 @@ It worked!
 
 This point is:
 
- 
+ rfc5732: implement <create> host message
 
-=head2 
+=head2 USING COERCIONS FOR SIMPLER CONSTRUCTION
+
+The L<Moose::Util::TypeConstraints> functions for coercing between
+types are invaluable for writing easy to use classes.
+
+For instance, if we write this in our C<Create> class, we can pass
+Perl hashes instead of already constructed objects; here is a recipe:
+
+ use Moose::Util::TypeConstraints;
+ coerce __PACKAGE__
+	 => from "Str",
+	 => via { __PACKAGE__->new(value => $_) },
+	 ;
+ coerce __PACKAGE__
+	 => from "HashRef",
+	 => via { __PACKAGE__->new($_) },
+	 ;
+
+In this, it is assumed that if you pass a plain string, to create an
+object with the string in the C<value> field.  Similarly, if a HASH
+reference is passed (C<HashRef> to Moose), then create an object,
+passing that to the C<-E<gt>new> constructor.
+
+Sadly, this does not imply that C<ArrayRef[XML::EPP::Host::Address]>
+with coercion enabled will happily work.  Moose should know this, but
+doesn't currently, so we have to declare a specific rule:
+
+ coerce "ArrayRef[XML::EPP::Host::Address]"
+     => from "ArrayRef[XML::EPP::Host::Address|HashRef|Str]"
+     => via {
+         my @rv = @$_;
+         for ( @rv ) {
+             if ( ref $_ eq "HASH" ) {
+                 $_ = XML::EPP::Host::Address->new($_);
+             }
+             elsif ( !blessed $_ ) {
+                 $_ = XML::EPP::Host::Address->new(
+                     value => $_,
+                        );
+             }
+         }
+         \@rv;
+     },
+     ;
+
+We are now up to
+
+ rfc5732: useful coercions for Address
 
 =cut
 
