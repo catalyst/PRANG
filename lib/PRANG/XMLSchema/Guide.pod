@@ -658,9 +658,8 @@ Here is the parser in action:
  ok 3 - 22-xml-rfc5732-host/rfc-examples/09-update-command.xml - XML output same
  denix:~/src/XML-EPP$ 
 
-The remaining types were implemented in two further commits;
+The remaining types were implemented in three further commits;
 
-  rfc5730 - corrections to XML::EPP::Common::Reason
   rfc5732 - implement <check> response (<chkData>)
   rfc5732 - implement <info> and <create> responses
   rfc5732 - implement pending action notifications (<panData>) message
