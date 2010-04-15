@@ -74,6 +74,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 	if ( ref $value ) {
 		$value = $value->[$slot];
 	}
+	return unless length($value//"");
 	my $doc = $node->ownerDocument;
 	my $tn = $doc->createTextNode($value);
 	$node->appendChild($tn);
