@@ -4,6 +4,29 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.07 - 26 Apr 2010
+
+=over
+
+=item *
+
+New documentation B<PRANG::XMLSchema::Guide> which provides
+information on manually converting XML Schema specifications to PRANG
+classes.
+
+=item *
+
+Add a coerce rule for C<PRANG::XMLSchema::token> types which
+normalizes whitespace on input values if enabled.
+
+=item *
+
+The C<xmlns> Class property now affects all sub-properties, but not
+the including element.  This mirrors the default behaviour with XML
+Schema.
+
+=back
+
 =head2 VERSION 0.06 - 14 Apr 2010
 
 =over
