@@ -43,6 +43,8 @@ subtype "PRANG::XMLSchema::dateTime"
 	=> as "Str"
 	=> where {
 		# from the XMLSchema spec... it'll do for now ;)
+		# how on earth is one supposed to encode Pacific/Guam
+		# or Pacific/Saipan dates before 1845 with this regex?
 		m{
 -?([1-9][0-9]{3,}|0[0-9]{3})
 -(0[1-9]|1[0-2])
