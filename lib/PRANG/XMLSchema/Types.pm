@@ -46,11 +46,40 @@ subtype "PRANG::XMLSchema::dateTime"
 		# how on earth is one supposed to encode Pacific/Guam
 		# or Pacific/Saipan dates before 1845 with this regex?
 		m{
+^
 -?([1-9][0-9]{3,}|0[0-9]{3})
 -(0[1-9]|1[0-2])
 -(0[1-9]|[12][0-9]|3[01])
 T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\.[0-9]+)?|(24:00:00(\.0+)?))
 (?:Z|(?:\+|-)(?:(?:0[0-9]|1[0-3]):[0-5][0-9]|14:00))?
+$
+	 }x;
+	};
+
+subtype "PRANG::XMLSchema::time"
+	=> as "Str"
+	=> where {
+		# from the XMLSchema spec... it'll do for now ;)
+		m{
+^
+(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\.[0-9]+)?|(24:00:00(\.0+)?))
+(?:Z|(?:\+|-)(?:(?:0[0-9]|1[0-3]):[0-5][0-9]|14:00))?
+$
+	 }x;
+	};
+
+subtype "PRANG::XMLSchema::date"
+	=> as "Str"
+	=> where {
+		# from the XMLSchema spec... it'll do for now ;)
+		# XXX: Note, since the XML Spec bizarrely has Timezones on Dates,
+		# we have chosen to ignore it (since it is optional anyway)
+		m{
+^
+-?([1-9][0-9]{3,}|0[0-9]{3})
+-(0[1-9]|1[0-2])
+-(0[1-9]|[12][0-9]|3[01])
+$
 	 }x;
 	};
 
