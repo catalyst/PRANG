@@ -5,7 +5,7 @@ use Moose;
 use MooseX::Method::Signatures;
 use Moose::Util::TypeConstraints;
 
-use XML::LibXML 1.69;
+use XML::LibXML 1.65;
 use PRANG::Util qw(types_of);
 
 BEGIN {
