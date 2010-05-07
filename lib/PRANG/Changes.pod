@@ -4,6 +4,11 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.09 - 7 May 2010
+
+No changes, just a re-bundling, as an included module was not the
+release version.
+
 =head2 VERSION 0.08 - 7 May 2010
 
 =over
