@@ -20,8 +20,15 @@ requires        ("Moose" => 0.92);
 requires        ("Set::Object" => 1.09);
 requires        ("XML::LibXML" => 1.65);
 requires        ("MooseX::Method::Signatures" => 0.17);
-test_requires   ("XML::Compare" => 0.02);
-test_requires   ("Scriptalicious" => 0);
-test_requires   ("YAML" => 0);
+
+my @test_requires = (
+	"XML::Compare" => 0.02,
+	"Scriptalicious" => 1.16,
+	"YAML" => 0,
+	);
+while (my ($module, $version) = splice @test_requires, 0, 2) {
+	test_requires $module => $version;
+	include $module => $version;
+}
 
 &WriteAll;

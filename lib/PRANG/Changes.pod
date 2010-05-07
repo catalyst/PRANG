@@ -4,6 +4,24 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.08 - 7 May 2010
+
+=over
+
+=item *
+
+Distribution now includes all the modules required only for the tests.
+This, along with a bugfix in L<Scriptalicious>, should hopefully close
+the last of the CPAN testers failures for 0.07.
+
+=item *
+
+An addition to L<PRANG::XMLSchema::Types> Str subtypes: C<date>,
+C<time>, and tightening of the C<dateTime> (it was not anchored
+before, so accepted any string containing a dateTime).
+
+=back
+
 =head2 VERSION 0.07 - 26 Apr 2010
 
 =over
