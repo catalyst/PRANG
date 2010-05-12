@@ -27,6 +27,10 @@ has 'xmlns_attr' =>
 	predicate => "has_xmlns_attr",
 	;
 
+override legal_options_for_inheritance => sub {
+	(super, qw(xmlns xml_name xml_required xmlns_attr));
+};
+
 package Moose::Meta::Attribute::Custom::Trait::PRANG::Attr;
 sub register_implementation {
 	"PRANG::Graph::Meta::Attr";

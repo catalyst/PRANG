@@ -514,6 +514,11 @@ method build_graph_node() {
 	return $node;
 }
 
+override legal_options_for_inheritance => sub {
+	(super, qw(xmlns xmlns_attr xml_nodeName xml_nodeName_prefix
+		   xml_nodeName_attr xml_required xml_min xml_max));
+};
+
 package Moose::Meta::Attribute::Custom::Trait::PRANG::Element;
 sub register_implementation {
 	"PRANG::Graph::Meta::Element";
@@ -582,6 +587,21 @@ module knows about sub-typing, and so if you specify a sub-type of one
 of these types, then the behaviour will be as for the type on this
 list.  Only a limited subset of higher-order/parametric/structured
 types are permitted as described.
+
+B<new in PRANG 0.10:> you can now override most options in
+sub-classes, like so:
+
+  package Foo;
+  use Moose;
+  use PRANG::Graph;
+  extends 'bar';
+  has "+someattr" =>
+      xml_required => 1,
+      ;
+
+Unfortunately, the order of declaration of elements is not preserved
+when inheriting (as with role composition), so this is not generally
+as nice an idea as you might think.
 
 =over 4
 
