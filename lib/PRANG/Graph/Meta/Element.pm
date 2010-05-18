@@ -139,7 +139,7 @@ method build_graph_node() {
 			push @st, @{ $x->parents };
 		}
 		elsif ( $x->isa("Moose::Meta::TypeConstraint::Enum") ) {
-			$expect_simple = 1;
+			push @st, $x->parent;
 		}
 		elsif ( $x->isa("Moose::Meta::TypeConstraint::Role") ) {
 			# likely to be a wildcard.

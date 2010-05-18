@@ -3,6 +3,7 @@ use Moose;
 sub xmlns {}
 sub root_element { "Octothorpe" }
 use PRANG::Graph;
+use Moose::Util::TypeConstraints;
 # class tests mixed graph structure:
 #   Seq -> Quant -> Element
 #   Seq -> Element
@@ -51,6 +52,12 @@ has_element "number_sign" =>
 	is => "ro",
 	isa => "InvertedQuestionMark",
 	xml_required => 0,
+	;
+
+has_element "permille_sign" =>
+	is => "ro",
+	isa => enum([qw(foo bar baz)]),
+	xml_min => 0,
 	;
 
 with "PRANG::Graph";
