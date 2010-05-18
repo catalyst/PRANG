@@ -4,6 +4,20 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.10 - ?? May 2010
+
+=over
+
+=item *
+
+Fix enum support [reported by Heiko Jansen]
+
+=item *
+
+Add support for libxml indenting on to_xml [Heiko Jansen]
+
+=back
+
 =head2 VERSION 0.09 - 7 May 2010
 
 No changes, just a re-bundling, as an included module was not the
