@@ -204,9 +204,9 @@ method to_xml_doc( PRANG::Graph $item ) {
 	$doc;
 }
 
-method to_xml( PRANG::Graph $item ) {
+method to_xml( PRANG::Graph $item, Int $format = 0 ) {
 	my $document = $self->to_xml_doc($item);
-	$document->toString;
+	$document->toString($format);
 }
 
 1;

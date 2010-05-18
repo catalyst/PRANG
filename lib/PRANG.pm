@@ -87,7 +87,8 @@ PRANG - XML graph engine - XML to Moose objects and back!
      );
 
  # step 4b.  emit!
- print $object->to_xml;
+ $format = 1;
+ print $object->to_xml($format);
 
 =head1 DESCRIPTION
 
@@ -152,7 +153,7 @@ release, once the "parse" role method is made to work correctly.
 =item B<marshall XML out>
 
 A L<PRANG::Graph> structure also has a C<to_xml> method, which emits
-XML.
+XML (optionally indented).
 
 =back
 
