@@ -58,6 +58,7 @@ has_element "permille_sign" =>
 	is => "ro",
 	isa => enum([qw(foo bar baz)]),
 	xml_min => 0,
+	xml_required => 0,
 	;
 
 with "PRANG::Graph";
