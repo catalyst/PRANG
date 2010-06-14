@@ -6,6 +6,8 @@ use MooseX::Method::Signatures;
 use Moose::Util::TypeConstraints;
 use XML::LibXML;
 
+with 'MooseX::StrictConstructor::Role::Object';
+
 has 'xml_attr' =>
 	isa => "HashRef[HashRef[PRANG::Graph::Meta::Attr]]",
 	is => "ro",
