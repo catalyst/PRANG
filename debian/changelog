@@ -1,3 +1,9 @@
+libprang-perl (0.09-11-g5857f84-1) unstable; urgency=low
+
+  * Update to latest git version
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Fri, 25 Jun 2010 15:58:01 +1200
+
 libprang-perl (0.09-1) unstable; urgency=low
 
   * new PRANG release
