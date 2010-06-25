@@ -1,0 +1,17 @@
+libprang-perl (0.09-1) unstable; urgency=low
+
+  * new PRANG release
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Fri, 07 May 2010 16:27:40 +1200
+
+libprang-perl (0.07-4-gbe0e610-1) unstable; urgency=low
+
+  * Note this isn't the same as the CPAN release
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Fri, 30 Apr 2010 15:01:18 +1200
+
+libprang-perl (0.07-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Fri, 30 Apr 2010 14:35:36 +1200
