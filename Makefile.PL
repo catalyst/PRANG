@@ -27,8 +27,8 @@ my @test_requires = (
 	"YAML" => 0,
 	);
 while (my ($module, $version) = splice @test_requires, 0, 2) {
-	test_requires $module => $version;
-	include $module => $version;
+	test_requires($module => $version);
+	include($module => $version);
 }
 
 &WriteAll;
