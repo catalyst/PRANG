@@ -16,6 +16,16 @@ Fix enum support [reported by Heiko Jansen]
 
 Add support for libxml indenting on to_xml [Heiko Jansen]
 
+=item *
+
+Specifying C<xml_min =E<gt> 0> on an element attribute is now
+equivalent to C<xml_required =E<gt> 0> [Sam Vilain]
+
+=item *
+
+New module L<PRANG::Coerce> for creating coercion rules which are
+convenient for typical PRANG applications [Andy Chilton]
+
 =back
 
 =head2 VERSION 0.09 - 7 May 2010
