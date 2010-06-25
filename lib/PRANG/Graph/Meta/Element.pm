@@ -92,7 +92,8 @@ method build_graph_node() {
 	if ( $self->has_xml_required ) {
 		$expect_one = $self->xml_required;
 	}
-	elsif ( $self->has_predicate ) {
+	elsif ( $self->has_predicate or
+			$self->has_xml_min and !$self->xml_min ) {
 		$expect_one = 0;
 	}
 	else {
@@ -122,6 +123,13 @@ method build_graph_node() {
 		$expect_many = 1;
 
 		$t_c = $t_c->type_parameter;
+	}
+	elsif ( $self->has_xml_max and $self->xml_max > 1 or
+			$self->has_xml_min and $self->xml_min > 1
+	       ) {
+		$self->error(
+	"min/max specified as >1, but type constraint is not an ArrayRef",
+		       );
 	}
 
 	# ok.  now let's walk the type constraint tree, and look for
