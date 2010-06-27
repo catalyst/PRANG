@@ -28,6 +28,9 @@ these form the PRANG manual.  However, the cookbook is designed to
 give quick examples to get up to speed with what you need to know to
 effectively use PRANG.
 
+The manual pages for the cookbook do not contain the content; see the
+actual source for the examples.
+
 =head1 RECIPES
 
 =head2 Basic PRANG
