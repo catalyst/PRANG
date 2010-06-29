@@ -4,7 +4,7 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
-=head2 VERSION 0.10 - 25 June 2010
+=head2 VERSION 0.10 - 27 June 2010
 
 =over
 
@@ -25,6 +25,11 @@ equivalent to C<xml_required =E<gt> 0> [Sam Vilain]
 
 New module L<PRANG::Coerce> for creating coercion rules which are
 convenient for typical PRANG applications [Andy Chilton]
+
+=item *
+
+Support C<YourXML::Language-E<gt>parse_file> and C<-E<gt>parse_fh> for
+convenience's sake [Sam Vilain]
 
 =back
 

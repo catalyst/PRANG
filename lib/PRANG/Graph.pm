@@ -55,7 +55,17 @@ method marshaller($inv:) { #returns PRANG::Marshaller {
 }
 
 method parse($class: Str $xml) {
-	my $instance = $class->marshaller->parse($xml);
+	my $instance = $class->marshaller->parse( xml => $xml );
+	return $instance;
+}
+
+method parse_file($class: Str $filename) {
+	my $instance = $class->marshaller->parse( filename => $filename );
+	return $instance;
+}
+
+method parse_fh($class: GlobRef $fh) {
+	my $instance = $class->marshaller->parse( fh => $fh );
 	return $instance;
 }
 
@@ -104,6 +114,10 @@ PRANG::Graph - XML mapping by peppering Moose attributes
 
  # loading XML to data structures
  my $parsed = My::XML::Language->parse($xml);
+
+ # alternatives
+ $parsed = My::XML::Language->parse_file($filename);
+ $parsed = My::XML::Language->parse_fh($fh);
 
  # converting back to XML
  print $parsed->to_xml;

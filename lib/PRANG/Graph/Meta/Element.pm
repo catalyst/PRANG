@@ -546,7 +546,7 @@ PRANG::Graph::Meta::Element - metaclass metarole for XML elements
  # equivalent alternative - plays well with others!
  has 'somechild' =>
     is => "rw",
-    traits => [qr/PRANG::Element/],
+    traits => [qw/PRANG::Element/],
     isa => "Some::Type",
     xml_required => 0,
     ;

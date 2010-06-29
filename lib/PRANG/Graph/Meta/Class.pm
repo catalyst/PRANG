@@ -428,11 +428,16 @@ PRANG::Graph::Meta::Class - metaclass metarole for PRANG-enabled classes
 
 =head1 DESCRIPTION
 
-This role effectively defines class properties and methods for PRANG
-classes' meta objects.  ie, the methods it defines are all to be found
-in C<YourClass-E<gt>meta>, not C<YourClass>.
+This role defines class properties and methods for PRANG classes' meta
+objects.  ie, the methods it defines are all to be found in
+C<YourClass-E<gt>meta>, not C<YourClass>.
 
-The 
+The L<PRANG::Graph::Meta::Class> object is the centre of the state
+machine which defines the parsing and emitting rules for your classes.
+In other words, the I<XML Graph> (see L<PRANG>).  Each one corresponds
+to an XML element (though not all XML elements will require a full
+object class), and via these objects can be found the lists of
+elements and attributes which define the XML structure.
 
 =head1 ATTRIBUTES
 
@@ -475,7 +480,8 @@ constructed by a transform on the B<xml_elements> property.
 =head2 B<marshall_in_element($node, $ctx)>
 
 These methods are the parsing machinery, their API is quite subject to
-change.
+change; the methods provided by the L<PRANG::Graph> role are what you
+should be using, unless you are writing a PRANG extension.
 
 =head2 B<add_xml_attr($item, $node, $ctx)>
 
