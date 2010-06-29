@@ -1,3 +1,9 @@
+libprang-perl (0.10-1) unstable; urgency=low
+
+  * Update version number to 0.10 to reflect the code
+
+ -- Andrew Chilton <andychilton@gmail.com>  Tue, 29 Jun 2010 13:44:54 +1200
+
 libprang-perl (0.09-12-g249e7d2-1) unstable; urgency=low
 
   * Update to latest git version
