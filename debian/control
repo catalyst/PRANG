@@ -9,7 +9,7 @@ Homepage: http://search.cpan.org/dist/PRANG/
 
 Package: libprang-perl
 Architecture: all
-Depends: perl (>= 5.01), ${misc:Depends}, libset-object-perl (>= 1.09), libxml-libxml-perl (>= 1.65), libmoose-perl (>= 0.92), libmoosex-method-signatures-perl (>= 0.30)
+Depends: perl (>= 5.01), ${misc:Depends}, libset-object-perl (>= 1.09), libxml-libxml-perl (>= 1.65), libmoose-perl (>= 0.92), libmoosex-method-signatures-perl (>= 0.29)
 Description: Moose XML Processor
  PRANG is an XML Graph engine, which provides post-schema
  validation objects (PSVO).
