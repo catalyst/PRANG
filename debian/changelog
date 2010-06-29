@@ -1,3 +1,9 @@
+libprang-perl (0.10-1) lucid; urgency=low
+
+  * Update to new PRANG release
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Tue, 29 Jun 2010 15:37:41 +1200
+
 libprang-perl (0.09-12-g249e7d2-1) unstable; urgency=low
 
   * Update to latest git version
