@@ -4,6 +4,19 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.11 - ?? 2010
+
+=over
+
+=item *
+
+Fixed a bug in L<PRANG::Graph::Meta::Element> which sorted the classes
+badly when using inheritance.  There is still a design issue to be
+solved, if you want to use inheritance and not put new elements on the
+end of the sequence, or if you want to use roles.
+
+=back
+
 =head2 VERSION 0.10 - 27 June 2010
 
 =over
