@@ -45,9 +45,10 @@ has 'xml_elements' =>
 					$e_c_does{$parent}{$child} = 0;
 				}
 				else {
+					my $cdp = $child->does($parent) ||
+						$child->isa($parent);
 					$e_c_does{$parent}{$child} =
-						( $child->does($parent)
-							  ? 1 : -1 );
+						( $cdp ? -1 : 1 );
 				}
 			}
 		}
