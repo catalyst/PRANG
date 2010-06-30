@@ -293,7 +293,6 @@ method build_graph_node() {
 
 		# auto-load the classes now... save problems later
 		if ( !eval{ $class->meta->can("marshall_in_element") } ) {
-			$DB::single = 1;
 			my $ok = eval "use $class; 1";
 			if ( !$ok ) {
 				die "problem auto-including class '$class'; (hint: did you expect '$class' to be a subtype, but forget to define it before it was used or not use BEGIN { } appropriately?); exception is: $@";
