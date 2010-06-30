@@ -1,3 +1,9 @@
+libprang-perl (0.10.1-1) lucid; urgency=low
+
+  * Update with new version
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Wed, 30 Jun 2010 18:03:06 +1200
+
 libprang-perl (0.10-2) lucid; urgency=low
 
   * Relax version requirements for Ubuntu Lucid
