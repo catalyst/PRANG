@@ -1,3 +1,9 @@
+libprang-perl (0.10_02-1) lucid; urgency=low
+
+  * Update with new version
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Thu, 01 Jul 2010 18:17:31 +1200
+
 libprang-perl (0.10.1-1) lucid; urgency=low
 
   * Update with new version
