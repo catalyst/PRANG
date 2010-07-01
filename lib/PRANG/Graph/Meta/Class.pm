@@ -171,6 +171,11 @@ method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::
 				$xmlns
 			       );
 		}
+		elsif ( $xmlns =~ m{^\w+://\w+\.w3\.org/.*schema}i and
+				$attr->localname =~ m{schema}i ) {
+			# they said "schema" twice, they must be mad.
+			# ignore their craven input.
+		}
 		else {
 			# fail.
 			$context->exception("invalid attribute '".$attr->name."'");
