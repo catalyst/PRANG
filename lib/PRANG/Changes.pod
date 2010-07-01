@@ -15,6 +15,12 @@ badly when using inheritance.  There is still a design issue to be
 solved, if you want to use inheritance and not put new elements on the
 end of the sequence, or if you want to use roles.
 
+=item *
+
+PRANG now happily ignores XML Schema instance C<schemaLocation> and
+C<noNamespaceSchemaLocation> attributes on incoming documents.  They
+are only hints for running unconfigured XML Schema validators anyway.
+
 =back
 
 =head2 VERSION 0.10 - 27 June 2010
