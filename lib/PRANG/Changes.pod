@@ -4,9 +4,20 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
-=head2 VERSION 0.11 - ?? 2010
+=head2 VERSION 0.11 - 12 July 2010
 
 =over
+
+=item *
+
+Ignore xsi:schemaLocation; it has no useful meaning.
+    
+xsi:schemaLocation describes "hints as to the physical location of schema
+documents which may be used for ‘assessment’" - ie, it is a hint to a local
+validator as to which schema file contains the XML Schema definition.  On
+XML documents which are transmitted, it is somewhere between a potential
+security risk and totally worthless.  See
+http://www.w3.org/TR/xmlschema-1/#schema-loc for the full story.
 
 =item *
 
