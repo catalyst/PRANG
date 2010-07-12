@@ -22,7 +22,7 @@ requires        ("XML::LibXML" => 1.65);
 requires        ("MooseX::Method::Signatures" => 0.17);
 
 my @test_requires = (
-	"XML::Compare" => 0.02,
+	"XML::Compare" => 0.04,
 	"Scriptalicious" => 1.16,
 	"YAML" => 0,
 	);
