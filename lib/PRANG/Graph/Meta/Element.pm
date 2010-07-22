@@ -73,7 +73,7 @@ has 'graph_node' =>
 use constant HIGHER_ORDER_TYPE =>
 	"Moose::Meta::TypeConstraint::Parameterized";
 
-method error(Str $message) {
+method _error(Str $message) {
 	my $class = $self->associated_class;
 	my $context = " (Element: ";
 	if ( $class ) {
@@ -83,7 +83,15 @@ method error(Str $message) {
 		$context .= "(unassociated)";
 	}
 	$context .= "/".$self->name.") ";
-	die $message.$context;
+	$message.$context;
+}
+
+method error(Str $message) {
+	die $self->_error($message);
+}
+
+method warn_of(Str $message) {
+	warn $self->_error($message)."\n";
 }
 
 method build_graph_node() {
@@ -489,6 +497,14 @@ method build_graph_node() {
 
 	if ( $expect_bool ) {
 		$expect_one = 0;
+	}
+	if ( $expect_one and !$self->is_required ) {
+		$self->warn_of(
+"expected element is not required, this can cause errors on marshall out"
+		       );
+		$self->meta->find_attribute_by_name("required")->set_value(
+			$self, 1,
+		       );
 	}
 
 	# deal with limits
