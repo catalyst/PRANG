@@ -16,6 +16,7 @@ has_element "hyphen" =>
 has_element "colon" =>
 	is => "ro",
 	isa => "Str",
+	required => 1,
 	;
 has_element "apostrophe" =>
 	is => "ro",
@@ -89,6 +90,7 @@ use PRANG::Graph;
 has_element "solidus" =>
 	is => "ro",
 	isa => "Octothorpe|Int",
+	required => 1,
 	xml_nodeName => {
 		"braces" => "Int",
 		"parens" => "Octothorpe",
@@ -108,6 +110,7 @@ has_element "bullet" =>
 	is => "ro",
 	isa => "ArrayRef[Str|Int]",
 	xml_max => 5,
+	required => 1,
 	xml_nodeName => {
 		"umlout" => "Int",
 		"guillemets" => "Str",
@@ -176,6 +179,7 @@ has 'currency_ns' =>
 has_element "fishhooks" =>
 	is => "ro",
 	isa => "Deaeresis",
+	required => 1,
 	;
 
 package SectionMark;
@@ -194,6 +198,7 @@ use PRANG::Graph;
 has_element "double_angle_quotes" =>
 	is => "ro",
 	isa => "ArrayRef[Ampersand|Str|SectionMark]",
+	required => 1,
 	xml_nodeName => {
 		"" => "Str",
 		"interrobang" => "Ampersand",

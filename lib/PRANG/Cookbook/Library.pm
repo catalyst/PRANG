@@ -11,6 +11,7 @@ has_element 'book' =>
 	is => 'rw',
 	isa => 'ArrayRef[PRANG::Cookbook::Book]',
 	xml_required => 1,
+	required => 1,
 	;
 
 sub root_element { 'library' }

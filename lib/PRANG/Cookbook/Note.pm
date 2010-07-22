@@ -20,6 +20,7 @@ has_element 'from' =>
 	is => 'rw',
 	isa => 'Str',
 	xml_required => 1,
+	required => 1,
 	;
 
 has_element 'to' =>
@@ -27,6 +28,7 @@ has_element 'to' =>
 	is => 'rw',
 	isa => 'Str',
 	xml_required => 1,
+	required => 1,
 	;
 
 has_element 'sent' =>
@@ -48,6 +50,7 @@ has_element 'subject' =>
 	is => 'rw',
 	isa => 'Str',
 	xml_required => 1,
+	required => 1,
 	;
 
 has_element 'body' =>
