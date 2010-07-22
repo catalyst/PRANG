@@ -1,3 +1,9 @@
+libprang-perl (0.11.2) lucid; urgency=low
+
+  * dch
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Thu, 22 Jul 2010 17:38:59 +1200
+
 libprang-perl (0.11.1) lucid; urgency=low
 
   * dch properly

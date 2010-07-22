@@ -10,8 +10,9 @@ full list of changes, refer to the git history.
 
 =item *
 
-Not setting 'required' on element attributes which are explicitly or
-implicitly required using C<xml_min>, C<xml_required>, etc is now
+Not setting 'required' or 'default' on complex element attributes (ie,
+attributes which contain another node), and which are explicitly or
+implicitly required - using C<xml_min>, C<xml_required>, etc - is now
 considered a declaration error and produces a warning.
 
 =back

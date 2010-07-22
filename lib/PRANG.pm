@@ -1,7 +1,7 @@
 
 package PRANG;
 
-our $VERSION = "0.11_01";
+our $VERSION = "0.11_02";
 
 1;
 
