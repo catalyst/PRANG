@@ -249,16 +249,13 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		# now proceed with contents...
 		if ( my $class = $self->nodeClass ) {
 			my $m;
-			if ( eval { $value->isa($class) }) {
+			if ( !defined $value ) {
+				$ctx->exception("required element not set");
+			}
+			elsif ( eval { $value->isa($class) }) {
 				$m = $ctx->base->get($class);
 			}
-			if ( !$m and blessed $value ) {
-				# this actually indicates a type
-				# error.  currently it is required for
-				# the Whatever mapping.
-				$m = PRANG::Marshaller->get(ref $value);
-			}
-			if ( !$m and $value->isa("XML::LibXML::Element") ) {
+			elsif ( eval{$value->isa("XML::LibXML::Element")} ) {
 				for my $att ( $value->attributes ) {
 					$nn->setAttribute(
 						$att->localname,
@@ -270,10 +267,20 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 					$nn->appendChild($nn2);
 				}
 			}
-			else {
-				$ctx->exception("tried to serialize unblessed reference")
+			elsif ( blessed $value ) {
+				# this actually indicates a type
+				# error.  currently it is required for
+				# the Whatever mapping.
+				$m = PRANG::Marshaller->get(ref $value);
+			}
+
+			if ( $m ) {
+				$ctx->exception("tried to serialize unblessed value $value")
 					if !blessed $value;
 				$m->to_libxml($value, $nn, $ctx);
+			}
+			else {
+				$ctx->exception("no marshaller for '$value'");
 			}
 		}
 		elsif ( $self->has_contents and defined $value ) {
