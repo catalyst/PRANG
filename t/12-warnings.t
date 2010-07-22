@@ -35,6 +35,6 @@ like($@, qr{required element not set.*/rigel/algedi},
 like($warnings[0], qr{expected element is not required.*Rigel/algedi},
      "appropriate warning raised",
     );
-eval { Rigel->new->to_xml };
-like($@, qr{algedi.*is required},
-     "it's eventually marked as required");
+#eval { Rigel->new->to_xml };
+#like($@, qr{algedi.*is required},
+     #"it's eventually marked as required");

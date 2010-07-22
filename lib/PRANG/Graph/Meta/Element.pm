@@ -502,9 +502,10 @@ method build_graph_node() {
 		$self->warn_of(
 "expected element is not required, this can cause errors on marshall out"
 		       );
-		$self->meta->find_attribute_by_name("required")->set_value(
-			$self, 1,
-		       );
+		# this is probably a bit harsh.
+		#$self->meta->find_attribute_by_name("required")->set_value(
+		#	$self, 1,
+		#	);
 	}
 
 	# deal with limits
