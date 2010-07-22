@@ -4,6 +4,18 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.12 - ? July 2010
+
+=over
+
+=item *
+
+Not setting 'required' on element attributes which are explicitly or
+implicitly required using C<xml_min>, C<xml_required>, etc is now
+considered a declaration error and produces a warning.
+
+=back
+
 =head2 VERSION 0.11 - 12 July 2010
 
 =over
