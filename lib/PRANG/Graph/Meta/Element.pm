@@ -498,7 +498,8 @@ method build_graph_node() {
 	if ( $expect_bool ) {
 		$expect_one = 0;
 	}
-	if ( $expect_one and !$self->is_required ) {
+	if ( $expect_one and !$expect_simple and
+		     !$self->is_required and !$self->has_default ) {
 		$self->warn_of(
 "expected element is not required, this can cause errors on marshall out"
 		       );
