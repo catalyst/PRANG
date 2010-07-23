@@ -256,16 +256,29 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 				$m = $ctx->base->get($class);
 			}
 			elsif ( eval{$value->isa("XML::LibXML::Element")} ) {
-				for my $att ( $value->attributes ) {
-					$nn->setAttribute(
-						$att->localname,
-						$att->value,
-					       );
+				if ( $value->localname eq $nn->localname and
+				     $value->namespaceURI eq $nn->namespaceURI
+				     ) {
+					my $nn2 = $value->cloneNode(1);
+					$node->appendChild($nn2);
+					$node->removeChild($nn);
 				}
-				for my $child ( $value->childNodes ) {
-					my $nn2 = $child->cloneNode;
-					$nn->appendChild($nn2);
+				else {
+					# it's just not safe to set
+					# the nodeName after the fact,
+					# so copy the children across.
+					for my $att ( $value->attributes ) {
+						$nn->setAttribute(
+							$att->localname,
+							$att->value,
+							);
+					}
+					for my $child ( $value->childNodes ) {
+						my $nn2 = $child->cloneNode;
+						$nn->appendChild($nn2);
+					}
 				}
+				$m = "ok";
 			}
 			elsif ( blessed $value ) {
 				# this actually indicates a type
@@ -274,10 +287,13 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 				$m = PRANG::Marshaller->get(ref $value);
 			}
 
-			if ( $m ) {
+			if ( $m and blessed $m ) {
 				$ctx->exception("tried to serialize unblessed value $value")
 					if !blessed $value;
 				$m->to_libxml($value, $nn, $ctx);
+			}
+			elsif ( $m ) {
+				# allow value-based code above to drop through
 			}
 			else {
 				$ctx->exception("no marshaller for '$value'");
