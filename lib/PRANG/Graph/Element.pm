@@ -257,7 +257,8 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 			}
 			elsif ( eval{$value->isa("XML::LibXML::Element")} ) {
 				if ( $value->localname eq $nn->localname and
-				     $value->namespaceURI eq $nn->namespaceURI
+				     ($value->namespaceURI||"") eq
+				     ($xmlns||"")
 				     ) {
 					my $nn2 = $value->cloneNode(1);
 					$node->appendChild($nn2);
@@ -268,13 +269,14 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 					# the nodeName after the fact,
 					# so copy the children across.
 					for my $att ( $value->attributes ) {
+						next if $att->isa("XML::LibXML::Namespace");
 						$nn->setAttribute(
 							$att->localname,
 							$att->value,
 							);
 					}
 					for my $child ( $value->childNodes ) {
-						my $nn2 = $child->cloneNode;
+						my $nn2 = $child->cloneNode(1);
 						$nn->appendChild($nn2);
 					}
 				}
