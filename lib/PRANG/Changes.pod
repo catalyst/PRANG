@@ -10,6 +10,13 @@ full list of changes, refer to the git history.
 
 =item *
 
+If PRANG is marshalling out a value and it finds an
+L<XML::LibXML::Element> there, it will now happily just throw the
+document fragment into the document being exported.  Of course, you
+probably had to try quite hard to do that...
+
+=item *
+
 Not setting 'required' or 'default' on complex element attributes (ie,
 attributes which contain another node), and which are explicitly or
 implicitly required - using C<xml_min>, C<xml_required>, etc - is now
