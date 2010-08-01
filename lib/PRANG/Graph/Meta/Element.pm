@@ -87,7 +87,7 @@ method _error(Str $message) {
 }
 
 method error(Str $message) {
-	die $self->_error($message);
+	confess $self->_error($message);
 }
 
 method warn_of(Str $message) {
