@@ -70,6 +70,11 @@ has 'graph_node' =>
 	},
 	;
 
+has "_item_tc" =>
+	is => "rw",
+	isa => "Moose::Meta::TypeConstraint",
+	;
+
 use constant HIGHER_ORDER_TYPE =>
 	"Moose::Meta::TypeConstraint::Parameterized";
 
@@ -139,6 +144,8 @@ method build_graph_node() {
 	"min/max specified as >1, but type constraint is not an ArrayRef",
 		       );
 	}
+
+	$self->_item_tc($t_c);
 
 	# ok.  now let's walk the type constraint tree, and look for
 	# types

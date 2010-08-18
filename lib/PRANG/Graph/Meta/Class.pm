@@ -141,6 +141,15 @@ method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::
 		if ( $meta_att ) {
 			# sweet, it's ok
 			my $att_name = $meta_att->name;
+			# check the type constraint
+			if ( my $tc = $meta_att->type_constraint and !$meta_att->xml_isa ) {
+				if ( ! $tc->check($attr->value) ) {
+					$context->exception(
+						"invalid value of attribute ".$attr->nodeName,
+						$attr->parentNode,
+					       );
+				}
+			}
 			add_to_list($rv{$att_name}, $attr->value);
 		}
 		elsif ( $meta_att = $attributes->{"*"}{$attr->localname} ) {
@@ -184,10 +193,12 @@ method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::
 	(%rv);
 }
 
+use JSON;
+
 method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph::Context $context ) {
 	my $graph = $self->graph;
 
-	my (%init_args, %init_arg_names, %init_arg_xmlns);
+	my (%init_args, %init_arg_names, %init_arg_xmlns, %init_arg_nodes);
 	my @rv;
 	my @nodes = grep { !( $_->isa("XML::LibXML::Text")
 				      and $_->data =~ /\A\s*\Z/) }
@@ -203,7 +214,19 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 				$input_node,
 			       );
 		}
+		my $meta_att = $self->find_attribute_by_name($key);
+		if ( ! $meta_att->_item_tc->check($value) ) {
+			$context = $context->next_ctx(
+				$input_node->namespaceURI,
+				$input_node->localname,
+			       );
+			$context->exception(
+				"bad value '$value'",
+				$input_node
+			       );
+		}
 		add_to_list($init_args{$key}, $value);
+		add_to_list($init_arg_nodes{$key}, $input_node);
 		if ( defined $name ) {
 			add_to_list(
 				$init_arg_names{$key},
@@ -237,6 +260,15 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 			$expect = \&as_listref;
 		}
 		push @rv, eval {
+			my $val = $expect->(delete $init_args{$key});
+			if ( my $t_c = $element->type_constraint) {
+				if ( !$t_c->check($val) ) {
+					if ( ref $val ) {
+						$val = encode_json $val;
+					}
+					die "value '$val' failed type check";
+				}
+			}
 			( ( ( $element->has_xml_nodeName_attr and
 				      exists $init_arg_names{$key} )
 				    ? ( $element->xml_nodeName_attr =>
@@ -247,11 +279,22 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 				    ? ( $element->xmlns_attr =>
 						$expect->($init_arg_xmlns{$key})) : ()
 					       ),
-			  $key => $expect->(delete $init_args{$key}),
+			  $key => $val,
 			 );
-		} or $context->exception(
-			"internal error: processing '$key' attribute: $@",
-		       );
+		} or do {
+			my $err = $@;
+			my $bad = $init_arg_nodes{$key};
+			if ( ref $bad eq "ARRAY" ) {
+				$bad = $bad->parentNode;
+			}
+			else {
+				$context = $context->next_ctx($bad->namespaceURI, $bad->localname);
+			}
+			$context->exception(
+				"internal error: processing '$key' attribute: $err",
+				$bad,
+			       );
+		};
 	}
 	if (my @leftovers = keys %init_args) {
 		$context->exception(
@@ -291,7 +334,7 @@ method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx 
 	if ( !$value ) {
 		$ctx->exception(
 			"Validation error from ".$self->name
-				." constructor: $@)",
+				." constructor: $@",
 			$node,
 		       );
 	}
