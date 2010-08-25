@@ -120,8 +120,8 @@ method next_ctx( Maybe[Str] $xmlns, Maybe[Str] $newnode_name, $thing? )  {
 			$prefix = $self->get_prefix($xmlns);
 		}
 	}
-	my $nodename = ($prefix ? "$prefix:" : "") .
-		$newnode_name//"text()";
+	my $nodename = (($newnode_name && $prefix) ? "$prefix:" : "") .
+		$newnode_name||"text()";
 
 	my $clone = (ref $self)->new(
 		prefix => $prefix,
