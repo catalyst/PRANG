@@ -44,7 +44,7 @@ has_element 'published' =>
 	xml_required => 0,
 	;
 
-sub root_element { 'book' }
+sub root_element {'book'}
 with 'PRANG::Cookbook';
 
 1;

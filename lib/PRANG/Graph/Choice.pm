@@ -66,6 +66,7 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 
 	if ($ctx->chosen) {
+
 		# this is a safe exception; the only time this graph
 		# node will be called repeatedly is if it is the root
 		# node for an element, due to the structure of
@@ -73,11 +74,12 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 		$ctx->exception(
 			"Single child node expected, multiple found",
 			$node,
-		       );
+		);
 	}
 
 	my $num;
-	my $name = $node->isa("XML::LibXML::Text") ? ""
+	my $name = $node->isa("XML::LibXML::Text")
+		? ""
 		: $node->localname;
 	my $xmlns = length($name) && $node->namespaceURI;
 	my ($key, $val, $x, $ns);
@@ -86,10 +88,12 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 		if ( defined $choice->node_ok($node, $ctx) ) {
 			($key, $val, $x, $ns) = $choice->accept($node, $ctx);
 		}
-		if ( $key ) {
+		if ($key) {
 			$ctx->chosen($num);
-			return ($key, $val, $x||eval{$choice->nodeName}||"",
-				$ns);
+			return (
+				$key, $val, $x||eval{$choice->nodeName}||"",
+				$ns
+			);
 		}
 	}
 	return ();
@@ -112,7 +116,8 @@ method expected( PRANG::Graph::Context $ctx ) {
 	}
 }
 
-our $REGISTRY = Moose::Util::TypeConstraints::get_type_constraint_registry();
+our $REGISTRY =
+	Moose::Util::TypeConstraints::get_type_constraint_registry();
 
 method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item :$value, Int :$slot ) {
 
@@ -145,7 +150,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		my $map = $self->type_map;
 		for my $element ( keys %$map ) {
 			my $type = $map->{$element};
-			if ( ! ref $type ) {
+			if ( !ref $type ) {
 				$type = $map->{$element} =
 					$REGISTRY->get_type_constraint($type);
 			}
@@ -156,7 +161,10 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		}
 	}
 	if ( !defined $name ) {
-		$ctx->exception("don't know what to serialize $value to for slot ".$self->attrName);
+		$ctx->exception(
+			"don't know what to serialize $value to for slot "
+				.$self->attrName
+		);
 	}
 	if ( length $name ) {
 		if ( $self->has_type_map_prefix and $name =~ /(.*):(.*)/) {
@@ -165,13 +173,13 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		}
 		my $found;
 		for my $choice ( @{ $self->choices } ) {
-			if ( $xmlns ) {
+			if ($xmlns) {
 				next unless $choice->has_xmlns;
 				next unless $choice->xmlns eq $xmlns or
-					$choice->xmlns eq "*";
+						$choice->xmlns eq "*";
 			}
 			next unless $choice->nodeName eq $name or
-				$choice->nodeName eq "*";
+					$choice->nodeName eq "*";
 			$found++;
 			$choice->output(
 				$item,$node,$ctx,
@@ -179,17 +187,23 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 				(defined $slot ? (slot => $slot) : ()),
 				name => $name,
 				(defined $xmlns ? (xmlns => $xmlns) : ()),
-			       );
+			);
 			last;
 		}
 		if ( !$found ) {
 			$ctx->exception(
-	"don't know what to serialize $value to for slot ".$self->attrName
-	." (looked for '$name' node".($xmlns?" xmlns='$xmlns'":"").")",
-			       );
+				"don't know what to serialize $value to for slot "
+					.$self->attrName
+					." (looked for '$name' node"
+					.(
+					$xmlns?" xmlns='$xmlns'":""
+					)
+					.")",
+			);
 		}
 	}
 	else {
+
 		# textnode ... jfdi
 		my $tn = $node->ownerDocument->createTextNode($value);
 		$node->appendChild($tn);

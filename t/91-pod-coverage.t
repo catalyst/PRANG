@@ -8,12 +8,13 @@
 # If not, see <http://www.perlfoundation.org/artistic_license_2_0>
 
 use strict;
-no warnings; $SIG{__WARN__} = sub {};
+no warnings;
+$SIG{__WARN__} = sub {};
 use Test::More;
 
 BEGIN {
 
-       # the below are all dependencies of Test::Pod::Coverage so should be OK
+ # the below are all dependencies of Test::Pod::Coverage so should be OK
 	eval <<USE;
 use Test::Pod::Coverage 1.04;
 require Pod::Coverage;
@@ -46,16 +47,19 @@ for my $module (@modules) {
 		my %naked = map { $_ => 1 } @naked;
 		open POD, $location;
 		while (<POD>) {
-			if ( m{^=head1 SYNOPSIS$} ..
-				m{^=(?!head1 SYNOPSIS)\w+} )
-			{
-				next if m{^=};
+			if (m{^=head1 SYNOPSIS$} ..
+				m{^=(?!head1 SYNOPSIS)\w+}
+				)
+			{   next if m{^=};
 				delete $naked{$_} for m{(\w+)}g;
 			}
 		}
 		my $num = $pc->covered + ( @naked - scalar keys %naked );
-		$rating = 1 - ($num ? ( ( scalar keys %naked ) / $num )
-				       : 0 );
+		$rating = 1 - (
+			$num
+			? ( ( scalar keys %naked ) / $num )
+			: 0
+		);
 		@naked = keys %naked;
 	} ## end if (@naked)
 	if ( defined $rating ) {
@@ -71,12 +75,14 @@ for my $module (@modules) {
 
 	my $s = @naked == 1 ? "" : "s";
 	if (@naked) {
-		diag(   sprintf("Coverage for %s is %3.1f%%, with %d naked "
+		diag(
+			sprintf(
+				"Coverage for %s is %3.1f%%, with %d naked "
 					. "subroutine$s:",
 				$module,
 				$rating * 100,
 				scalar @naked,
-			)
+				)
 		);
 		diag("\t$_") for @naked;
 	}

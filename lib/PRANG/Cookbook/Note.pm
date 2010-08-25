@@ -61,7 +61,7 @@ has_element 'body' =>
 	xml_required => 0,
 	;
 
-sub root_element { 'note' }
+sub root_element {'note'}
 with 'PRANG::Cookbook';
 
 1;

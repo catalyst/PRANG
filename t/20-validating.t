@@ -32,8 +32,10 @@ for my $test ( sort @invalid_tests ) {
 	my $error = XMLTests::parsefail_test( "Octothorpe", $xml, $test );
 	if ( $xml =~ m{<!-- error: /(.*)/ -->} ) {
 		my $expected_error = $1;
-		like($error, qr/$expected_error/,
-		     "$test - exception as expected");
+		like(
+			$error, qr/$expected_error/,
+			"$test - exception as expected"
+		);
 	}
 	else {
 	SKIP: {

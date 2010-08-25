@@ -8,19 +8,19 @@ use Moose::Util::TypeConstraints;
 subtype 'PRANG::Cookbook::Hour'
 	=> as 'Int',
 	=> where {
-		$_ >= 1 and $_ <= 24;
+	$_ >= 1 and $_ <= 24;
 	};
 
 subtype 'PRANG::Cookbook::Minute'
 	=> as 'Int',
 	=> where {
-		$_ >= 1 and $_ <= 60;
+	$_ >= 1 and $_ <= 60;
 	};
 
 subtype 'PRANG::Cookbook::Second'
 	=> as 'Int',
 	=> where {
-		$_ >= 1 and $_ <= 60;
+	$_ >= 1 and $_ <= 60;
 	};
 
 has_attr 'hour' =>
@@ -39,7 +39,7 @@ has_attr 'second' =>
 	is => 'rw',
 	isa => 'PRANG::Cookbook::Second',
 	xml_required => 0,
-    default => 0,
+	default => 0,
 	;
 
 1;

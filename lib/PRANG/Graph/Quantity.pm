@@ -28,7 +28,7 @@ has 'attrName' =>
 	required => 1,
 	;
 
-sub accept_many { 1 }
+sub accept_many {1}
 
 method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	my $found = $ctx->quant_found;
@@ -36,9 +36,9 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	return if not $ok;
 	my ($key, $value, $x, $ns) = $self->child->accept($node, $ctx)
 		or $ctx->exception(
-			"internal error: node ok, but then not accepted?",
-			$node,
-		       );
+		"internal error: node ok, but then not accepted?",
+		$node,
+		);
 	$found++;
 	$ctx->quant_found($found);
 	if ( $self->has_max and $found > $self->max ) {
@@ -78,17 +78,21 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 	my $attrName = $self->attrName;
 	my $val = $item->$attrName;
 	if ( $self->has_max and $self->max == 1 ) {
+
 		# this is an 'optional'-type thingy
 		if ( defined $val ) {
 			$self->child->output($item,$node,$ctx,value => $val);
 		}
 	}
 	else {
+
 		# this is an arrayref-type thingy
 		if ( !$val and !$self->has_min ) {
+
 			# ok, that's fine
 		}
 		elsif ( $val and (ref($val)||"") ne "ARRAY" ) {
+
 			# that's not
 			die "item $item / slot $attrName is $val, not"
 				."an ArrayRef";
@@ -100,7 +104,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 					$item,$node,$ctx,
 					value => $val->[$i],
 					slot => $i,
-				       );
+				);
 			}
 		}
 	}

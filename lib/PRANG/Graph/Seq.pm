@@ -47,7 +47,7 @@ method complete( PRANG::Graph::Context $ctx ) {
 method expected( PRANG::Graph::Context $ctx ) {
 	my $pos = $ctx->seq_pos;
 	my $member = $self->members->[$pos-1];
-	if ( $member ) {
+	if ($member) {
 		return $member->expected($ctx);
 	}
 	else {

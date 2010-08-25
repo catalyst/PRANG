@@ -6,7 +6,7 @@ use PRANG::Graph;
 
 sub xmlns { }
 
-BEGIN { with 'PRANG::Graph', 'PRANG::Cookbook::Node'; };
+BEGIN { with 'PRANG::Graph', 'PRANG::Cookbook::Node'; }
 
 1;
 

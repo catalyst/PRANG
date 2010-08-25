@@ -23,26 +23,28 @@ has 'extra' =>
 	isa => "ArrayRef",
 	lazy => 1,
 	default => sub {
-		my $self = shift;
-		my @extra;
-		if ( $self->nodeName_attr ) {
-			push @extra, "";
-		}
-		else {
-			push @extra, undef;
-		}
-		if ( $self->xmlns_attr ) {
-			push @extra, "";
-		}
-		elsif ( !defined $extra[0] ) {
-			pop @extra;
-		}
-		\@extra;
+	my $self = shift;
+	my @extra;
+	if ( $self->nodeName_attr ) {
+		push @extra, "";
+	}
+	else {
+		push @extra, undef;
+	}
+	if ( $self->xmlns_attr ) {
+		push @extra, "";
+	}
+	elsif ( !defined $extra[0] ) {
+		pop @extra;
+	}
+	\@extra;
 	};
 
 method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
-	( $node->nodeType == XML_TEXT_NODE or
-		  $node->nodeType == XML_CDATA_SECTION_NODE )
+	(   $node->nodeType == XML_TEXT_NODE
+			or
+			$node->nodeType == XML_CDATA_SECTION_NODE
+		)
 		? 1 : undef;
 }
 

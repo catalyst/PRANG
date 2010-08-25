@@ -50,12 +50,14 @@ my $doc = $parser->parse_string(<<XML);
 XML
 
 {
+
 	# replace the recursive part of the marshall process with a
 	# mock that says where was recursed to
 	package Dummy::Marshaller;
 	sub get { bless [ $_[1] ], __PACKAGE__ }
 	sub marshall_in_element { return \${$_[0]}[0] }
-	sub isa { 1 }
+	sub isa {1}
+
 	# this eliminates recursion on the way out.
 	sub to_libxml { }
 }
@@ -75,10 +77,12 @@ for my $oktest ( $doc->findnodes("//ok/*") ) {
 		xpath => "//ok/$class\[position()=$test_num]",
 		xsi => $xsi,
 		base => (bless{},"Dummy::Marshaller"),
+
 		#base => PRANG::Marshaller->get($class),
 		prefix => "",
-	       );
-	my %rv = eval { $class->meta->accept_childnodes( \@nodes, $context ) };
+	);
+	my %rv =
+		eval { $class->meta->accept_childnodes( \@nodes, $context ) };
 	for my $slot ( keys %rv ) {
 		if ( (ref($rv{$slot})||"") eq "SCALAR" ) {
 			$rv{$slot} = bless {}, ${$rv{$slot}};
@@ -102,13 +106,13 @@ for my $oktest ( $doc->findnodes("//ok/*") ) {
 	#is($@, "", "ok test $test_num - output elements no exception");
 	#my @wrote_nodes = $node->childNodes;
 	#@nodes = grep { !( $_->isa("XML::LibXML::Text")
-				   #and $_->data =~ /\A\s*\Z/) }
-		#@nodes;
+	#and $_->data =~ /\A\s*\Z/) }
+	#@nodes;
 	#is(@wrote_nodes, @nodes,
-	   #"ok test $test_num - correct number of child nodes") or do {
-		   #diag("expected: ".$oktest->toString);
-		   #diag("got: ".$node->toString);
-	   #};
+	#"ok test $test_num - correct number of child nodes") or do {
+	#diag("expected: ".$oktest->toString);
+	#diag("got: ".$node->toString);
+	#};
 
 	$test_num++;
 }
@@ -124,17 +128,22 @@ for my $failtest ( $doc->findnodes("//fail/*") ) {
 		xpath => "//fail/$class\[position()=$test_num]",
 		xsi => { "" => "" },
 		base => (bless{},"Dummy::Marshaller"),
+
 		#base => PRANG::Marshaller->get($class),
 		prefix => "",
-	       );
-	my $rv = eval { $class->new(
-		$class->meta->accept_childnodes( \@nodes, $context )
-	       ) };
+	);
+	my $rv = eval {
+		$class->new(
+			$class->meta->accept_childnodes( \@nodes, $context )
+		);
+	};
 	my $exception = "$@";
 	isnt($exception, "", "$test_name - exception raised");
 	if ( my $err_re = $failtest->getAttribute("error") ) {
-		like($exception, qr/$err_re/,
-		     "$test_name - exception string OK");
+		like(
+			$exception, qr/$err_re/,
+			"$test_name - exception string OK"
+		);
 	}
 	$test_num++;
 }

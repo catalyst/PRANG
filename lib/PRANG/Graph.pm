@@ -20,6 +20,7 @@ use MooseX::Method::Signatures;
 use PRANG::Marshaller;
 
 use Moose::Exporter;
+
 sub has_attr {
 	my ( $meta, $name, %options ) = @_;
 	my $traits_a = $options{traits} ||= [];
@@ -27,8 +28,9 @@ sub has_attr {
 	$meta->add_attribute(
 		$name,
 		%options,
-	       );
+	);
 }
+
 sub has_element {
 	my ( $meta, $name, %options ) = @_;
 	my $traits_a = $options{traits} ||= [];
@@ -36,13 +38,13 @@ sub has_element {
 	$meta->add_attribute(
 		$name,
 		%options,
-	       );
+	);
 }
 
 Moose::Exporter->setup_import_methods(
-	with_meta => [ qw(has_attr has_element) ],
+	with_meta => [qw(has_attr has_element)],
 	metaclass_roles => [qw(PRANG::Graph::Meta::Class)],
-       );
+);
 
 requires 'xmlns';
 requires 'root_element';
@@ -51,7 +53,7 @@ method marshaller($inv:) { #returns PRANG::Marshaller {
 	if ( ref $inv ) {
 		$inv = ref $inv;
 	}
-	PRANG::Marshaller->get( $inv );
+	PRANG::Marshaller->get($inv);
 }
 
 method parse($class: Str $xml) {

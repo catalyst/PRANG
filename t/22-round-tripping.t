@@ -30,58 +30,65 @@ for my $test ( sort @xml_tests ) {
 	my @ignores = $xml =~ m{<!-- ignore: (.*) -->}g;
 
 	my $ignore_xmlns;
-	if ( @ignores ) {
+	if (@ignores) {
 		$ignore_xmlns = {};
 		my $dom = XML::LibXML->load_xml(string => $xml);
-		my @nodes = $dom->findnodes( '@xmlns:*' );
-		for my $ns ( @nodes ) {
+		my @nodes = $dom->findnodes('@xmlns:*');
+		for my $ns (@nodes) {
 			next unless $ns->can("declaredURI");
 			$ignore_xmlns->{$ns->declaredPrefix}
 				= $ns->declaredURI;
 		}
 	}
 	my $comparator = XML::Compare->new(
-		(@ignores ? ( ignore => \@ignores,
-			      ignore_xmlns => $ignore_xmlns )
-			 : () ),
-	       );
+		(   @ignores
+			? ( ignore => \@ignores,
+				ignore_xmlns => $ignore_xmlns
+				)
+			: ()
+		),
+	);
 
 	my $object = XMLTests::parse_test( "Octothorpe", $xml, $test );
- SKIP:{
+SKIP:{
 		skip "parse failed", 2 if !$object;
 
 		my $xml_2 = XMLTests::emit_test($object, $test);
 		skip "re-emit failed", 1 if !$xml_2;
 
-		ok(eval { $comparator->same($xml, $xml_2) },
-		   "$test - round-tripped from XML to data and back OK")
+		ok( eval { $comparator->same($xml, $xml_2) },
+			"$test - round-tripped from XML to data and back OK"
+			)
 			or do {
-				diag("Error: $@");
-				diag("XML was: ".$xml_2);
+			diag("Error: $@");
+			diag("XML was: ".$xml_2);
 			};
 	}
 }
 
 for my $test ( sort @yaml_tests ) {
 	my ($object, $yaml) = XMLTests::read_yaml($test);
- SKIP:{
+SKIP:{
 		my $xml = XMLTests::emit_test($object, $test);
 		skip "emit failed", 2 if !$xml;
 
 		my $object_2 = XMLTests::parse_test(
 			"Octothorpe", $xml, $test,
-		       ) or do {
-			       diag("tried to parse:\n".$xml);
-			       skip "re-parse failed", 1;
-		       };
+			)
+			or do {
+			diag("tried to parse:\n".$xml);
+			skip "re-parse failed", 1;
+			};
 
 		skip "round-trip test skipped for this case", 1
 			if $yaml =~ /NO_ROUNDTRIP/;
 
-		is_deeply($object_2, $object,
-			  "$test - round-tripped from YAML to XML and back OK")
+		is_deeply(
+			$object_2, $object,
+			"$test - round-tripped from YAML to XML and back OK"
+			)
 			or do {
-				diag("parsed to: ".Dump($object_2));
+			diag("parsed to: ".Dump($object_2));
 			};
 	}
 }

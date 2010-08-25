@@ -65,7 +65,8 @@ use PRANG::Graph;
 has_element 'contents' =>
 	is => "rw",
 	isa => "ArrayRef[PRANG::XMLSchema::Whatever|Str]",
-	xml_nodeName => { "" => "Str", "*" => "PRANG::XMLSchema::Whatever" },
+	xml_nodeName =>
+	{ "" => "Str", "*" => "PRANG::XMLSchema::Whatever" },
 	xml_nodeName_attr => "nodenames",
 	xmlns => "*",
 	xmlns_attr => "nodenames_ns",

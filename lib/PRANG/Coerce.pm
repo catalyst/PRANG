@@ -10,20 +10,20 @@ use Moose::Util::TypeConstraints;
 #    => via { [ $_ ] };
 #
 sub coerce_arrayref_of {
-    my $what = shift;
+	my $what = shift;
 
-    my $typeName = lc $what;
-    $typeName =~ s{^(\w)}{uc($1||"")}eg;
-    $typeName =~ s{::(\w?)}{uc($1||"")}eg;
+	my $typeName = lc $what;
+	$typeName =~ s{^(\w)}{uc($1||"")}eg;
+	$typeName =~ s{::(\w?)}{uc($1||"")}eg;
 
-    my $subtype = __PACKAGE__ . '::ArrayRefOf' . $typeName . 's';
-    my $as = 'ArrayRef[' . $typeName . ']';
+	my $subtype = __PACKAGE__ . '::ArrayRefOf' . $typeName . 's';
+	my $as = 'ArrayRef[' . $typeName . ']';
 
-    subtype $subtype
-        => as $as;
-    coerce $subtype
-        => from $what
-        => via { [ $_ ] };
+	subtype $subtype
+		=> as $as;
+	coerce $subtype
+		=> from $what
+		=> via { [$_] };
 }
 
 # Make these coercions from standard types

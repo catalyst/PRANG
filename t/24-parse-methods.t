@@ -9,7 +9,7 @@ use lib "t";
 use Octothorpe;
 use XMLTests;
 
-my @eg_filenames = map { "t/$_" }
+my @eg_filenames = map {"t/$_"}
 	sort {$a cmp $b} XMLTests::find_tests("xml/valid");
 
 my $valid_foo = Octothorpe->parse_file( shift @eg_filenames );

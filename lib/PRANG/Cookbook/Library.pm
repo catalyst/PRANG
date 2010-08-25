@@ -14,7 +14,7 @@ has_element 'book' =>
 	required => 1,
 	;
 
-sub root_element { 'library' }
+sub root_element {'library'}
 with 'PRANG::Cookbook';
 
 1;

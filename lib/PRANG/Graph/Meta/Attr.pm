@@ -34,9 +34,10 @@ has 'xmlns_attr' =>
 	;
 
 package Moose::Meta::Attribute::Custom::Trait::PRANG::Attr;
+
 sub register_implementation {
 	"PRANG::Graph::Meta::Attr";
-};
+}
 
 1;
 

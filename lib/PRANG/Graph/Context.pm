@@ -16,10 +16,10 @@ has 'seq_pos' =>
 	lazy => 1,
 	default => 1,
 	trigger => sub {
-		my $self = shift;
-		$self->clear_quant;
-		$self->clear_chosen;
-		$self->clear_element_ok;
+	my $self = shift;
+	$self->clear_quant;
+	$self->clear_chosen;
+	$self->clear_element_ok;
 	},
 	clearer => "clear_seq_pos",
 	;
@@ -35,9 +35,9 @@ has 'quant_found' =>
 	default => 0,
 	clearer => 'clear_quant',
 	trigger => sub {
-		my $self = shift;
-		$self->clear_chosen;
-		$self->clear_element_ok;
+	my $self = shift;
+	$self->clear_chosen;
+	$self->clear_element_ok;
 	},
 	;
 
@@ -46,7 +46,7 @@ has 'chosen' =>
 	isa => "Int",
 	clearer => "clear_chosen",
 	trigger => sub {
-		$_[0]->clear_element_ok;
+	$_[0]->clear_element_ok;
 	}
 	;
 
@@ -84,8 +84,8 @@ has 'rxsi' =>
 	isa => "HashRef",
 	lazy => 1,
 	default => sub {
-		my $self = shift;
-		+{ reverse %{ $self->xsi } };
+	my $self = shift;
+	+{ reverse %{ $self->xsi } };
 	},
 	;
 
@@ -110,7 +110,7 @@ sub thing_xmlns {
 method next_ctx( Maybe[Str] $xmlns, Maybe[Str] $newnode_name, $thing? )  {
 	my $prefix = $self->prefix;
 	my $new_prefix;
-	if ( $xmlns ) {
+	if ($xmlns) {
 		if ( !exists $self->rxsi->{$xmlns} ) {
 			$new_prefix = 1;
 			$prefix = thing_xmlns($thing, $xmlns) //
@@ -129,8 +129,8 @@ method next_ctx( Maybe[Str] $xmlns, Maybe[Str] $newnode_name, $thing? )  {
 		xpath => $self->xpath."/".$nodename,
 		xsi => $self->xsi,
 		rxsi => $self->rxsi,
-	       );
-	if ( $new_prefix ) {
+	);
+	if ($new_prefix) {
 		$clone->add_xmlns($prefix, $xmlns);
 	}
 	$clone;
@@ -146,7 +146,7 @@ has 'prefix' =>
 	isa => "Str",
 	;
 
-BEGIN { class_type "XML::LibXML::Node" };
+BEGIN { class_type "XML::LibXML::Node" }
 
 method get_prefix( Str $xmlns, Object $thing?, XML::LibXML::Element $victim? ) {
 	if ( defined(my $prefix = $self->rxsi->{$xmlns}) ) {
@@ -156,11 +156,11 @@ method get_prefix( Str $xmlns, Object $thing?, XML::LibXML::Element $victim? ) {
 		my $new_prefix = thing_xmlns($thing, $xmlns)
 			// $self->base->generate_prefix($xmlns);
 		$self->add_xmlns($new_prefix, $xmlns);
-		if ( $victim ) {
+		if ($victim) {
 			$victim->setAttribute(
 				"xmlns:".$new_prefix,
 				$xmlns,
-			       );
+			);
 		}
 		$new_prefix;
 	}
@@ -194,7 +194,7 @@ method exception( Str $message, XML::LibXML::Node $node?, Bool $skip_ok? ) {
 		message => $message,
 		xpath => $self->xpath,
 		($skip_ok ? (skip_ok => 1) : ()),
-	       );
+	);
 	die $error;
 }
 
@@ -231,17 +231,24 @@ method show_node {
 	if ( $node->isa("XML::LibXML::Element") ) {
 		$extra = " (parsing: <".$node->nodeName;
 		if ( $node->hasAttributes ) {
-			$extra .= join(" ", "", map {
-				$_->name."='".$_->value."'"
-			} $node->attributes);
+			$extra .= join(
+				" ", "",
+				map {
+					$_->name."='".$_->value."'"
+					} $node->attributes
+			);
 		}
 		my @nodes = grep {
-			!( $_->isa("XML::LibXML::Comment") or
+			!(  $_->isa("XML::LibXML::Comment")
+				or
 				$_->isa("XML::LibXML::Text") and $_->data =~ /\A\s+\Z/
-			) } $node->childNodes;
-		if ( @nodes > 1 and grep { !$_->isa("XML::LibXML::Element") }
-			     @nodes ) {
-			$extra .= ">(mixed content)";
+				)
+		} $node->childNodes;
+		if (@nodes > 1
+			and grep { !$_->isa("XML::LibXML::Element") }
+			@nodes
+			)
+		{   $extra .= ">(mixed content)";
 		}
 		elsif (@nodes and $nodes[0]->isa("XML::LibXML::Element")) {
 			$extra .= "><!-- ".@nodes
@@ -266,7 +273,7 @@ method show_node {
 		}
 		$extra .= " (at text node: '$val')";
 	}
-	elsif ( $node ) {
+	elsif ($node) {
 		my $type = ref $node;
 		$type =~ s{XML::LibXML::}{};
 		$extra .= " (bogon? $type node)";
