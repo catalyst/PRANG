@@ -1,0 +1,25 @@
+# driving goals behind these rules;
+#  1. allow the user to set their preferred indent, by using tabs
+#  2. try to avoid changes on one line affecting whitespace on other
+#     nearby lines which didn't change.
+--maximum-line-length=72
+--indent-columns=4
+--continuation-indentation=4
+--entab-leading-whitespace=4
+--vertical-tightness=2
+--vertical-tightness-closing=0
+--closing-token-indentation=0
+--paren-tightness=1
+--brace-tightness=1
+--square-bracket-tightness=1
+--block-brace-tightness=1
+--block-brace-vertical-tightness=1
+--nospace-for-semicolon
+-naws
+-ndnl
+--outdent-long-quotes
+--outdent-long-comments
+--stack-opening-tokens
+--break-at-old-comma-breakpoints
+--comma-arrow-breakpoints=0
+-nbot
