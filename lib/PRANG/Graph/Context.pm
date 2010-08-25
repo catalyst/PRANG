@@ -107,7 +107,7 @@ sub thing_xmlns {
 	}
 }
 
-method next_ctx( Maybe[Str] $xmlns, Str $newnode_name, $thing? )  {
+method next_ctx( Maybe[Str] $xmlns, Maybe[Str] $newnode_name, $thing? )  {
 	my $prefix = $self->prefix;
 	my $new_prefix;
 	if ( $xmlns ) {
@@ -120,7 +120,8 @@ method next_ctx( Maybe[Str] $xmlns, Str $newnode_name, $thing? )  {
 			$prefix = $self->get_prefix($xmlns);
 		}
 	}
-	my $nodename = ($prefix ? "$prefix:" : "") . $newnode_name;
+	my $nodename = ($prefix ? "$prefix:" : "") .
+		$newnode_name//"text()";
 
 	my $clone = (ref $self)->new(
 		prefix => $prefix,
