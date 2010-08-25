@@ -123,8 +123,8 @@ method parse( Str :$xml, Str :$filename, GlobRef :$fh ) {
 	$rv;
 }
 
-method xml_version { "1.0" };
-method encoding { "UTF-8" };
+method xml_version { "1.0" }
+method encoding { "UTF-8" }
 
 # nothing to see here ... move along please ...
 our $zok;
