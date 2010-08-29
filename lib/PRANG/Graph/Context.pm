@@ -121,7 +121,7 @@ method next_ctx( Maybe[Str] $xmlns, Maybe[Str] $newnode_name, $thing? )  {
 		}
 	}
 	my $nodename = (($newnode_name && $prefix) ? "$prefix:" : "") .
-		$newnode_name||"text()";
+		($newnode_name||"text()");
 
 	my $clone = (ref $self)->new(
 		prefix => $prefix,
@@ -288,7 +288,9 @@ sub build_error {
 	return "$message at ".$self->xpath."$extra\n";
 }
 
-use overload '""' => \&build_error;
+use overload
+	'""' => \&build_error,
+	fallback => 1;
 
 1;
 
