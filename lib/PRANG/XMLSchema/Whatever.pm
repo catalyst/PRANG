@@ -59,7 +59,7 @@
 package PRANG::XMLSchema::Whatever;
 
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 use PRANG::Graph;
 
 has_element 'contents' =>

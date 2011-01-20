@@ -3,7 +3,7 @@ package PRANG::Graph::Meta::Element;
 
 use Moose::Role;
 use PRANG::Util qw(types_of);
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 
 has 'xmlns' =>
 	is => "rw",
@@ -78,7 +78,13 @@ has "_item_tc" =>
 use constant HIGHER_ORDER_TYPE =>
 	"Moose::Meta::TypeConstraint::Parameterized";
 
-method _error(Str $message) {
+sub _error {
+    my $self = shift;
+    my ( $message ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );    
+    
 	my $class = $self->associated_class;
 	my $context = " (Element: ";
 	if ($class) {
@@ -91,15 +97,29 @@ method _error(Str $message) {
 	$message.$context;
 }
 
-method error(Str $message) {
+sub error {
+    my $self = shift;
+    my ( $message ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );      
+    
 	confess $self->_error($message);
 }
 
-method warn_of(Str $message) {
+sub warn_of {
+    my $self = shift;
+    my ( $message ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );    
+    
 	warn $self->_error($message)."\n";
 }
 
-method build_graph_node() {
+sub build_graph_node {
+    my $self = shift;
+    
 	my ($expect_one, $expect_many);
 
 	if ( $self->has_xml_required ) {

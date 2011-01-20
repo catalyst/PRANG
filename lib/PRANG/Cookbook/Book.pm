@@ -2,7 +2,6 @@
 package PRANG::Cookbook::Book;
 
 use Moose;
-use MooseX::Method::Signatures;
 use PRANG::Graph;
 use PRANG::XMLSchema::Types;
 

@@ -2,7 +2,7 @@
 package PRANG::Graph::Seq;
 
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 
 has 'members' =>
 	is => "ro",
@@ -10,7 +10,14 @@ has 'members' =>
 	default => sub { [] },
 	;
 
-method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub accept {
+    my $self = shift;
+    my ( $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+    );     
+    
 	my $pos = $ctx->seq_pos;
 	my ($key, $val, $x, $ns, $member);
 	do {
@@ -24,7 +31,13 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	($key, $val, $x, $ns);
 }
 
-method complete( PRANG::Graph::Context $ctx ) {
+sub complete {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );
+    
 	my $pos = $ctx->seq_pos;
 	my $member;
 	my $done;
@@ -44,7 +57,13 @@ method complete( PRANG::Graph::Context $ctx ) {
 	return ( $cmp != -1 );
 }
 
-method expected( PRANG::Graph::Context $ctx ) {
+sub expected {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	my $pos = $ctx->seq_pos;
 	my $member = $self->members->[$pos-1];
 	if ($member) {
@@ -55,7 +74,15 @@ method expected( PRANG::Graph::Context $ctx ) {
 	}
 }
 
-method output ( Item $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx ) {
+sub output {
+    my $self = shift;
+    my ( $item, $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'Item' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+    );      
+    
 	for my $member ( @{ $self->members } ) {
 		$member->output($item,$node,$ctx);
 	}

@@ -19,3 +19,6 @@ open FH, "<", shift @eg_filenames;
 $valid_foo = Octothorpe->parse_fh( \*FH );
 ok($valid_foo, "parse_fh(\*FOO)");
 
+eval {Octothorpe->parse_fh( 'blah' )};
+like($@, qr{Parameter #1 \("blah"\) to PRANG::Graph::parse_fh did not pass the 'checking type constraint for GlobRef' callback}, 
+    "parse_fh parameter validated"); 

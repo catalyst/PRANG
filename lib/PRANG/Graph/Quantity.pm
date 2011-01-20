@@ -2,7 +2,7 @@
 package PRANG::Graph::Quantity;
 
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 
 has 'min' =>
 	is => "ro",
@@ -30,7 +30,14 @@ has 'attrName' =>
 
 sub accept_many {1}
 
-method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub accept {
+    my $self = shift;
+    my ( $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	my $found = $ctx->quant_found;
 	my $ok = defined $self->child->node_ok($node, $ctx);
 	return if not $ok;
@@ -47,12 +54,24 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	($key, $value, $x, $ns);
 }
 
-method complete( PRANG::Graph::Context $ctx ) {
+sub complete {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	my $found = $ctx->quant_found;
 	return !( $self->has_min and $found < $self->min );
 }
 
-method expected( PRANG::Graph::Context $ctx ) {
+sub expected {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	my $desc;
 	if ( $self->has_min ) {
 		if ( $self->has_max ) {
@@ -74,7 +93,15 @@ method expected( PRANG::Graph::Context $ctx ) {
 	return("($desc of: ", @expected, ")");
 }
 
-method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx ) {
+sub output {
+    my $self = shift;
+    my ( $item, $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'Object' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+    ); 
+    
 	my $attrName = $self->attrName;
 	my $val = $item->$attrName;
 	if ( $self->has_max and $self->max == 1 ) {

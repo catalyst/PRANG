@@ -2,7 +2,7 @@
 package PRANG::Marshaller;
 
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 use Moose::Util::TypeConstraints;
 
 use XML::LibXML 1.65;
@@ -34,7 +34,13 @@ has 'class' =>
 
 our %marshallers;  # could use MooseX::NaturalKey?
 
-method get($inv: Str $class) {
+sub get {
+    my $inv = shift;
+    my ( $class ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );      
+    
 	if ( ref $inv ) {
 		$inv = ref $inv;
 	}
@@ -64,7 +70,14 @@ method get($inv: Str $class) {
 	}
 }
 
-method parse( Str :$xml, Str :$filename, GlobRef :$fh ) {
+sub parse {
+    my $self = shift;
+    my ( $xml, $filename, $fh ) = validated_list(
+        \@_,
+        xml => { isa => 'Str', optional => 1 },
+        filename => { isa => 'Str', optional => 1 },
+        fh => { isa => 'GlobRef', optional => 1 },
+    );    
 
 	my $parser = XML::LibXML->new;
 	my $dom = (
@@ -134,8 +147,8 @@ method parse( Str :$xml, Str :$filename, GlobRef :$fh ) {
 	$rv;
 }
 
-method xml_version { "1.0" }
-method encoding { "UTF-8" }
+sub xml_version { "1.0" }
+sub encoding { "UTF-8" }
 
 # nothing to see here ... move along please ...
 our $zok;
@@ -150,7 +163,13 @@ our $zok_theme;
 
 our $gen_prefix;
 
-method generate_prefix( Str $xmlns ) {
+sub generate_prefix {
+    my $self = shift;
+    my ( $xmlns ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );    
+    
 	if ( $zok or eval { require Acme::MetaSyntactic; 1 } ) {
 		my $name;
 		do {
@@ -163,7 +182,7 @@ method generate_prefix( Str $xmlns ) {
 					}
 				}
 				else {
-					$zok_theme = int(time / 86400)
+					$zok_theme = int(time() / 86400)
 						% scalar(@zok_themes);
 				}
 				Acme::MetaSyntactic->new(
@@ -195,7 +214,13 @@ method generate_prefix( Str $xmlns ) {
 	}
 }
 
-method to_xml_doc( PRANG::Graph $item ) {
+sub to_xml_doc {
+    my $self = shift;
+    my ( $item ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph' },
+    );    
+    
 	my $xmlns = $item->xmlns;
 	my $prefix = "";
 	if ( $item->can("preferred_prefix") ) {
@@ -229,7 +254,14 @@ method to_xml_doc( PRANG::Graph $item ) {
 	$doc;
 }
 
-method to_xml( PRANG::Graph $item, Int $format = 0 ) {
+sub to_xml {
+    my $self = shift;
+    my ( $item, $format ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph' },
+        { isa => 'Int', default => 0 },
+    );    
+    
 	my $document = $self->to_xml_doc($item);
 	$document->toString($format);
 }

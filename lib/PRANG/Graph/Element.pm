@@ -3,7 +3,7 @@ package PRANG::Graph::Element;
 
 use 5.010;
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 use Moose::Util::TypeConstraints;
 use XML::LibXML;
 
@@ -54,7 +54,14 @@ has 'contents' =>
 	predicate => "has_contents",
 	;
 
-method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub node_ok {
+    my $self = shift;
+    my ( $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	return unless $node->nodeType == XML_ELEMENT_NODE;
 	my $got_xmlns;
 
@@ -99,7 +106,14 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	}
 }
 
-method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub accept {
+    my $self = shift;
+    my ( $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	my ($ret_nodeName, $xmlns) = $self->node_ok($node, $ctx);
 	if ( !defined $ret_nodeName ) {
 
@@ -197,11 +211,23 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	}
 }
 
-method complete( PRANG::Graph::Context $ctx ) {
+sub complete {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	$ctx->element_ok;
 }
 
-method expected( PRANG::Graph::Context $ctx ) {
+sub expected {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );   
+    
 	my $prefix = "";
 	my $nodename = $self->nodeName;
 	if ( $self->has_xmlns ) {
@@ -225,7 +251,29 @@ method expected( PRANG::Graph::Context $ctx ) {
 		.">";
 }
 
-method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item :$value, Int :$slot, Str :$name, Str :$xmlns ) {
+sub output  {
+    my $self = shift;
+    
+    # First 3 args positional, rest are named
+    #  Because we're making 2 validation calls, we have to use different cache keys
+    my ( $item, $node, $ctx ) = pos_validated_list(
+        [@_[0..2]],
+        { isa => 'Object' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+        MX_PARAMS_VALIDATE_CACHE_KEY => 'element-output-positional',
+    );
+        
+    my ( $value, $slot, $name, $xmlns ) = validated_list(
+        [@_[3..$#_]],
+        value => { isa => 'Item', optional => 1 },
+        slot => { isa => 'Int', optional => 1 },
+        name => { isa => 'Str', optional => 1 },
+        xmlns => { isa => 'Str', optional => 1 },
+        MX_PARAMS_VALIDATE_CACHE_KEY => 'element-output-named',
+    );
+    
+    
 	$value //= do {
 		my $accessor = $self->attrName;
 		$item->$accessor;

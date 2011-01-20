@@ -2,8 +2,8 @@ package PRANG::Graph::Meta::Class;
 
 use 5.010;
 use Moose::Role;
-use MooseX::Method::Signatures;
 use Moose::Util::TypeConstraints;
+use MooseX::Params::Validate;
 use XML::LibXML;
 
 has 'xml_attr' =>
@@ -76,7 +76,9 @@ has 'graph' =>
 	},
 	;
 
-method build_graph( ) {
+sub build_graph {
+    my $self = shift;
+    
 	my @nodes = map { $_->graph_node } @{ $self->xml_elements };
 	if ( @nodes != 1 ) {
 		PRANG::Graph::Seq->new(
@@ -118,7 +120,13 @@ sub as_item($) {
 	}
 }
 
-method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::Context $context ) {
+sub accept_attributes {
+    my $self = shift;
+    my ( $node_attr, $context ) = pos_validated_list(
+        \@_,
+        { isa => 'ArrayRef[XML::LibXML::Attr]' },
+        { isa => 'PRANG::Graph::Context' },
+    );
 
 	my $attributes = $self->xml_attr;
 	my %rv;
@@ -216,7 +224,15 @@ method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::
 
 use JSON;
 
-method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph::Context $context ) {
+sub accept_childnodes {
+    my $self = shift;
+    
+    my ( $childNodes, $context ) = pos_validated_list(
+        \@_,
+        { isa => 'ArrayRef[XML::LibXML::Node]' },
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	my $graph = $self->graph;
 
 	my (%init_args, %init_arg_names, %init_arg_xmlns, %init_arg_nodes);
@@ -340,7 +356,15 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 	return @rv;
 }
 
-method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub marshall_in_element {
+    my $self = shift;
+    
+    my ( $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+    );       
+    
 	my @node_attr = grep { $_->isa("XML::LibXML::Attr") }
 		$node->attributes;
 	my @ns_attr = $node->getNamespaces;
@@ -380,7 +404,17 @@ method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx 
 	}
 }
 
-method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx ) {
+sub add_xml_attr {
+    my $self = shift;
+    
+    my ( $item, $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'Object' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+    );       
+    
+    
 	my $attributes = $self->xml_attr;
 	while ( my ($xmlns, $att) = each %$attributes ) {
 		while ( my ($attName, $meta_att) = each %$att ) {
@@ -485,7 +519,17 @@ method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Con
 	}
 }
 
-method to_libxml( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx ) {
+sub to_libxml {
+    my $self = shift;
+    
+    my ( $item, $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'Object' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+    );          
+    
+    
 	$self->add_xml_attr($item, $node, $ctx);
 	$self->graph->output($item, $node, $ctx);
 }

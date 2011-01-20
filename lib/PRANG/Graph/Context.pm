@@ -3,7 +3,7 @@ package PRANG::Graph::Context;
 
 use 5.010;
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 use Moose::Util::TypeConstraints;
 
 BEGIN {
@@ -24,7 +24,9 @@ has 'seq_pos' =>
 	clearer => "clear_seq_pos",
 	;
 
-method reset() {
+sub reset {
+    my $self = shift;
+    
 	$self->clear_seq_pos;
 }
 
@@ -107,7 +109,15 @@ sub thing_xmlns {
 	}
 }
 
-method next_ctx( Maybe[Str] $xmlns, Maybe[Str] $newnode_name, $thing? )  {
+sub next_ctx {
+    my $self = shift;
+    my ( $xmlns, $newnode_name, $thing) = pos_validated_list(
+        \@_,
+        { isa => 'Maybe[Str]' },
+        { isa => 'Maybe[Str]' },
+        { optional => 1 },        
+    );    
+    
 	my $prefix = $self->prefix;
 	my $new_prefix;
 	if ($xmlns) {
@@ -136,7 +146,13 @@ method next_ctx( Maybe[Str] $xmlns, Maybe[Str] $newnode_name, $thing? )  {
 	$clone;
 }
 
-method prefix_new(Str $prefix) {
+sub prefix_new {
+    my $self = shift;
+    my ( $prefix) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },        
+    );    
+    
 	!$self->xsi_virgin and not exists $self->old_xsi->{$prefix};
 }
 
@@ -148,7 +164,15 @@ has 'prefix' =>
 
 BEGIN { class_type "XML::LibXML::Node" }
 
-method get_prefix( Str $xmlns, Object $thing?, XML::LibXML::Element $victim? ) {
+sub get_prefix {
+    my $self = shift;
+    my ( $xmlns, $thing, $victim ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+        { isa => 'Object', optional => 1 },
+        { isa => 'XML::LibXML::Element', optional => 1 },
+    );    
+    
 	if ( defined(my $prefix = $self->rxsi->{$xmlns}) ) {
 		$prefix;
 	}
@@ -166,7 +190,14 @@ method get_prefix( Str $xmlns, Object $thing?, XML::LibXML::Element $victim? ) {
 	}
 }
 
-method add_xmlns( Str $prefix, Str $xmlns ) {
+sub add_xmlns {
+    my $self = shift;
+    my ( $prefix, $xmlns ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+        { isa => 'Str' },
+    );     
+    
 	if ( $self->xsi_virgin ) {
 		$self->xsi_virgin(0);
 		$self->old_xsi($self->xsi);
@@ -181,14 +212,29 @@ method add_xmlns( Str $prefix, Str $xmlns ) {
 	}
 }
 
-method get_xmlns( Str $prefix ) {
+sub get_xmlns{
+    my $self = shift;
+    my ( $prefix, ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );    
+    
 	$self->xsi->{$prefix};
 }
 
 # this is a very convenient class to put a rich and useful exception
 # method on; all important methods use it, and it has just the
 # information to make the error message very useful.
-method exception( Str $message, XML::LibXML::Node $node?, Bool $skip_ok? ) {
+sub exception {
+    my $self = shift;
+    my ( $message, $node, $skip_ok ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+        { isa => 'XML::LibXML::Node', optional => 1 },
+        { isa => 'Bool', optional => 1 },
+    );    
+        
+    
 	my $error = PRANG::Graph::Context::Error->new(
 		($node ? (node => $node) : ()),
 		message => $message,
@@ -201,7 +247,7 @@ method exception( Str $message, XML::LibXML::Node $node?, Bool $skip_ok? ) {
 package PRANG::Graph::Context::Error;
 
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 
 has 'node' =>
 	is => "ro",
@@ -224,7 +270,9 @@ has 'skip_ok' =>
 	isa => "Bool",
 	;
 
-method show_node {
+sub show_node {
+    my $self = shift;
+    
 	return "" unless $self->has_node;
 	my $extra = "";
 	my $node = $self->node;

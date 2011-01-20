@@ -2,6 +2,7 @@
 package PRANG::Graph;
 
 use Moose::Role;
+use Moose::Meta::TypeConstraint;
 
 use PRANG;
 use PRANG::Graph::Context;
@@ -15,7 +16,7 @@ use PRANG::Graph::Quantity;
 
 use PRANG::Graph::Meta::Attr;
 use PRANG::Graph::Meta::Element;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 
 use PRANG::Marshaller;
 
@@ -49,29 +50,55 @@ Moose::Exporter->setup_import_methods(
 requires 'xmlns';
 requires 'root_element';
 
-method marshaller($inv:) { #returns PRANG::Marshaller {
+sub marshaller { #returns PRANG::Marshaller {
+    my $inv = shift;
+    
 	if ( ref $inv ) {
 		$inv = ref $inv;
 	}
 	PRANG::Marshaller->get($inv);
 }
 
-method parse($class: Str $xml) {
+sub parse {
+    my $class = shift;
+    my ( $xml ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );
+    
 	my $instance = $class->marshaller->parse( xml => $xml );
 	return $instance;
 }
 
-method parse_file($class: Str $filename) {
+sub parse_file {
+    my $class = shift;
+    my ( $filename ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );    
+    
 	my $instance = $class->marshaller->parse( filename => $filename );
 	return $instance;
 }
 
-method parse_fh($class: GlobRef $fh) {
+sub parse_fh() {
+    my $class = shift;
+    my ( $fh ) = pos_validated_list(
+        \@_,
+        { isa => 'GlobRef' },
+    );        
+    
 	my $instance = $class->marshaller->parse( fh => $fh );
 	return $instance;
 }
 
-method to_xml(Int $format = 0) {
+sub to_xml() {
+    my $self = shift;
+    my ( $format ) = pos_validated_list(
+        \@_,
+        { isa => 'Int', default => 0 },
+    );          
+    
 	my $marshaller = $self->marshaller;
 	$marshaller->to_xml( $self, $format );
 }
