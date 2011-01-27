@@ -304,6 +304,9 @@ parsing XML from a trusted source, but that source may introduce
 new elements and attributes. Using lax mode, your parser will
 be forwards compatible for any additions. 
 
+Without lax mode, any attributes or elements not defined in your
+classes will cause PRANG to throw an exception.
+
 =head2 B<to_xml(PRANG::Graph $object: Int $format = 0) returns Str>
 
 Converts an object to an XML string.  The returned XML will include
