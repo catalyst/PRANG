@@ -12,18 +12,26 @@ has 'members' =>
 
 sub accept {
     my $self = shift;
-    my ( $node, $ctx ) = pos_validated_list(
+    my ( $node, $ctx, $lax ) = pos_validated_list(
         \@_,
         { isa => 'XML::LibXML::Node' },
         { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool' },
     );     
     
 	my $pos = $ctx->seq_pos;
 	my ($key, $val, $x, $ns, $member);
-	do {
-		$member = $self->members->[$pos-1]
-			or $ctx->exception("unexpected element", $node);
+	do {	    
+	    $member = $self->members->[$pos-1];
+		
+		if (! $member) {
+			$ctx->exception("unexpected element", $node)
+			 unless $lax;
+			return;
+		}
+		
 		($key, $val, $x, $ns) = $member->accept($node, $ctx);
+		
 		if (!$key or !$member->accept_many ) {
 			$ctx->seq_pos(++$pos);
 		}

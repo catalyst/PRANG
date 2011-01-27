@@ -112,6 +112,7 @@ sub accept {
         \@_,
         { isa => 'XML::LibXML::Node' },
         { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1 },
     );    
     
 	my ($ret_nodeName, $xmlns) = $self->node_ok($node, $ctx);

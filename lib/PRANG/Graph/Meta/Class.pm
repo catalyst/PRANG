@@ -122,10 +122,11 @@ sub as_item($) {
 
 sub accept_attributes {
     my $self = shift;
-    my ( $node_attr, $context ) = pos_validated_list(
+    my ( $node_attr, $context, $lax ) = pos_validated_list(
         \@_,
         { isa => 'ArrayRef[XML::LibXML::Attr]' },
         { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1, default => 0 },
     );
 
 	my $attributes = $self->xml_attr;
@@ -214,9 +215,9 @@ sub accept_attributes {
 			# ignore their craven input.
 		}
 		else {
-
-			# fail.
-			$context->exception("invalid attribute '".$attr->name."'");
+			# fail, unless we're in lax mode, in which case do nothing.
+			$context->exception("invalid attribute '".$attr->name."'")
+			 unless $lax;
 		}
 	}
 	(%rv);
@@ -227,10 +228,11 @@ use JSON;
 sub accept_childnodes {
     my $self = shift;
     
-    my ( $childNodes, $context ) = pos_validated_list(
+    my ( $childNodes, $context, $lax ) = pos_validated_list(
         \@_,
         { isa => 'ArrayRef[XML::LibXML::Node]' },
         { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1, default => 0 },
     );    
     
 	my $graph = $self->graph;
@@ -246,8 +248,10 @@ sub accept_childnodes {
 	while ( my $input_node = shift @nodes ) {
 		next if $input_node->nodeType == XML_COMMENT_NODE;
 		my ($key, $value, $name, $xmlns) =
-			$graph->accept($input_node, $context);
+			$graph->accept($input_node, $context, $lax);
 		if ( !$key ) {
+		    next if $lax;
+		    
 			my (@what) = $graph->expected($context);
 			$context->exception(
 				"unexpected node: expecting @what",
@@ -359,10 +363,11 @@ sub accept_childnodes {
 sub marshall_in_element {
     my $self = shift;
     
-    my ( $node, $ctx ) = pos_validated_list(
+    my ( $node, $ctx, $lax ) = pos_validated_list(
         \@_,
         { isa => 'XML::LibXML::Node' },
         { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1, default => 0 },
     );       
     
 	my @node_attr = grep { $_->isa("XML::LibXML::Attr") }
@@ -379,7 +384,7 @@ sub marshall_in_element {
 		$node->localname,
 	);
 
-	my @init_args = $self->accept_attributes( \@node_attr, $new_ctx );
+	my @init_args = $self->accept_attributes( \@node_attr, $new_ctx, $lax );
 
 	# now process elements
 	my @childNodes = grep {
@@ -389,7 +394,7 @@ sub marshall_in_element {
 			)
 	} $node->childNodes;
 
-	push @init_args, $self->accept_childnodes( \@childNodes, $new_ctx );
+	push @init_args, $self->accept_childnodes( \@childNodes, $new_ctx, $lax );
 
 	my $value = eval { $self->name->new(@init_args) };
 	if ( !$value ) {

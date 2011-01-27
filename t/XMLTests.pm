@@ -64,7 +64,9 @@ sub parse_test {
 	my $class = shift;
 	my $xml = shift;
 	my $test_name = shift;
-	my $object = eval { $class->parse($xml) };
+	my $lax = shift // 0;
+	
+	my $object = eval { $class->parse($xml, $lax) };
 	my $ok = ok($object, "$test_name - parsed OK");
 	if ( !$ok ) {
 		diag("exception: $@");

@@ -61,34 +61,38 @@ sub marshaller { #returns PRANG::Marshaller {
 
 sub parse {
     my $class = shift;
-    my ( $xml ) = pos_validated_list(
+    
+    my ( $xml, $lax ) = pos_validated_list(
         \@_,
         { isa => 'Str' },
+        { isa => 'Bool', optional => 1, default => 0 }, 
     );
     
-	my $instance = $class->marshaller->parse( xml => $xml );
+	my $instance = $class->marshaller->parse( xml => $xml, lax => $lax );
 	return $instance;
 }
 
 sub parse_file {
     my $class = shift;
-    my ( $filename ) = pos_validated_list(
+    my ( $filename, $lax ) = pos_validated_list(
         \@_,
         { isa => 'Str' },
+        { isa => 'Bool', optional => 1, default => 0 }, 
     );    
     
-	my $instance = $class->marshaller->parse( filename => $filename );
+	my $instance = $class->marshaller->parse( filename => $filename, lax => $lax  );
 	return $instance;
 }
 
 sub parse_fh() {
     my $class = shift;
-    my ( $fh ) = pos_validated_list(
+    my ( $fh, $lax ) = pos_validated_list(
         \@_,
         { isa => 'GlobRef' },
+        { isa => 'Bool', optional => 1, default => 0 }, 
     );        
     
-	my $instance = $class->marshaller->parse( fh => $fh );
+	my $instance = $class->marshaller->parse( fh => $fh, lax => $lax  );
 	return $instance;
 }
 
@@ -284,7 +288,7 @@ These methods are defined in, or required classes which implement the
 C<PRANG::Graph> I<role>.  In general, that means they are a document
 type.
 
-=head2 B<parse($class: Str $xml) returns Object>
+=head2 B<parse($class: Str $xml, Bool $lax) returns Object>
 
 Parse an XML string according to the PRANG Graph and return the built
 object.  Throws exceptions on error.
@@ -292,6 +296,13 @@ object.  Throws exceptions on error.
 By example, this is:
 
  my $object = $class->parse($xml);
+ 
+The $lax param tells PRANG to use 'lax' parsing mode. This ignores
+any extra elements or attributes in the XML that haven't been
+specified in your definition classes. This is useful if you're
+parsing XML from a trusted source, but that source may introduce
+new elements and attributes. Using lax mode, your parser will
+be forwards compatible for any additions. 
 
 =head2 B<to_xml(PRANG::Graph $object: Int $format = 0) returns Str>
 

@@ -81,6 +81,7 @@ sub accept {
         \@_,
         { isa => 'XML::LibXML::Node' },
         { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1 },
     );
 
 	if ($ctx->chosen) {

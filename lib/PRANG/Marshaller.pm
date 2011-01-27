@@ -72,11 +72,12 @@ sub get {
 
 sub parse {
     my $self = shift;
-    my ( $xml, $filename, $fh ) = validated_list(
+    my ( $xml, $filename, $fh, $lax ) = validated_list(
         \@_,
         xml => { isa => 'Str', optional => 1 },
         filename => { isa => 'Str', optional => 1 },
         fh => { isa => 'GlobRef', optional => 1 },
+        lax => { isa => 'Bool', optional => 1, default => 0 },
     );    
 
 	my $parser = XML::LibXML->new;
@@ -143,6 +144,7 @@ sub parse {
 	my $rv = $self->class->marshall_in_element(
 		$rootNode,
 		$context,
+		$lax,
 	);
 	$rv;
 }
