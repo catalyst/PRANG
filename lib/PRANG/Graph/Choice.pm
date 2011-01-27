@@ -77,7 +77,7 @@ sub node_ok {
 
 sub accept {
     my $self = shift;
-    my ( $node, $ctx ) = pos_validated_list(
+    my ( $node, $ctx, $lax ) = pos_validated_list(
         \@_,
         { isa => 'XML::LibXML::Node' },
         { isa => 'PRANG::Graph::Context' },
@@ -105,7 +105,7 @@ sub accept {
 	for my $choice ( @{ $self->choices } ) {
 		$num++;
 		if ( defined $choice->node_ok($node, $ctx) ) {
-			($key, $val, $x, $ns) = $choice->accept($node, $ctx);
+			($key, $val, $x, $ns) = $choice->accept($node, $ctx, $lax);
 		}
 		if ($key) {
 			$ctx->chosen($num);

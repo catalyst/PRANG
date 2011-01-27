@@ -108,7 +108,7 @@ sub node_ok {
 
 sub accept {
     my $self = shift;
-    my ( $node, $ctx ) = pos_validated_list(
+    my ( $node, $ctx, $lax ) = pos_validated_list(
         \@_,
         { isa => 'XML::LibXML::Node' },
         { isa => 'PRANG::Graph::Context' },
@@ -146,6 +146,7 @@ sub accept {
 			? $marshaller->marshall_in_element(
 				$node,
 				$ctx,
+				$lax,
 				)
 			: $node
 		);
@@ -192,6 +193,7 @@ sub accept {
 				(undef, $value) = $self->contents->accept(
 					$childNodes[0],
 					$ctx,
+					$lax,
 				);
 			}
 			$ctx->element_ok(1);

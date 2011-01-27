@@ -32,7 +32,7 @@ sub accept_many {1}
 
 sub accept {
     my $self = shift;
-    my ( $node, $ctx ) = pos_validated_list(
+    my ( $node, $ctx, $lax ) = pos_validated_list(
         \@_,
         { isa => 'XML::LibXML::Node' },
         { isa => 'PRANG::Graph::Context' },
@@ -42,7 +42,7 @@ sub accept {
 	my $found = $ctx->quant_found;
 	my $ok = defined $self->child->node_ok($node, $ctx);
 	return if not $ok;
-	my ($key, $value, $x, $ns) = $self->child->accept($node, $ctx)
+	my ($key, $value, $x, $ns) = $self->child->accept($node, $ctx, $lax)
 		or $ctx->exception(
 		"internal error: node ok, but then not accepted?",
 		$node,

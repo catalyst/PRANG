@@ -67,7 +67,7 @@ sub parse {
         { isa => 'Str' },
         { isa => 'Bool', optional => 1, default => 0 }, 
     );
-    
+
 	my $instance = $class->marshaller->parse( xml => $xml, lax => $lax );
 	return $instance;
 }

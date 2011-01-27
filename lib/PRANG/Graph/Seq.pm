@@ -30,7 +30,7 @@ sub accept {
 			return;
 		}
 		
-		($key, $val, $x, $ns) = $member->accept($node, $ctx);
+		($key, $val, $x, $ns) = $member->accept($node, $ctx, $lax);
 		
 		if (!$key or !$member->accept_many ) {
 			$ctx->seq_pos(++$pos);
