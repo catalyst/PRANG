@@ -61,6 +61,7 @@ sub accept {
         \@_,
         { isa => 'XML::LibXML::Node' },
         { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool' },
     );    
     
 	if ( $node->nodeType == XML_TEXT_NODE ) {
