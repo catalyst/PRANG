@@ -329,6 +329,11 @@ namespace.
 If you are not using namespaces, just define the method in your class,
 and return a false value.
 
+=head2 B<encoding() returns Maybe[Str]>
+
+Class method that defines the encoding for this class when emitting XML. 
+Defaults to 'UTF-8'.
+
 =head2 B<root_element(Moose::Meta::Class $class:) returns Str>
 
 This is a B<required class method> which returns the XML name of the

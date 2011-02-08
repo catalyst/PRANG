@@ -31,6 +31,11 @@ has 'class' =>
 	}
 	},
 	;
+	
+has 'encoding' =>
+    isa => 'Str',
+    is => 'ro',
+    default => 'UTF-8';
 
 our %marshallers;  # could use MooseX::NaturalKey?
 
@@ -60,9 +65,11 @@ sub get {
 		$meta->meta->does_role("PRANG::Graph::Meta::Class")
 		)
 	{
+	    
+	    my $encoding = $class->can('encoding') ? $class->encoding : 'UTF-8';
 		$marshallers{$class} ||= do {
-			$inv->new( class => $class->meta );
-			}
+			$inv->new( class => $class->meta, encoding => $encoding );
+			}			
 	}
 	else {
 		die "cannot marshall ".$meta->name
@@ -150,7 +157,6 @@ sub parse {
 }
 
 sub xml_version { "1.0" }
-sub encoding { "UTF-8" }
 
 # nothing to see here ... move along please ...
 our $zok;
