@@ -4,7 +4,7 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
-=head2 VERSION 0.12 - ? July 2010
+=head2 VERSION 0.12 - 9 February 2011
 
 =over
 
@@ -21,6 +21,21 @@ Not setting 'required' or 'default' on complex element attributes (ie,
 attributes which contain another node), and which are explicitly or
 implicitly required - using C<xml_min>, C<xml_required>, etc - is now
 considered a declaration error and produces a warning.
+
+=item *
+
+Removed dependency on MooseX::Method::Signatures, and replaced it with
+MooseX::Params::Validate
+
+=item *
+
+Added a 'lax' parsing mode, which ignores any extra attributes or
+elements which aren't defined in your class.
+
+=item *
+
+Allow PRANG classes to define the encoding of the XML document
+emitted.
 
 =back
 
