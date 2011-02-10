@@ -44,8 +44,11 @@ sub has_element {
 
 Moose::Exporter->setup_import_methods(
 	with_meta => [qw(has_attr has_element)],
-	metaclass_roles => [qw(PRANG::Graph::Meta::Class)],
+	class_metaroles => {
+	    class => [qw(PRANG::Graph::Meta::Class)],
+	},
 );
+
 
 requires 'xmlns';
 requires 'root_element';

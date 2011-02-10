@@ -24,8 +24,10 @@ has 'class' =>
 	handles => [qw(marshall_in_element to_libxml)],
 	trigger => sub {
 	my $self = shift;
-	my $class = $self->class;
-	if ( !$class->can("marshall_in_element") ) {
+	my $class = shift;
+
+	if ( !$class->can("marshall_in_element") && ! $class->does_role('PRANG::Graph') ) {
+
 		$class = $class->name if ref $class;
 		die "Can't marshall $class; didn't 'use PRANG::Graph' ?";
 	}
@@ -147,7 +149,7 @@ sub parse {
 		xsi => $xsi,
 		prefix => "",
 	);
-
+	
 	my $rv = $self->class->marshall_in_element(
 		$rootNode,
 		$context,

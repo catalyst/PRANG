@@ -69,7 +69,7 @@ sub parse_test {
 	my $object = eval { $class->parse($xml, $lax) };
 	my $ok = ok($object, "$test_name - parsed OK");
 	if ( !$ok ) {
-		diag("exception: $@");
+		diag("exception during parsing: $@");
 	}
 	if ( $ok and ($main::VERBOSE//0)>0) {
 		diag("read: ".Dump($object));
@@ -101,7 +101,7 @@ sub emit_test {
 	my $time = show_elapsed;
 	ok($r_xml, "$test_name - emitted OK ($time)")
 		or do {
-		diag("exception: $@");
+		diag("exception during emitting: $@");
 		return undef;
 		};
 	if (($main::VERBOSE||0)>0) {
