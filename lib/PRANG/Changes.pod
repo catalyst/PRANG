@@ -4,6 +4,16 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.12 - 10 February 2011
+
+=over
+
+=item *
+
+Increased the minimum required version of Moose.
+
+=back
+
 =head2 VERSION 0.12 - 9 February 2011
 
 =over
