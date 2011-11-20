@@ -185,7 +185,7 @@ sub build_graph_node {
 			push @expect_type, $x->class;
 		}
 		elsif ( $x->isa("Moose::Meta::TypeConstraint::Union") ) {
-			push @st, @{ $x->parents };
+			push @st, @{ $x->type_constraints };
 		}
 		elsif ( $x->isa("Moose::Meta::TypeConstraint::Enum") ) {
 			push @st, $x->parent;
