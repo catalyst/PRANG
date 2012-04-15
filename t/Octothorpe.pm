@@ -1,9 +1,10 @@
 package Octothorpe;
 use Moose;
 sub xmlns {}
-sub root_element { "Octothorpe" }
+sub root_element {"Octothorpe"}
 use PRANG::Graph;
 use Moose::Util::TypeConstraints;
+
 # class tests mixed graph structure:
 #   Seq -> Quant -> Element
 #   Seq -> Element
@@ -16,6 +17,7 @@ has_element "hyphen" =>
 has_element "colon" =>
 	is => "ro",
 	isa => "Str",
+	required => 1,
 	;
 has_element "apostrophe" =>
 	is => "ro",
@@ -70,6 +72,7 @@ sub xmlns {}
 package Ampersand;
 use Moose;
 use PRANG::Graph;
+
 # class tests: Quant -> Element
 has_element "interpunct" =>
 	is => "ro",
@@ -77,30 +80,33 @@ has_element "interpunct" =>
 	predicate => "has_interpunct",
 	;
 
-sub root_element { "ampersand" }
+sub root_element {"ampersand"}
 with 'InvertedQuestionMark';
 
 package Caret;
 use Moose;
 use PRANG::Graph;
+
 # class tests:
 #    Choice -> Element
 #    Choice -> Element -> Text
 has_element "solidus" =>
 	is => "ro",
 	isa => "Octothorpe|Int",
+	required => 1,
 	xml_nodeName => {
-		"braces" => "Int",
-		"parens" => "Octothorpe",
+	"braces" => "Int",
+	"parens" => "Octothorpe",
 	},
 	;
 
-sub root_element { "caret" }
+sub root_element {"caret"}
 with 'InvertedQuestionMark';
 
 package Asteriks;
 use Moose;
 use PRANG::Graph;
+
 # class tests:
 #    Quant -> Choice -> Element
 #    Quant -> Choice -> Text
@@ -108,9 +114,10 @@ has_element "bullet" =>
 	is => "ro",
 	isa => "ArrayRef[Str|Int]",
 	xml_max => 5,
+	required => 1,
 	xml_nodeName => {
-		"umlout" => "Int",
-		"guillemets" => "Str",
+	"umlout" => "Int",
+	"guillemets" => "Str",
 	},
 	;
 
@@ -135,9 +142,9 @@ has_element "asterism" =>
 	isa => "ArrayRef[Caret|Pilcrow|Str]",
 	xml_min => 0,
 	xml_nodeName => {
-		"space" => "Caret",
-		"underscore" => "Pilcrow",
-		"slash" => "Str",
+	"space" => "Caret",
+	"underscore" => "Pilcrow",
+	"slash" => "Str",
 	},
 	;
 
@@ -161,6 +168,7 @@ has "period_ns" => is => "ro";
 package Fingernails;
 use Moose;
 use PRANG::Graph;
+
 #    Class tests: Seq -> Element
 
 # test attribute xmlns wildcarding
@@ -176,6 +184,7 @@ has 'currency_ns' =>
 has_element "fishhooks" =>
 	is => "ro",
 	isa => "Deaeresis",
+	required => 1,
 	;
 
 package SectionMark;
@@ -194,10 +203,11 @@ use PRANG::Graph;
 has_element "double_angle_quotes" =>
 	is => "ro",
 	isa => "ArrayRef[Ampersand|Str|SectionMark]",
+	required => 1,
 	xml_nodeName => {
-		"" => "Str",
-		"interrobang" => "Ampersand",
-                "section_mark" => "SectionMark",
+	"" => "Str",
+	"interrobang" => "Ampersand",
+	"section_mark" => "SectionMark",
 	},
 	;
 
@@ -208,8 +218,8 @@ has_element "percent_sign" =>
 	isa => "Ampersand",
 	xml_required => 0,
 	xml_nodeName => {
-		"degree" => "Ampersand",
-		"period" => "Ampersand",
+	"degree" => "Ampersand",
+	"period" => "Ampersand",
 	},
 	xml_nodeName_attr => "percent_sign_type",
 	;
@@ -225,12 +235,12 @@ has_element "broken_bar" =>
 	isa => "Ampersand|Caret",
 	xml_required => 0,
 	xml_nodeName => {
-		"trumpery:broken_bar" => "Ampersand",
-		"rubble:broken_bar" => "Caret",
+	"trumpery:broken_bar" => "Ampersand",
+	"rubble:broken_bar" => "Caret",
 	},
 	xml_nodeName_prefix => {
-		"trumpery" => "uri:type:A",
-		"rubble" => "uri:type:B",
+	"trumpery" => "uri:type:A",
+	"rubble" => "uri:type:B",
 	},
 	;
 
@@ -239,12 +249,12 @@ has_element "prime" =>
 	isa => "Ampersand",
 	xml_required => 0,
 	xml_nodeName => {
-		"trumpery:single_quotes" => "Ampersand",
-		"rubble:single_quotes" => "Ampersand",
+	"trumpery:single_quotes" => "Ampersand",
+	"rubble:single_quotes" => "Ampersand",
 	},
 	xml_nodeName_prefix => {
-		"trumpery" => "uri:type:A",
-		"rubble" => "uri:type:B",
+	"trumpery" => "uri:type:A",
+	"rubble" => "uri:type:B",
 	},
 	xmlns_attr => "prime_ns",
 	;

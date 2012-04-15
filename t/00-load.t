@@ -44,7 +44,8 @@ while ( my ($module, $uses) = each %uses ) {
 
 my %done;
 while (@modules) {
-	my (@winners) = grep { !$uses{$_} or !keys %{ $uses{$_} } } @modules;
+	my (@winners) =
+		grep { !$uses{$_} or !keys %{ $uses{$_} } } @modules;
 	if ( !@winners ) {
 		@winners = shift @modules;
 	}

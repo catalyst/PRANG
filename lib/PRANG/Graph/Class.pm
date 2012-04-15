@@ -7,7 +7,10 @@ package PRANG::Graph::Class;
 
 use Moose::Role;
 
-BEGIN { warn "PRANG::Graph::Class is now deprecated" unless $0 =~ /00-load.t/ }
+BEGIN {
+	warn "PRANG::Graph::Class is now deprecated"
+		unless $0 =~ /00-load.t/;
+}
 
 1;
 

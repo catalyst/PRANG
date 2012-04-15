@@ -3,8 +3,13 @@ package PRANG::Graph::Choice;
 
 use 5.010;
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 use Moose::Util::TypeConstraints;
+use Moose::Meta::TypeConstraint;
+
+BEGIN {
+    class_type('Moose::Meta::TypeConstraint');
+}
 
 has 'choices' =>
 	is => "ro",
@@ -54,7 +59,14 @@ has 'xmlns' =>
 	predicate => "has_xmlns",
 	;
 
-method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub node_ok {
+    my $self = shift;
+    my ( $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+    );        
+    
 	for my $choice ( @{ $self->choices } ) {
 		if ( defined $choice->node_ok($node, $ctx) ) {
 			return 1;
@@ -63,9 +75,17 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	return;
 }
 
-method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub accept {
+    my $self = shift;
+    my ( $node, $ctx, $lax ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1 },
+    );
 
 	if ($ctx->chosen) {
+
 		# this is a safe exception; the only time this graph
 		# node will be called repeatedly is if it is the root
 		# node for an element, due to the structure of
@@ -73,33 +93,48 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 		$ctx->exception(
 			"Single child node expected, multiple found",
 			$node,
-		       );
+		);
 	}
 
 	my $num;
-	my $name = $node->isa("XML::LibXML::Text") ? ""
+	my $name = $node->isa("XML::LibXML::Text")
+		? ""
 		: $node->localname;
 	my $xmlns = length($name) && $node->namespaceURI;
 	my ($key, $val, $x, $ns);
 	for my $choice ( @{ $self->choices } ) {
 		$num++;
 		if ( defined $choice->node_ok($node, $ctx) ) {
-			($key, $val, $x, $ns) = $choice->accept($node, $ctx);
+			($key, $val, $x, $ns) = $choice->accept($node, $ctx, $lax);
 		}
-		if ( $key ) {
+		if ($key) {
 			$ctx->chosen($num);
-			return ($key, $val, $x||eval{$choice->nodeName}||"",
-				$ns);
+			return (
+				$key, $val, $x||eval{$choice->nodeName}||"",
+				$ns
+			);
 		}
 	}
 	return ();
 }
 
-method complete( PRANG::Graph::Context $ctx ) {
+sub complete {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	$ctx->chosen;
 }
 
-method expected( PRANG::Graph::Context $ctx ) {
+sub expected {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	if ( my $num = $ctx->chosen ) {
 		return $self->choices->[$num-1]->expected($ctx);
 	}
@@ -112,9 +147,28 @@ method expected( PRANG::Graph::Context $ctx ) {
 	}
 }
 
-our $REGISTRY = Moose::Util::TypeConstraints::get_type_constraint_registry();
+our $REGISTRY =
+	Moose::Util::TypeConstraints::get_type_constraint_registry();
 
-method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item :$value, Int :$slot ) {
+sub output {
+    my $self = shift;
+    
+    # First 3 args positional, rest are named
+    #  Because we're making 2 validation calls, we have to use different cache keys
+    my ( $item, $node, $ctx ) = pos_validated_list(
+        [@_[0..2]],
+        { isa => 'Object' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+        MX_PARAMS_VALIDATE_CACHE_KEY => 'choice-output-positional',
+    );
+    
+    my ( $value, $slot ) = validated_list(
+        [@_[3..$#_]],
+        value => { isa => 'Item', optional => 1 },
+        slot => { isa => 'Int', optional => 1 },
+        MX_PARAMS_VALIDATE_CACHE_KEY => 'choice-output-named',
+    );
 
 	my $an = $self->attrName;
 	$value //= $item->$an;
@@ -145,7 +199,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		my $map = $self->type_map;
 		for my $element ( keys %$map ) {
 			my $type = $map->{$element};
-			if ( ! ref $type ) {
+			if ( !ref $type ) {
 				$type = $map->{$element} =
 					$REGISTRY->get_type_constraint($type);
 			}
@@ -156,7 +210,10 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		}
 	}
 	if ( !defined $name ) {
-		$ctx->exception("don't know what to serialize $value to for slot ".$self->attrName);
+		$ctx->exception(
+			"don't know what to serialize $value to for slot "
+				.$self->attrName
+		);
 	}
 	if ( length $name ) {
 		if ( $self->has_type_map_prefix and $name =~ /(.*):(.*)/) {
@@ -165,13 +222,13 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		}
 		my $found;
 		for my $choice ( @{ $self->choices } ) {
-			if ( $xmlns ) {
+			if ($xmlns) {
 				next unless $choice->has_xmlns;
 				next unless $choice->xmlns eq $xmlns or
-					$choice->xmlns eq "*";
+						$choice->xmlns eq "*";
 			}
 			next unless $choice->nodeName eq $name or
-				$choice->nodeName eq "*";
+					$choice->nodeName eq "*";
 			$found++;
 			$choice->output(
 				$item,$node,$ctx,
@@ -179,17 +236,23 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 				(defined $slot ? (slot => $slot) : ()),
 				name => $name,
 				(defined $xmlns ? (xmlns => $xmlns) : ()),
-			       );
+			);
 			last;
 		}
 		if ( !$found ) {
 			$ctx->exception(
-	"don't know what to serialize $value to for slot ".$self->attrName
-	." (looked for '$name' node".($xmlns?" xmlns='$xmlns'":"").")",
-			       );
+				"don't know what to serialize $value to for slot "
+					.$self->attrName
+					." (looked for '$name' node"
+					.(
+					$xmlns?" xmlns='$xmlns'":""
+					)
+					.")",
+			);
 		}
 	}
 	else {
+
 		# textnode ... jfdi
 		my $tn = $node->ownerDocument->createTextNode($value);
 		$node->appendChild($tn);

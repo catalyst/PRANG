@@ -2,7 +2,6 @@
 package PRANG::Cookbook::Book;
 
 use Moose;
-use MooseX::Method::Signatures;
 use PRANG::Graph;
 use PRANG::XMLSchema::Types;
 
@@ -18,6 +17,7 @@ has_element 'title' =>
 	is => 'rw',
 	isa => 'Str',
 	xml_required => 1,
+	required => 1,
 	;
 
 has_element 'author' =>
@@ -25,6 +25,7 @@ has_element 'author' =>
 	is => 'rw',
 	isa => 'ArrayRef[Str]',
 	xml_required => 1,
+	required => 1,
 	;
 
 has_element 'pages' =>
@@ -32,6 +33,7 @@ has_element 'pages' =>
 	is => 'rw',
 	isa => 'Int',
 	xml_required => 1,
+	required => 1,
 	;
 
 has_element 'published' =>
@@ -41,7 +43,7 @@ has_element 'published' =>
 	xml_required => 0,
 	;
 
-sub root_element { 'book' }
+sub root_element {'book'}
 with 'PRANG::Cookbook';
 
 1;

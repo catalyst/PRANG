@@ -3,7 +3,7 @@ package PRANG::Graph::Meta::Element;
 
 use Moose::Role;
 use PRANG::Util qw(types_of);
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 
 has 'xmlns' =>
 	is => "rw",
@@ -65,36 +65,72 @@ has 'graph_node' =>
 	lazy => 1,
 	required => 1,
 	default => sub {
-		my $self = shift;
-		$self->build_graph_node;
+	my $self = shift;
+	$self->build_graph_node;
 	},
+	;
+
+has "_item_tc" =>
+	is => "rw",
+	isa => "Moose::Meta::TypeConstraint",
 	;
 
 use constant HIGHER_ORDER_TYPE =>
 	"Moose::Meta::TypeConstraint::Parameterized";
 
-method error(Str $message) {
+sub _error {
+    my $self = shift;
+    my ( $message ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );    
+    
 	my $class = $self->associated_class;
 	my $context = " (Element: ";
-	if ( $class ) {
+	if ($class) {
 		$context .= $class->name;
 	}
 	else {
 		$context .= "(unassociated)";
 	}
 	$context .= "/".$self->name.") ";
-	die $message.$context;
+	$message.$context;
 }
 
-method build_graph_node() {
+sub error {
+    my $self = shift;
+    my ( $message ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );      
+    
+	confess $self->_error($message);
+}
+
+sub warn_of {
+    my $self = shift;
+    my ( $message ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );    
+    
+	warn $self->_error($message)."\n";
+}
+
+sub build_graph_node {
+    my $self = shift;
+    
 	my ($expect_one, $expect_many);
 
 	if ( $self->has_xml_required ) {
 		$expect_one = $self->xml_required;
 	}
-	elsif ( $self->has_predicate or
-			$self->has_xml_min and !$self->xml_min ) {
-		$expect_one = 0;
+	elsif (
+		$self->has_predicate
+		or
+		$self->has_xml_min and !$self->xml_min
+		)
+	{   $expect_one = 0;
 	}
 	else {
 		$expect_one = 1;
@@ -103,7 +139,7 @@ method build_graph_node() {
 	my $t_c = $self->type_constraint
 		or $self->error(
 		"No type constraint on attribute; did you specify 'isa'?",
-		       );
+		);
 
 	# check to see whether ArrayRef was specified
 	if ( $t_c->is_a_type_of("ArrayRef") ) {
@@ -124,13 +160,18 @@ method build_graph_node() {
 
 		$t_c = $t_c->type_parameter;
 	}
-	elsif ( $self->has_xml_max and $self->xml_max > 1 or
-			$self->has_xml_min and $self->xml_min > 1
-	       ) {
+	elsif (
+		$self->has_xml_max and $self->xml_max > 1
+		or
+		$self->has_xml_min and $self->xml_min > 1
+		)
+	{
 		$self->error(
-	"min/max specified as >1, but type constraint is not an ArrayRef",
-		       );
+"min/max specified as >1, but type constraint is not an ArrayRef",
+		);
 	}
+
+	$self->_item_tc($t_c);
 
 	# ok.  now let's walk the type constraint tree, and look for
 	# types
@@ -144,12 +185,13 @@ method build_graph_node() {
 			push @expect_type, $x->class;
 		}
 		elsif ( $x->isa("Moose::Meta::TypeConstraint::Union") ) {
-			push @st, @{ $x->parents };
+			push @st, @{ $x->type_constraints };
 		}
 		elsif ( $x->isa("Moose::Meta::TypeConstraint::Enum") ) {
 			push @st, $x->parent;
 		}
 		elsif ( $x->isa("Moose::Meta::TypeConstraint::Role") ) {
+
 			# likely to be a wildcard.
 			push @expect_role, $x->role;
 		}
@@ -165,87 +207,104 @@ method build_graph_node() {
 			}
 		}
 		else {
-			$self->error("Sorry, I don't know how to map a "
-					     .ref($x));
+			$self->error(
+				"Sorry, I don't know how to map a "
+					.ref($x)
+			);
 		}
 	}
 
 	my $node;
-	my $nodeName = $self->has_xml_nodeName ?
-		$self->xml_nodeName : $self->name;
-	my $nodeName_prefix = $self->has_xml_nodeName_prefix ?
-		$self->xml_nodeName_prefix : {};
+	my $nodeName = $self->has_xml_nodeName
+		?
+		$self->xml_nodeName
+		: $self->name;
+	my $nodeName_prefix = $self->has_xml_nodeName_prefix
+		?
+		$self->xml_nodeName_prefix
+		: {};
 	my $nodeName_r_prefix = { reverse %$nodeName_prefix };
 
 	my $expect_concrete = ($expect_bool||0) +
 		($expect_simple||0) + @expect_type;
 
 	if ( $expect_concrete > 1 ) {
+
 		# multiple or ambiguous types are specified; we *need*
 		# to know
-		if ( ! ref $nodeName ) {
+		if ( !ref $nodeName ) {
 			$self->error(
-			"type union specified, but no nodename map given"
-				);
+				"type union specified, but no nodename map given"
+			);
 		}
 		while ( my ($nodeName, $type) = each %$nodeName ) {
 			if ( not exists $t_c{$type} ) {
 				$self->error(
 "nodeName to type map specifies $nodeName => '$type', but $type is not"
 						." an acceptable type",
-				       );
+				);
 			}
 		}
 	}
 
 	my $prefix_xx;
+
 	# plug-in type classes.
-	if ( @expect_role ) {
+	if (@expect_role) {
 		my @users = map { $_->name } types_of(@expect_role);
 		if ( $self->has_xml_nodeName and !ref $self->xml_nodeName ) {
 			$self->error(
 "Str value for xml_nodeName incompatible with specifying a role type "
-	."constraint"
+					."constraint"
 			);
 		}
 		$nodeName = {} if !ref $nodeName;
-		for my $user ( @users ) {
+		for my $user (@users) {
 			if ( $user->does("PRANG::Graph") ) {
 				my $plugin_nodeName = $user->root_element;
 				my $xmlns;
 				if ( $xmlns = eval { $user->xmlns }//"" ) {
 					if ( not exists $nodeName_r_prefix->{$xmlns} ) {
 						$prefix_xx ||= "a";
-						$prefix_xx++ while exists $nodeName_prefix->{$prefix_xx};
+						$prefix_xx++
+							while exists $nodeName_prefix->{$prefix_xx};
 						$nodeName_prefix->{$prefix_xx} = $xmlns;
 						$nodeName_r_prefix->{$xmlns} = $prefix_xx;
 					}
-					$plugin_nodeName = "$nodeName_r_prefix->{$xmlns}:$plugin_nodeName";
+					$plugin_nodeName =
+						"$nodeName_r_prefix->{$xmlns}:$plugin_nodeName";
 				}
 				if ( exists $nodeName->{$plugin_nodeName} ) {
 					$self->error(
-"Both '$user' and '$nodeName->{$plugin_nodeName}' plug-in type specify nodename $plugin_nodeName".($xmlns ? " (xmlns $xmlns)" : "").", conflict",
-					       );
+"Both '$user' and '$nodeName->{$plugin_nodeName}' plug-in type specify nodename $plugin_nodeName"
+							.(
+							$xmlns ? " (xmlns $xmlns)" : ""
+							)
+							.", conflict",
+					);
 				}
 				$nodeName->{$plugin_nodeName} = $user;
 			}
 			else {
 				$self->error(
-"Can't use one or more of role(s) @expect_role; ".$user->name." needs to consume role PRANG::Graph (hint: did you forget to \"with 'PRANG::Graph';\"?)",
-					);
+					"Can't use one or more of role(s) @expect_role; "
+						.$user->name
+						." needs to consume role PRANG::Graph (hint: did you forget to \"with 'PRANG::Graph';\"?)",
+				);
 			}
 			push @expect_type, $user;
 			$expect_concrete++;
 		}
 		$self->xml_nodeName({%$nodeName});
-		if ( !$self->has_xml_nodeName_prefix and keys %$nodeName_prefix ) {
-			$self->xml_nodeName_prefix($nodeName_prefix);
+		if ( !$self->has_xml_nodeName_prefix
+			and keys %$nodeName_prefix )
+		{   $self->xml_nodeName_prefix($nodeName_prefix);
 		}
 	}
 	if (!$expect_concrete) {
 		$self->error(
 			"no type(s) specified (or, role evaluated to nothing)",
-		       )
+			)
 	}
 
 	if ( !ref $nodeName ) {
@@ -277,7 +336,9 @@ method build_graph_node() {
 		if ( $nodeName_prefix and $name =~ /^(\w+):(\w+)/ ) {
 			my %this_xmlns_opts = %xmlns_opts;
 			my $xmlns = $nodeName_prefix->{$1}
-				or die "unknown prefix '$1' used on attribute ".$self->name." of ".eval{$self->associated_class->name};
+				or die "unknown prefix '$1' used on attribute "
+				.$self->name." of "
+				.eval{$self->associated_class->name};
 			$this_xmlns_opts{xmlns} = $xmlns;
 			($2, \%this_xmlns_opts);
 		}
@@ -287,7 +348,7 @@ method build_graph_node() {
 	};
 
 	my @expect;
-	for my $class ( @expect_type ) {
+	for my $class (@expect_type) {
 		my (@names) = grep { $nodeName->{$_} eq $class }
 			keys %$nodeName;
 
@@ -295,26 +356,36 @@ method build_graph_node() {
 		if ( !eval{ $class->meta->can("marshall_in_element") } ) {
 			my $ok = eval "use $class; 1";
 			if ( !$ok ) {
-				die "problem auto-including class '$class'; (hint: did you expect '$class' to be a subtype, but forget to define it before it was used or not use BEGIN { } appropriately?); exception is: $@";
+				die
+"problem auto-including class '$class'; (hint: did you expect '$class' to be a subtype, but forget to define it before it was used or not use BEGIN { } appropriately?); exception is: $@";
 			}
 		}
 		if ( !eval{ $class->meta->can("marshall_in_element") } ) {
-			die "'$class' can't marshall in; did you 'use PRANG::Graph'?";
+			die
+"'$class' can't marshall in; did you 'use PRANG::Graph'?";
 		}
 
 		if ( !@names ) {
 			die "type '$class' specified as allowed on '"
-	.$self->name."' element of ".$self->associated_class->name
-	.", but which node names indicate that type?  You've defined: "
-	.($self->has_xml_nodeName
-	? ( ref $self->xml_nodeName
-	    ? join("; ", map { "$_ => ".$self->xml_nodeName->{$_} }
-		      sort keys %{$self->xml_nodeName} )
-	    : ("(all '".$self->xml_nodeName."')") )
-	: "(nothing)" );
+				.$self->name
+				."' element of "
+				.$self->associated_class->name
+				.", but which node names indicate that type?  You've defined: "
+				.(
+				$self->has_xml_nodeName
+				? ( ref $self->xml_nodeName
+					? join(
+						"; ",
+						map { "$_ => ".$self->xml_nodeName->{$_} }
+							sort keys %{$self->xml_nodeName}
+						)
+					: ("(all '".$self->xml_nodeName."')")
+					)
+				: "(nothing)"
+				);
 		}
 
-		for my $name ( @names ) {
+		for my $name (@names) {
 			my ($nn, $xmlns_args) =
 				$prefix_xmlns->($name);
 			push @expect, PRANG::Graph::Element->new(
@@ -322,46 +393,52 @@ method build_graph_node() {
 				attrName => $self->name,
 				nodeClass => $class,
 				nodeName => $nn,
-			       );
+			);
 			delete $nodeName->{$name};
 		}
 	}
 
-	if ( $expect_bool ) {
+	if ($expect_bool) {
 		my (@names) = grep {
 			!$t_c{$nodeName->{$_}}->is_a_type_of("Object")
 		} keys %$nodeName;
 
 		# 'Bool' elements are a shorthand for the element
 		# 'maybe' being there.
-		for my $name ( @names ) {
+		for my $name (@names) {
 			my ($nn, $xmlns_args) = $prefix_xmlns->($name);
 			push @expect, PRANG::Graph::Element->new(
 				%$xmlns_args,
 				attrName => $self->name,
 				attIsArray => $expect_many,
 				nodeName => $nn,
-			       );
+			);
 			delete $nodeName->{$name};
 		}
 	}
-	if ( $expect_simple ) {
+	if ($expect_simple) {
 		my (@names) = grep {
 			my $t_c = $t_c{$nodeName->{$_}};
-			die "dang, ".$self->name." of ".$self->associated_class->name.", no type constraint called $nodeName->{$_} (element $_)"
+			die "dang, "
+				.$self->name." of "
+				.$self->associated_class->name
+				.", no type constraint called $nodeName->{$_} (element $_)"
 				if !$t_c;
 			!$t_c->is_a_type_of("Object")
 		} keys %$nodeName;
-		for my $name ( @names ) {
+		for my $name (@names) {
+
 			# 'Str', 'Int', etc element attributes: this
 			# means an XML data type: <attr>value</attr>
 			if ( !length($name) ) {
+
 				# this is for 'mixed' data
 				push @expect, PRANG::Graph::Text->new(
 					attrName => $self->name,
-				       );
+				);
 			}
 			else {
+
 				# regular XML data style
 				my ($nn, $xmlns_args) =
 					$prefix_xmlns->($name);
@@ -370,7 +447,7 @@ method build_graph_node() {
 					attrName => $self->name,
 					nodeName => $nn,
 					contents => PRANG::Graph::Text->new,
-				       );
+				);
 			}
 			delete $nodeName->{$name};
 		}
@@ -387,11 +464,14 @@ method build_graph_node() {
 	my $fixed_xmlns = $self->xmlns;
 	my $use_prefixes = $self->has_xml_nodeName_prefix;
 	if ( $fixed_xmlns and $use_prefixes ) {
-		$self->error("specify only one of 'xmlns' / 'xml_nodeName_prefix' (note: latter may be implied by use of roles)");
+		$self->error(
+"specify only one of 'xmlns' / 'xml_nodeName_prefix' (note: latter may be implied by use of roles)"
+		);
 	}
-	while ( my ($element_fullname, $class) = each %{$self->xml_nodeName}) {
-		my ($xmlns, $localname);
-		if ( $use_prefixes ) {
+	while ( my ($element_fullname, $class) =
+		each %{$self->xml_nodeName})
+	{   my ($xmlns, $localname);
+		if ($use_prefixes) {
 			(my $prefix, $localname) =
 				($element_fullname =~ /^(?:(\w+):)?(\w+|\*)/);
 			$prefix //= "";
@@ -415,7 +495,7 @@ method build_graph_node() {
 			push @$aref, $ent;
 		}
 		else {
-			$seen_types{$class} = [ $ent ];
+			$seen_types{$class} = [$ent];
 		}
 	}
 
@@ -423,37 +503,38 @@ method build_graph_node() {
 	# xmlns_attr.  if all nodes have the same xmlns, we can use
 	# just name_attr
 	my @name_attr;
-	if ( $have_ambiguous ) {
+	if ($have_ambiguous) {
 		if ( keys %seen_localname > 1 or $seen_localname{"*"} ) {
 			if ( !$self->has_xml_nodeName_attr ) {
 				$self->error(
 "xml_nodeName map ambiguities or wildcarding imply need for "
-	."xml_nodeName_attr, but none given",
-				       );
+						."xml_nodeName_attr, but none given",
+				);
 			}
 			else {
 				my $attr = $self->xml_nodeName_attr;
 				push @name_attr, name_attr => $attr;
-				for my $x ( @expect ) {
+				for my $x (@expect) {
 					$x->nodeName_attr($attr);
 				}
 			}
 		}
 		else {
-			push @name_attr, xml_nodeName => (keys %seen_localname)[0]//"";
+			push @name_attr,
+				xml_nodeName => (keys %seen_localname)[0]//"";
 		}
 
 		if ( keys %seen_xmlns > 1 or $seen_xmlns{"*"} ) {
 			if ( !$self->has_xmlns_attr ) {
 				$self->error(
 "xml_nodeName map ambiguities or wildcarding imply need for "
-	."xmlns_attr, but none given",
-				       );
+						."xmlns_attr, but none given",
+				);
 			}
 			else {
 				my $attr = $self->xmlns_attr;
 				push @name_attr, xmlns_attr => $attr;
-				for my $x ( @expect ) {
+				for my $x (@expect) {
 					$x->xmlns_attr($attr);
 				}
 			}
@@ -463,7 +544,8 @@ method build_graph_node() {
 		}
 	}
 	elsif ( $self->has_xmlns_attr or $self->has_xml_nodeName_attr ) {
-		$self->error("unnecessary use of xmlns_attr / xml_nodeName_attr");
+		$self->error(
+			"unnecessary use of xmlns_attr / xml_nodeName_attr");
 	}
 	elsif ( $self->has_xml_nodeName ) {
 		push @name_attr, type_map => {%{$self->xml_nodeName}};
@@ -478,7 +560,7 @@ method build_graph_node() {
 			choices => \@expect,
 			attrName => $self->name,
 			@name_attr,
-		       );
+		);
 	}
 	else {
 		$node = $expect[0];
@@ -487,8 +569,23 @@ method build_graph_node() {
 		}
 	}
 
-	if ( $expect_bool ) {
+	if ($expect_bool) {
 		$expect_one = 0;
+	}
+	if (    $expect_one
+		and !$expect_simple
+		and
+		!$self->is_required and !$self->has_default
+		)
+	{
+		$self->warn_of(
+"expected element is not required, this can cause errors on marshall out"
+		);
+
+		# this is probably a bit harsh.
+		#$self->meta->find_attribute_by_name("required")->set_value(
+		#	$self, 1,
+		#	);
 	}
 
 	# deal with limits
@@ -506,12 +603,16 @@ method build_graph_node() {
 		if ( $self->has_xml_max ) {
 			push @min_max, max => $self->xml_max;
 		}
-		die "no node!  fail!  processing ".$self->associated_class->name.", element ".$self->name unless $node;
+		die "no node!  fail!  processing "
+			.$self->associated_class->name
+			.", element "
+			.$self->name
+			unless $node;
 		$node = PRANG::Graph::Quantity->new(
 			@min_max,
 			attrName => $self->name,
 			child => $node,
-		       );
+		);
 	}
 	else {
 		$self->xml_min(1);
@@ -522,9 +623,10 @@ method build_graph_node() {
 }
 
 package Moose::Meta::Attribute::Custom::Trait::PRANG::Element;
+
 sub register_implementation {
 	"PRANG::Graph::Meta::Element";
-};
+}
 
 1;
 

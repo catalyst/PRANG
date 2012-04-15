@@ -1,8 +1,6 @@
 
 package PRANG;
 
-our $VERSION = "0.11";
-
 1;
 
 __END__

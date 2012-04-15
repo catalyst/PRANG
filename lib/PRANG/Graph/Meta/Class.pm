@@ -2,8 +2,8 @@ package PRANG::Graph::Meta::Class;
 
 use 5.010;
 use Moose::Role;
-use MooseX::Method::Signatures;
 use Moose::Util::TypeConstraints;
+use MooseX::Params::Validate;
 use XML::LibXML;
 
 has 'xml_attr' =>
@@ -12,19 +12,23 @@ has 'xml_attr' =>
 	lazy => 1,
 	required => 1,
 	default => sub {
-		my $self = shift;
-		my @attr = grep { $_->does("PRANG::Graph::Meta::Attr") }
-			$self->get_all_attributes;
-		my $default_xmlns = ""; #eval { $self->name->xmlns };
-		my %attr_ns;
-		for my $attr ( @attr ) {
-			my $xmlns = $attr->has_xmlns ?
-				$attr->xmlns : $default_xmlns;
-			my $xml_name = $attr->has_xml_name ?
-				$attr->xml_name : $attr->name;
-			$attr_ns{$xmlns//""}{$xml_name} = $attr;
-		}
-		\%attr_ns;
+	my $self = shift;
+	my @attr = grep { $_->does("PRANG::Graph::Meta::Attr") }
+		$self->get_all_attributes;
+	my $default_xmlns = ""; #eval { $self->name->xmlns };
+	my %attr_ns;
+	for my $attr (@attr) {
+		my $xmlns = $attr->has_xmlns
+			?
+			$attr->xmlns
+			: $default_xmlns;
+		my $xml_name = $attr->has_xml_name
+			?
+			$attr->xml_name
+			: $attr->name;
+		$attr_ns{$xmlns//""}{$xml_name} = $attr;
+	}
+	\%attr_ns;
 	};
 
 has 'xml_elements' =>
@@ -33,30 +37,33 @@ has 'xml_elements' =>
 	lazy => 1,
 	required => 1,
 	default => sub {
-		my $self = shift;
-		my @elements = grep {
-			$_->does("PRANG::Graph::Meta::Element")
-		} $self->get_all_attributes;
-		my @e_c = map { $_->associated_class->name } @elements;
-		my %e_c_does;
-		for my $parent ( @e_c ) {
-			for my $child ( @e_c ) {
-				if ( $parent eq $child ) {
-					$e_c_does{$parent}{$child} = 0;
-				}
-				else {
-					my $cdp = $child->does($parent) ||
-						$child->isa($parent);
-					$e_c_does{$parent}{$child} =
-						( $cdp ? -1 : 1 );
-				}
+	my $self = shift;
+	my @elements = grep {
+		$_->does("PRANG::Graph::Meta::Element")
+	} $self->get_all_attributes;
+	my @e_c = map { $_->associated_class->name } @elements;
+	my %e_c_does;
+	for my $parent (@e_c) {
+		for my $child (@e_c) {
+			if ( $parent eq $child ) {
+				$e_c_does{$parent}{$child} = 0;
+			}
+			else {
+				my $cdp = $child->does($parent) ||
+					$child->isa($parent);
+				$e_c_does{$parent}{$child} =
+					( $cdp ? -1 : 1 );
 			}
 		}
-		[ map { $elements[$_] } sort {
+	}
+	[   map { $elements[$_] } sort {
 			$e_c_does{$e_c[$a]}{$e_c[$b]} or
-				($elements[$a]->insertion_order
-					 <=> $elements[$b]->insertion_order)
-			} 0..$#elements ];
+				(
+				$elements[$a]->insertion_order
+				<=> $elements[$b]->insertion_order
+				)
+			} 0..$#elements
+	];
 	};
 
 has 'graph' =>
@@ -65,18 +72,20 @@ has 'graph' =>
 	lazy => 1,
 	required => 1,
 	default => sub {
-		$_[0]->build_graph;
+	$_[0]->build_graph;
 	},
 	;
 
-method build_graph( ) {
+sub build_graph {
+    my $self = shift;
+    
 	my @nodes = map { $_->graph_node } @{ $self->xml_elements };
 	if ( @nodes != 1 ) {
 		PRANG::Graph::Seq->new(
 			members => \@nodes,
-		       );
+		);
 	}
-	elsif ( @nodes ) {
+	elsif (@nodes) {
 		$nodes[0];
 	}
 }
@@ -111,12 +120,20 @@ sub as_item($) {
 	}
 }
 
-method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::Context $context ) {
+sub accept_attributes {
+    my $self = shift;
+    my ( $node_attr, $context, $lax ) = pos_validated_list(
+        \@_,
+        { isa => 'ArrayRef[XML::LibXML::Attr]' },
+        { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1, default => 0 },
+    );
 
 	my $attributes = $self->xml_attr;
 	my %rv;
+
 	# process attributes
-	for my $attr ( @$node_attr ) {
+	for my $attr (@$node_attr) {
 		my $prefix = $attr->prefix;
 		if ( !defined $prefix ) {
 			$prefix = "";
@@ -132,18 +149,32 @@ method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::
 		my $_xmlns_att_name = sub {
 			$xmlns_att_name = $meta_att->xmlns_attr
 				or $context->exception(
-			"xmlns wildcarded, but no xmlns_attr set on "
-				.$self->name." property '"
+				"xmlns wildcarded, but no xmlns_attr set on "
+					.$self->name." property '"
 					.$meta_att->att_name."'",
-			       );
+				);
 		};
 
-		if ( $meta_att ) {
+		if ($meta_att) {
+
 			# sweet, it's ok
 			my $att_name = $meta_att->name;
+
+			# check the type constraint
+			if ( my $tc = $meta_att->type_constraint
+				and !$meta_att->xml_isa )
+			{
+				if ( !$tc->check($attr->value) ) {
+					$context->exception(
+						"invalid value of attribute ".$attr->nodeName,
+						$attr->parentNode,
+					);
+				}
+			}
 			add_to_list($rv{$att_name}, $attr->value);
 		}
 		elsif ( $meta_att = $attributes->{"*"}{$attr->localname} ) {
+
 			# wildcard xmlns only; need to store the xmlns
 			# in another attribute.  Also, multiple values
 			# may appear with different xml namespaces.
@@ -153,11 +184,13 @@ method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::
 			add_to_list($rv{$xmlns_att_name}, $xmlns);
 		}
 		elsif ( $meta_att = $attributes->{$xmlns}{"*"} ) {
+
 			# wildcard attribute name.  This attribute gets
 			# HashRef treatment.
 			$rv{$meta_att->name}{$attr->localname} = $attr->value;
 		}
 		elsif ( $meta_att = $attributes->{"*"}{"*"} ) {
+
 			# wildcard attribute name and namespace.  Both
 			# attributes gets the joy of HashRef[ArrayRef[Str]|Str]
 			my $att_name = $meta_att->name;
@@ -165,56 +198,90 @@ method accept_attributes( ArrayRef[XML::LibXML::Attr] $node_attr, PRANG::Graph::
 			add_to_list(
 				$rv{$att_name}{$attr->localname},
 				$attr->value,
-			       );
+			);
 			add_to_list(
 				$rv{$xmlns_att_name}{$attr->localname},
 				$xmlns
-			       );
+			);
 		}
-		elsif ( $xmlns =~ m{^\w+://\w+\.w3\.org/.*schema}i and
-				$attr->localname =~ m{schema}i ) {
+		elsif (
+			$xmlns =~ m{^\w+://\w+\.w3\.org/.*schema}i
+			and
+			$attr->localname =~ m{schema}i
+			)
+		{
+
 			# they said "schema" twice, they must be mad.
 			# ignore their craven input.
 		}
 		else {
-			# fail.
-			$context->exception("invalid attribute '".$attr->name."'");
+			# fail, unless we're in lax mode, in which case do nothing.
+			$context->exception("invalid attribute '".$attr->name."'")
+			 unless $lax;
 		}
-	};
+	}
 	(%rv);
 }
 
-method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph::Context $context ) {
+use JSON;
+
+sub accept_childnodes {
+    my $self = shift;
+    
+    my ( $childNodes, $context, $lax ) = pos_validated_list(
+        \@_,
+        { isa => 'ArrayRef[XML::LibXML::Node]' },
+        { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1, default => 0 },
+    );    
+    
 	my $graph = $self->graph;
 
-	my (%init_args, %init_arg_names, %init_arg_xmlns);
+	my (%init_args, %init_arg_names, %init_arg_xmlns, %init_arg_nodes);
 	my @rv;
-	my @nodes = grep { !( $_->isa("XML::LibXML::Text")
-				      and $_->data =~ /\A\s*\Z/) }
+	my @nodes = grep {
+		!(  $_->isa("XML::LibXML::Text")
+			and $_->data =~ /\A\s*\Z/
+			)
+		}
 		@$childNodes;
 	while ( my $input_node = shift @nodes ) {
 		next if $input_node->nodeType == XML_COMMENT_NODE;
 		my ($key, $value, $name, $xmlns) =
-			$graph->accept($input_node, $context);
+			$graph->accept($input_node, $context, $lax);
 		if ( !$key ) {
+		    next if $lax;
+		    
 			my (@what) = $graph->expected($context);
 			$context->exception(
 				"unexpected node: expecting @what",
 				$input_node,
-			       );
+			);
+		}
+		my $meta_att = $self->find_attribute_by_name($key);
+		if ( !$meta_att->_item_tc->check($value) ) {
+			$context = $context->next_ctx(
+				$input_node->namespaceURI,
+				$input_node->localname,
+			);
+			$context->exception(
+				"bad value '$value'",
+				$input_node
+			);
 		}
 		add_to_list($init_args{$key}, $value);
+		add_to_list($init_arg_nodes{$key}, $input_node);
 		if ( defined $name ) {
 			add_to_list(
 				$init_arg_names{$key},
 				$name,
-			       );
+			);
 		}
 		if ( defined $xmlns ) {
 			add_to_list(
 				$init_arg_xmlns{$key},
 				$xmlns,
-			       );
+			);
 		}
 	}
 
@@ -222,8 +289,9 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 		my (@what) = $graph->expected($context);
 		$context->exception(
 			"Node incomplete; expecting: @what",
-			);
+		);
 	}
+
 	# now, we have to take all the values we just got and
 	# collapse them to init args
 	for my $element ( @{ $self->xml_elements } ) {
@@ -237,37 +305,76 @@ method accept_childnodes( ArrayRef[XML::LibXML::Node] $childNodes, PRANG::Graph:
 			$expect = \&as_listref;
 		}
 		push @rv, eval {
-			( ( ( $element->has_xml_nodeName_attr and
-				      exists $init_arg_names{$key} )
-				    ? ( $element->xml_nodeName_attr =>
-						$expect->($init_arg_names{$key})) : ()
-					       ),
-			  ( ( $element->has_xmlns_attr and
-				      exists $init_arg_xmlns{$key} )
-				    ? ( $element->xmlns_attr =>
-						$expect->($init_arg_xmlns{$key})) : ()
-					       ),
-			  $key => $expect->(delete $init_args{$key}),
-			 );
-		} or $context->exception(
-			"internal error: processing '$key' attribute: $@",
-		       );
+			my $val = $expect->(delete $init_args{$key});
+			if ( my $t_c = $element->type_constraint) {
+				if ( !$t_c->check($val) ) {
+					if ( ref $val ) {
+						$val = encode_json $val;
+					}
+					die "value '$val' failed type check";
+				}
+			}
+			( ( (       $element->has_xml_nodeName_attr
+							and
+							exists $init_arg_names{$key}
+					)
+					? ( $element->xml_nodeName_attr =>
+							$expect->($init_arg_names{$key})
+						)
+					: ()
+				),
+				( (     $element->has_xmlns_attr
+							and
+							exists $init_arg_xmlns{$key}
+					)
+					? ( $element->xmlns_attr =>
+							$expect->($init_arg_xmlns{$key})
+						)
+					: ()
+				),
+				$key => $val,
+			);
+		} or do {
+			my $err = $@;
+			my $bad = $init_arg_nodes{$key};
+			if ( ref $bad eq "ARRAY" ) {
+				$bad = $bad->parentNode;
+			}
+			else {
+				$context =
+					$context->next_ctx($bad->namespaceURI,
+					$bad->localname);
+			}
+			$context->exception(
+				"internal error: processing '$key' attribute: $err",
+				$bad,
+			);
+		};
 	}
 	if (my @leftovers = keys %init_args) {
 		$context->exception(
-		"internal error: ".@leftovers
-			." init arg(s) left over (@leftovers)",
-		       );
+			"internal error: ".@leftovers
+				." init arg(s) left over (@leftovers)",
+		);
 	}
 	return @rv;
 }
 
-method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub marshall_in_element {
+    my $self = shift;
+    
+    my ( $node, $ctx, $lax ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1, default => 0 },
+    );       
+    
 	my @node_attr = grep { $_->isa("XML::LibXML::Attr") }
 		$node->attributes;
 	my @ns_attr = $node->getNamespaces;
 
-	if ( @ns_attr ) {
+	if (@ns_attr) {
 		$ctx->add_xmlns($_->declaredPrefix//"" => $_->declaredURI)
 			for @ns_attr;
 	}
@@ -275,32 +382,44 @@ method marshall_in_element( XML::LibXML::Node $node, PRANG::Graph::Context $ctx 
 	my $new_ctx = $ctx->next_ctx(
 		$node->namespaceURI,
 		$node->localname,
-	       );
+	);
 
-	my @init_args = $self->accept_attributes( \@node_attr, $new_ctx );
+	my @init_args = $self->accept_attributes( \@node_attr, $new_ctx, $lax );
 
 	# now process elements
 	my @childNodes = grep {
-		!($_->isa("XML::LibXML::Comment") or
-			$_->isa("XML::LibXML::Text") and $_->data =~ /\A\s+\Z/)
+		!(  $_->isa("XML::LibXML::Comment")
+			or
+			$_->isa("XML::LibXML::Text") and $_->data =~ /\A\s+\Z/
+			)
 	} $node->childNodes;
 
-	push @init_args, $self->accept_childnodes( \@childNodes, $new_ctx );
+	push @init_args, $self->accept_childnodes( \@childNodes, $new_ctx, $lax );
 
-	my $value = eval { $self->name->new( @init_args ) };
+	my $value = eval { $self->name->new(@init_args) };
 	if ( !$value ) {
 		$ctx->exception(
 			"Validation error from ".$self->name
-				." constructor: $@)",
+				." constructor: $@",
 			$node,
-		       );
+		);
 	}
 	else {
 		return $value;
 	}
 }
 
-method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx ) {
+sub add_xml_attr {
+    my $self = shift;
+    
+    my ( $item, $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'Object' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+    );       
+    
+    
 	my $attributes = $self->xml_attr;
 	while ( my ($xmlns, $att) = each %$attributes ) {
 		while ( my ($attName, $meta_att) = each %$att ) {
@@ -309,10 +428,12 @@ method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Con
 			if ( $meta_att->has_xml_required ) {
 				$is_optional = !$meta_att->xml_required;
 			}
-			elsif ( ! $meta_att->is_required ) {
+			elsif ( !$meta_att->is_required ) {
+
 				# it's optional
 				$is_optional = 1;
 			}
+
 			# we /could/ use $meta_att->get_value($item)
 			# here, but I consider that to break
 			# encapsulation
@@ -329,17 +450,17 @@ method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Con
 			if ( !defined $value ) {
 				die "could not serialize $item; slot "
 					.$meta_att->name." empty"
-						unless $is_optional;
+					unless $is_optional;
 				next;
 			}
 
 			my $emit_att = sub {
 				my ($xmlns, $name, $value) = @_;
 				my $prefix;
-				if ( $xmlns ) {
+				if ($xmlns) {
 					$prefix = $ctx->get_prefix(
 						$xmlns, $item, $node,
-					       );
+					);
 					if ( length $prefix ) {
 						$prefix .= ":";
 					}
@@ -349,7 +470,7 @@ method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Con
 				}
 				$node->setAttribute(
 					$prefix.$name, $value,
-				       );
+				);
 			};
 
 			my $do_array = sub {
@@ -361,29 +482,31 @@ method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Con
 						$xmlns&&$xmlns->[$i],
 						$att_name,
 						$array->[$i],
-					       );
+					);
 				}
 			};
 
 			if ( ref $value eq "HASH" ) {
+
 				# wildcarded attribute name case
 				while ( my ($att, $val) = each %$value ) {
 					my $att_xmlns;
-					if ( $xmlns ) {
+					if ($xmlns) {
 						$att_xmlns = $xmlns->{$att};
 					}
+
 					# now, we can *still* have arrays here..
 					if ( ref $val eq "ARRAY" ) {
 						$do_array->(
 							$att, $val,
 							$att_xmlns,
-						       );
+						);
 					}
 					else {
 						$emit_att->(
 							$att_xmlns,
 							$att, $val,
-						       );
+						);
 					}
 				}
 			}
@@ -392,7 +515,7 @@ method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Con
 					$xml_att_name,
 					$value,
 					$xmlns,
-				       );
+				);
 			}
 			else {
 				$emit_att->( $xmlns, $xml_att_name, $value );
@@ -401,13 +524,23 @@ method add_xml_attr( Object $item, XML::LibXML::Element $node, PRANG::Graph::Con
 	}
 }
 
-method to_libxml( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx ) {
+sub to_libxml {
+    my $self = shift;
+    
+    my ( $item, $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'Object' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+    );          
+    
+    
 	$self->add_xml_attr($item, $node, $ctx);
 	$self->graph->output($item, $node, $ctx);
 }
 
 package Moose::Meta::Class::Custom::Trait::PRANG;
-sub register_implementation { "PRANG::Graph::Meta::Class" }
+sub register_implementation {"PRANG::Graph::Meta::Class"}
 
 1;
 

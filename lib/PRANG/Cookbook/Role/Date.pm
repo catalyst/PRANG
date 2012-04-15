@@ -8,19 +8,19 @@ use Moose::Util::TypeConstraints;
 subtype 'PRANG::Cookbook::Year'
 	=> as 'Int',
 	=> where {
-		length(0+$_) == 4;
+	length(0+$_) == 4;
 	};
 
 subtype 'PRANG::Cookbook::Month'
 	=> as 'Int',
 	=> where {
-		$_ >= 1 and $_ <= 12;
+	$_ >= 1 and $_ <= 12;
 	};
 
 subtype 'PRANG::Cookbook::Day'
 	=> as 'Int',
 	=> where {
-		$_ >= 1 and $_ <= 31;
+	$_ >= 1 and $_ <= 31;
 	};
 
 has_attr 'year' =>

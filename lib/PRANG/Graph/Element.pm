@@ -3,7 +3,7 @@ package PRANG::Graph::Element;
 
 use 5.010;
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 use Moose::Util::TypeConstraints;
 use XML::LibXML;
 
@@ -54,27 +54,43 @@ has 'contents' =>
 	predicate => "has_contents",
 	;
 
-method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub node_ok {
+    my $self = shift;
+    my ( $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	return unless $node->nodeType == XML_ELEMENT_NODE;
 	my $got_xmlns;
 
-	if ( $self->has_xmlns or
-		     ($node->prefix||"") ne ($ctx->prefix||"") ) {
-		my $prefix = $node->prefix//"";
+	if ($self->has_xmlns
+		or
+		($node->prefix||"") ne ($ctx->prefix||"")
+		)
+	{   my $prefix = $node->prefix//"";
 		$got_xmlns = $ctx->xsi->{$prefix};
 		if ( !defined $got_xmlns ) {
-			$got_xmlns = $node->getAttribute("xmlns".(length $prefix?":$prefix":""));
+			$got_xmlns = $node->getAttribute(
+				"xmlns".(length $prefix?":$prefix":"")
+			);
 		}
 		my $wanted_xmlns = ($self->xmlns||"");
-		if ( $got_xmlns and $wanted_xmlns ne "*" and
-			     $got_xmlns ne $wanted_xmlns ) {
-			return;
+		if ($got_xmlns
+			and $wanted_xmlns ne "*"
+			and
+			$got_xmlns ne $wanted_xmlns
+			)
+		{   return;
 		}
 	}
 	my ($ret_nodeName, $ret_xmlns) = ("", "");
 	my $wanted_nodeName = $self->nodeName;
-	if ( $wanted_nodeName ne "*" and $wanted_nodeName ne $node->localname ) {
-		return;
+	if ($wanted_nodeName ne "*"
+		and $wanted_nodeName ne $node->localname
+		)
+	{   return;
 	}
 	if ( $self->has_nodeName_attr ) {
 		$ret_nodeName = $node->localname;
@@ -82,7 +98,7 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	if ( $self->has_xmlns_attr ) {
 		$ret_xmlns = $got_xmlns;
 	}
-	if ( wantarray ) {
+	if (wantarray) {
 		return ($ret_nodeName, $ret_xmlns);
 	}
 	else {
@@ -90,7 +106,15 @@ method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	}
 }
 
-method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub accept {
+    my $self = shift;
+    my ( $node, $ctx, $lax ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1 },
+    );    
+    
 	my ($ret_nodeName, $xmlns) = $self->node_ok($node, $ctx);
 	if ( !defined $ret_nodeName ) {
 
@@ -108,64 +132,81 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 			}
 		}
 		$ctx->exception(
-		"invalid element; expected '$nodeName'",
+			"invalid element; expected '$nodeName'",
 			$node, 1,
-		       );
+		);
 	}
 	undef($ret_nodeName) if !length($ret_nodeName);
 	if ( $self->has_nodeClass ) {
+
 		# general nested XML support
 		my $marshaller = $ctx->base->get($self->nodeClass);
-		my $value = ( $marshaller ? $marshaller->marshall_in_element(
-			$node,
-			$ctx,
-		       )
-				      : $node );
+		my $value = (
+			$marshaller
+			? $marshaller->marshall_in_element(
+				$node,
+				$ctx,
+				$lax,
+				)
+			: $node
+		);
 		$ctx->element_ok(1);
 		return ($self->attrName => $value, $ret_nodeName, $xmlns);
 	}
 	else {
+
 		# XML data types
-		my $type = $self->has_contents ?
-			"XML data" : "presence-only";
+		my $type = $self->has_contents
+			?
+			"XML data"
+			: "presence-only";
 		if ($node->hasAttributes) {
 			$ctx->exception(
-			"Superfluous attributes on $type node",
-				$node);
+				"Superfluous attributes on $type node",
+				$node
+			);
 		}
 		if ( $self->has_contents ) {
+
 			# simple types, eg Int, Str
 			my (@childNodes) = grep {
-                		!($_->isa("XML::LibXML::Comment") or
-                        		$_->isa("XML::LibXML::Text") and $_->data =~ /\A\s+\Z/)
- 			} $node->childNodes;
+				!(  $_->isa("XML::LibXML::Comment")
+					or
+					$_->isa("XML::LibXML::Text")
+					and $_->data =~ /\A\s+\Z/
+					)
+			} $node->childNodes;
 
 			if ( @childNodes > 1 ) {
+
 				# we could maybe merge CDATA nodes...
 				$ctx->exception(
-			"Too many child nodes for $type node",
+					"Too many child nodes for $type node",
 					$node,
-				       );
+				);
 			}
 			my $value;
 			if ( !@childNodes ) {
 				$value = "";
-			} else {
+			}
+			else {
 				(undef, $value) = $self->contents->accept(
 					$childNodes[0],
 					$ctx,
-				       );
+					$lax,
+				);
 			}
 			$ctx->element_ok(1);
 			return ($self->attrName => $value, $ret_nodeName, $xmlns);
 		}
 		else {
+
 			# boolean
 			if ( $node->hasChildNodes ) {
 				$ctx->exception(
-		"Superfluous child nodes on $type node",
+					"Superfluous child nodes on $type node",
 					$node,
-	       				);
+				);
 			}
 			$ctx->element_ok(1);
 			return ($self->attrName => 1, $ret_nodeName, $xmlns);
@@ -173,11 +214,23 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	}
 }
 
-method complete( PRANG::Graph::Context $ctx ) {
+sub complete {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	$ctx->element_ok;
 }
 
-method expected( PRANG::Graph::Context $ctx ) {
+sub expected {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );   
+    
 	my $prefix = "";
 	my $nodename = $self->nodeName;
 	if ( $self->has_xmlns ) {
@@ -192,12 +245,38 @@ method expected( PRANG::Graph::Context $ctx ) {
 			$prefix .= ":";
 		}
 	}
-	return "<$prefix$nodename".($self->has_nodeClass?"...":
-					    $self->has_contents?"":"/")
+	return "<$prefix$nodename".(
+		$self->has_nodeClass
+		?"..."
+		:
+			$self->has_contents?"":"/"
+		)
 		.">";
 }
 
-method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item :$value, Int :$slot, Str :$name, Str :$xmlns ) {
+sub output  {
+    my $self = shift;
+    
+    # First 3 args positional, rest are named
+    #  Because we're making 2 validation calls, we have to use different cache keys
+    my ( $item, $node, $ctx ) = pos_validated_list(
+        [@_[0..2]],
+        { isa => 'Object' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+        MX_PARAMS_VALIDATE_CACHE_KEY => 'element-output-positional',
+    );
+        
+    my ( $value, $slot, $name, $xmlns ) = validated_list(
+        [@_[3..$#_]],
+        value => { isa => 'Item', optional => 1 },
+        slot => { isa => 'Int', optional => 1 },
+        name => { isa => 'Str', optional => 1 },
+        xmlns => { isa => 'Str', optional => 1 },
+        MX_PARAMS_VALIDATE_CACHE_KEY => 'element-output-named',
+    );
+    
+    
 	$value //= do {
 		my $accessor = $self->attrName;
 		$item->$accessor;
@@ -238,42 +317,74 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		$ctx = $ctx->next_ctx( $xmlns, $name, $value );
 		$prefix = $ctx->prefix;
 		my $new_nodeName = ($prefix ? "$prefix:" : "") . $name;
-		$nn = $doc->createElement( $new_nodeName );
+		$nn = $doc->createElement($new_nodeName);
 		if ( $ctx->prefix_new($prefix) ) {
 			$nn->setAttribute(
 				"xmlns".($prefix?":$prefix":""),
 				$xmlns,
-			       );
+			);
 		}
 		$node->appendChild($nn);
+
 		# now proceed with contents...
 		if ( my $class = $self->nodeClass ) {
 			my $m;
-			if ( eval { $value->isa($class) }) {
+			if ( !defined $value ) {
+				$ctx->exception("required element not set");
+			}
+			elsif ( eval { $value->isa($class) }) {
 				$m = $ctx->base->get($class);
 			}
-			if ( !$m and blessed $value ) {
+			elsif ( eval{$value->isa("XML::LibXML::Element")} ) {
+				if ($value->localname eq $nn->localname
+					and
+					($value->namespaceURI||"") eq
+					($xmlns||"")
+					)
+				{   my $nn2 = $value->cloneNode(1);
+					$node->appendChild($nn2);
+					$node->removeChild($nn);
+				}
+				else {
+
+					# it's just not safe to set
+					# the nodeName after the fact,
+					# so copy the children across.
+					for my $att ( $value->attributes ) {
+						next if $att->isa("XML::LibXML::Namespace");
+						$nn->setAttribute(
+							$att->localname,
+							$att->value,
+						);
+					}
+					for my $child ( $value->childNodes ) {
+						my $nn2 = $child->cloneNode(1);
+						$nn->appendChild($nn2);
+					}
+				}
+				$m = "ok";
+			}
+			elsif ( blessed $value ) {
+
 				# this actually indicates a type
 				# error.  currently it is required for
 				# the Whatever mapping.
 				$m = PRANG::Marshaller->get(ref $value);
 			}
-			if ( !$m and $value->isa("XML::LibXML::Element") ) {
-				for my $att ( $value->attributes ) {
-					$nn->setAttribute(
-						$att->localname,
-						$att->value,
-					       );
-				}
-				for my $child ( $value->childNodes ) {
-					my $nn2 = $child->cloneNode;
-					$nn->appendChild($nn2);
-				}
-			}
-			else {
-				$ctx->exception("tried to serialize unblessed reference")
+
+			if ( $m and blessed $m ) {
+				$ctx->exception(
+					"tried to serialize unblessed value $value"
+					)
 					if !blessed $value;
 				$m->to_libxml($value, $nn, $ctx);
+			}
+			elsif ($m) {
+
+				# allow value-based code above to drop through
+			}
+			else {
+				$ctx->exception("no marshaller for '$value'");
 			}
 		}
 		elsif ( $self->has_contents and defined $value ) {
@@ -285,7 +396,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 		$nn = $doc->createTextNode($value);
 		$node->appendChild($nn);
 	}
-};
+}
 
 with 'PRANG::Graph::Node';
 

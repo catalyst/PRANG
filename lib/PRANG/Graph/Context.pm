@@ -3,7 +3,7 @@ package PRANG::Graph::Context;
 
 use 5.010;
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 use Moose::Util::TypeConstraints;
 
 BEGIN {
@@ -16,15 +16,17 @@ has 'seq_pos' =>
 	lazy => 1,
 	default => 1,
 	trigger => sub {
-		my $self = shift;
-		$self->clear_quant;
-		$self->clear_chosen;
-		$self->clear_element_ok;
+	my $self = shift;
+	$self->clear_quant;
+	$self->clear_chosen;
+	$self->clear_element_ok;
 	},
 	clearer => "clear_seq_pos",
 	;
 
-method reset() {
+sub reset {
+    my $self = shift;
+    
 	$self->clear_seq_pos;
 }
 
@@ -35,9 +37,9 @@ has 'quant_found' =>
 	default => 0,
 	clearer => 'clear_quant',
 	trigger => sub {
-		my $self = shift;
-		$self->clear_chosen;
-		$self->clear_element_ok;
+	my $self = shift;
+	$self->clear_chosen;
+	$self->clear_element_ok;
 	},
 	;
 
@@ -46,7 +48,7 @@ has 'chosen' =>
 	isa => "Int",
 	clearer => "clear_chosen",
 	trigger => sub {
-		$_[0]->clear_element_ok;
+	$_[0]->clear_element_ok;
 	}
 	;
 
@@ -84,8 +86,8 @@ has 'rxsi' =>
 	isa => "HashRef",
 	lazy => 1,
 	default => sub {
-		my $self = shift;
-		+{ reverse %{ $self->xsi } };
+	my $self = shift;
+	+{ reverse %{ $self->xsi } };
 	},
 	;
 
@@ -107,10 +109,18 @@ sub thing_xmlns {
 	}
 }
 
-method next_ctx( Maybe[Str] $xmlns, Str $newnode_name, $thing? )  {
+sub next_ctx {
+    my $self = shift;
+    my ( $xmlns, $newnode_name, $thing) = pos_validated_list(
+        \@_,
+        { isa => 'Maybe[Str]' },
+        { isa => 'Maybe[Str]' },
+        { optional => 1 },        
+    );    
+    
 	my $prefix = $self->prefix;
 	my $new_prefix;
-	if ( $xmlns ) {
+	if ($xmlns) {
 		if ( !exists $self->rxsi->{$xmlns} ) {
 			$new_prefix = 1;
 			$prefix = thing_xmlns($thing, $xmlns) //
@@ -120,7 +130,8 @@ method next_ctx( Maybe[Str] $xmlns, Str $newnode_name, $thing? )  {
 			$prefix = $self->get_prefix($xmlns);
 		}
 	}
-	my $nodename = ($prefix ? "$prefix:" : "") . $newnode_name;
+	my $nodename = (($newnode_name && $prefix) ? "$prefix:" : "") .
+		($newnode_name||"text()");
 
 	my $clone = (ref $self)->new(
 		prefix => $prefix,
@@ -128,14 +139,20 @@ method next_ctx( Maybe[Str] $xmlns, Str $newnode_name, $thing? )  {
 		xpath => $self->xpath."/".$nodename,
 		xsi => $self->xsi,
 		rxsi => $self->rxsi,
-	       );
-	if ( $new_prefix ) {
+	);
+	if ($new_prefix) {
 		$clone->add_xmlns($prefix, $xmlns);
 	}
 	$clone;
 }
 
-method prefix_new(Str $prefix) {
+sub prefix_new {
+    my $self = shift;
+    my ( $prefix) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },        
+    );    
+    
 	!$self->xsi_virgin and not exists $self->old_xsi->{$prefix};
 }
 
@@ -145,9 +162,17 @@ has 'prefix' =>
 	isa => "Str",
 	;
 
-BEGIN { class_type "XML::LibXML::Node" };
+BEGIN { class_type "XML::LibXML::Node" }
 
-method get_prefix( Str $xmlns, Object $thing?, XML::LibXML::Element $victim? ) {
+sub get_prefix {
+    my $self = shift;
+    my ( $xmlns, $thing, $victim ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+        { isa => 'Object', optional => 1 },
+        { isa => 'XML::LibXML::Element', optional => 1 },
+    );    
+    
 	if ( defined(my $prefix = $self->rxsi->{$xmlns}) ) {
 		$prefix;
 	}
@@ -155,17 +180,24 @@ method get_prefix( Str $xmlns, Object $thing?, XML::LibXML::Element $victim? ) {
 		my $new_prefix = thing_xmlns($thing, $xmlns)
 			// $self->base->generate_prefix($xmlns);
 		$self->add_xmlns($new_prefix, $xmlns);
-		if ( $victim ) {
+		if ($victim) {
 			$victim->setAttribute(
 				"xmlns:".$new_prefix,
 				$xmlns,
-			       );
+			);
 		}
 		$new_prefix;
 	}
 }
 
-method add_xmlns( Str $prefix, Str $xmlns ) {
+sub add_xmlns {
+    my $self = shift;
+    my ( $prefix, $xmlns ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+        { isa => 'Str' },
+    );     
+    
 	if ( $self->xsi_virgin ) {
 		$self->xsi_virgin(0);
 		$self->old_xsi($self->xsi);
@@ -180,27 +212,42 @@ method add_xmlns( Str $prefix, Str $xmlns ) {
 	}
 }
 
-method get_xmlns( Str $prefix ) {
+sub get_xmlns{
+    my $self = shift;
+    my ( $prefix, ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+    );    
+    
 	$self->xsi->{$prefix};
 }
 
 # this is a very convenient class to put a rich and useful exception
 # method on; all important methods use it, and it has just the
 # information to make the error message very useful.
-method exception( Str $message, XML::LibXML::Node $node?, Bool $skip_ok? ) {
+sub exception {
+    my $self = shift;
+    my ( $message, $node, $skip_ok ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+        { isa => 'XML::LibXML::Node', optional => 1 },
+        { isa => 'Bool', optional => 1 },
+    );    
+        
+    
 	my $error = PRANG::Graph::Context::Error->new(
 		($node ? (node => $node) : ()),
 		message => $message,
 		xpath => $self->xpath,
 		($skip_ok ? (skip_ok => 1) : ()),
-	       );
+	);
 	die $error;
 }
 
 package PRANG::Graph::Context::Error;
 
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 
 has 'node' =>
 	is => "ro",
@@ -223,24 +270,33 @@ has 'skip_ok' =>
 	isa => "Bool",
 	;
 
-method show_node {
+sub show_node {
+    my $self = shift;
+    
 	return "" unless $self->has_node;
 	my $extra = "";
 	my $node = $self->node;
 	if ( $node->isa("XML::LibXML::Element") ) {
 		$extra = " (parsing: <".$node->nodeName;
 		if ( $node->hasAttributes ) {
-			$extra .= join(" ", "", map {
-				$_->name."='".$_->value."'"
-			} $node->attributes);
+			$extra .= join(
+				" ", "",
+				map {
+					$_->name."='".$_->value."'"
+					} $node->attributes
+			);
 		}
 		my @nodes = grep {
-			!( $_->isa("XML::LibXML::Comment") or
+			!(  $_->isa("XML::LibXML::Comment")
+				or
 				$_->isa("XML::LibXML::Text") and $_->data =~ /\A\s+\Z/
-			) } $node->childNodes;
-		if ( @nodes > 1 and grep { !$_->isa("XML::LibXML::Element") }
-			     @nodes ) {
-			$extra .= ">(mixed content)";
+				)
+		} $node->childNodes;
+		if (@nodes > 1
+			and grep { !$_->isa("XML::LibXML::Element") }
+			@nodes
+			)
+		{   $extra .= ">(mixed content)";
 		}
 		elsif (@nodes and $nodes[0]->isa("XML::LibXML::Element")) {
 			$extra .= "><!-- ".@nodes
@@ -265,7 +321,7 @@ method show_node {
 		}
 		$extra .= " (at text node: '$val')";
 	}
-	elsif ( $node ) {
+	elsif ($node) {
 		my $type = ref $node;
 		$type =~ s{XML::LibXML::}{};
 		$extra .= " (bogon? $type node)";
@@ -280,7 +336,9 @@ sub build_error {
 	return "$message at ".$self->xpath."$extra\n";
 }
 
-use overload '""' => \&build_error;
+use overload
+	'""' => \&build_error,
+	fallback => 1;
 
 1;
 

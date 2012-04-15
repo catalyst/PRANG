@@ -2,7 +2,7 @@
 package PRANG::Graph::Quantity;
 
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 
 has 'min' =>
 	is => "ro",
@@ -28,17 +28,25 @@ has 'attrName' =>
 	required => 1,
 	;
 
-sub accept_many { 1 }
+sub accept_many {1}
 
-method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub accept {
+    my $self = shift;
+    my ( $node, $ctx, $lax ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool', optional => 1 },
+    );    
+    
 	my $found = $ctx->quant_found;
 	my $ok = defined $self->child->node_ok($node, $ctx);
 	return if not $ok;
-	my ($key, $value, $x, $ns) = $self->child->accept($node, $ctx)
+	my ($key, $value, $x, $ns) = $self->child->accept($node, $ctx, $lax)
 		or $ctx->exception(
-			"internal error: node ok, but then not accepted?",
-			$node,
-		       );
+		"internal error: node ok, but then not accepted?",
+		$node,
+		);
 	$found++;
 	$ctx->quant_found($found);
 	if ( $self->has_max and $found > $self->max ) {
@@ -47,12 +55,24 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	($key, $value, $x, $ns);
 }
 
-method complete( PRANG::Graph::Context $ctx ) {
+sub complete {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	my $found = $ctx->quant_found;
 	return !( $self->has_min and $found < $self->min );
 }
 
-method expected( PRANG::Graph::Context $ctx ) {
+sub expected {
+    my $self = shift;
+    my ( $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
 	my $desc;
 	if ( $self->has_min ) {
 		if ( $self->has_max ) {
@@ -74,21 +94,33 @@ method expected( PRANG::Graph::Context $ctx ) {
 	return("($desc of: ", @expected, ")");
 }
 
-method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx ) {
+sub output {
+    my $self = shift;
+    my ( $item, $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'Object' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+    ); 
+    
 	my $attrName = $self->attrName;
 	my $val = $item->$attrName;
 	if ( $self->has_max and $self->max == 1 ) {
+
 		# this is an 'optional'-type thingy
 		if ( defined $val ) {
 			$self->child->output($item,$node,$ctx,value => $val);
 		}
 	}
 	else {
+
 		# this is an arrayref-type thingy
 		if ( !$val and !$self->has_min ) {
+
 			# ok, that's fine
 		}
 		elsif ( $val and (ref($val)||"") ne "ARRAY" ) {
+
 			# that's not
 			die "item $item / slot $attrName is $val, not"
 				."an ArrayRef";
@@ -100,7 +132,7 @@ method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context 
 					$item,$node,$ctx,
 					value => $val->[$i],
 					slot => $i,
-				       );
+				);
 			}
 		}
 	}

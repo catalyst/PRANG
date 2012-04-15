@@ -1,0 +1,69 @@
+libprang-perl (0.11.2) lucid; urgency=low
+
+  * dch
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Thu, 22 Jul 2010 17:38:59 +1200
+
+libprang-perl (0.11.1) lucid; urgency=low
+
+  * dch properly
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Thu, 22 Jul 2010 13:14:06 +1200
+
+libprang-perl (0.11) lucid; urgency=low
+
+  [ Evan Giles ]
+  * Update with new version
+
+  [ Sam Vilain ]
+  * 0.11.1 dch
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Thu, 22 Jul 2010 13:12:13 +1200
+
+libprang-perl (0.10.2-1) lucid; urgency=low
+
+  * Update with new version
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Thu, 01 Jul 2010 18:17:31 +1200
+
+libprang-perl (0.10.1-1) lucid; urgency=low
+
+  * Update with new version
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Wed, 30 Jun 2010 18:03:06 +1200
+
+libprang-perl (0.10-2) lucid; urgency=low
+
+  * Relax version requirements for Ubuntu Lucid
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Tue, 29 Jun 2010 15:39:54 +1200
+
+libprang-perl (0.10-1) lucid; urgency=low
+
+  * Update to new PRANG release
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Tue, 29 Jun 2010 15:37:41 +1200
+
+libprang-perl (0.09-12-g249e7d2-1) unstable; urgency=low
+
+  * Update to latest git version
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Fri, 25 Jun 2010 15:58:01 +1200
+
+libprang-perl (0.09-1) unstable; urgency=low
+
+  * new PRANG release
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Fri, 07 May 2010 16:27:40 +1200
+
+libprang-perl (0.07-4-gbe0e610-1) unstable; urgency=low
+
+  * Note this isn't the same as the CPAN release
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Fri, 30 Apr 2010 15:01:18 +1200
+
+libprang-perl (0.07-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Sam Vilain <sam.vilain@catalyst.net.nz>  Fri, 30 Apr 2010 14:35:36 +1200

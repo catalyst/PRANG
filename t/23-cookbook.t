@@ -23,23 +23,24 @@ my $xml_compare = XML::Compare->new(
 	ignore => [
 		q{//Error//text()},  # FIXME - cdata types
 		q{//AccessControlListQry/@FullResult},
-	       ],
-       );
+	],
+);
 
 for my $test ( sort @tests ) {
 	my $xml = XMLTests::read_xml($test);
 
 	my $object = XMLTests::parse_test( "PRANG::Cookbook", $xml, $test );
- SKIP:{
+SKIP:{
 		skip "parse failed", 2 if !$object;
 
 		my $xml_2 = XMLTests::emit_test($object, $test);
 		skip "re-emit failed", 1 if !$xml_2;
 
-		ok(eval { $xml_compare->same($xml, $xml_2) },
-		   "$test - round-tripped from XML to data and back OK")
+		ok( eval { $xml_compare->same($xml, $xml_2) },
+			"$test - round-tripped from XML to data and back OK"
+			)
 			or do {
-				diag("Error: $@");
+			diag("Error: $@");
 			};
 	}
 }

@@ -18,7 +18,9 @@ our @valid_tests = XMLTests::find_tests "xml/valid";
 
 our @invalid_tests = XMLTests::find_tests "xml/invalid";
 
-plan tests => @valid_tests + (@invalid_tests * 2);
+our @lax_tests = XMLTests::find_tests "xml/lax";
+
+plan tests => @valid_tests + (@invalid_tests * 2) + @lax_tests;
 
 for my $test ( sort @valid_tests ) {
 	my $xml = XMLTests::read_xml($test) or die "erp!";
@@ -32,8 +34,10 @@ for my $test ( sort @invalid_tests ) {
 	my $error = XMLTests::parsefail_test( "Octothorpe", $xml, $test );
 	if ( $xml =~ m{<!-- error: /(.*)/ -->} ) {
 		my $expected_error = $1;
-		like($error, qr/$expected_error/,
-		     "$test - exception as expected");
+		like(
+			$error, qr/$expected_error/,
+			"$test - exception as expected"
+		);
 	}
 	else {
 	SKIP: {
@@ -41,6 +45,13 @@ for my $test ( sort @invalid_tests ) {
 		}
 	}
 }
+
+for my $test ( sort @lax_tests ) {
+	my $xml = XMLTests::read_xml($test) or die "erp!";
+
+	my $object = XMLTests::parse_test( "Octothorpe", $xml, $test, 1 );
+}
+
 
 # Copyright (C) 2009  NZ Registry Services
 #

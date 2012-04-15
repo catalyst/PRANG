@@ -14,14 +14,19 @@ getopt_lenient( "test-grep|t=s" => \$grep );
 sub find_tests {
 	my $group = shift;
 	my @tests;
-	find(sub {
-		     if ( m{\.(?:x|ya)ml$} &&
-				  (!$grep||$File::Find::name=~m{$grep}) ) {
-			     my $name = $File::Find::name;
-			     $name =~ s{^\Q$Bin\E/}{} or die;
-			     push @tests, $name;
-		     }
-	     }, "$Bin/$group");
+	find(
+		sub {
+			if (m{\.(?:x|ya)ml$}
+				&&
+				(!$grep||$File::Find::name=~m{$grep})
+				)
+			{   my $name = $File::Find::name;
+				$name =~ s{^\Q$Bin\E/}{} or die;
+				push @tests, $name;
+			}
+		},
+		"$Bin/$group"
+	);
 	@tests;
 }
 
@@ -47,7 +52,7 @@ sub read_yaml {
 	};
 	close YAML;
 	my $obj = Load($yaml);
-	if ( wantarray ) {
+	if (wantarray) {
 		return ($obj, $yaml);
 	}
 	else {
@@ -59,10 +64,12 @@ sub parse_test {
 	my $class = shift;
 	my $xml = shift;
 	my $test_name = shift;
-	my $object = eval { $class->parse( $xml ) };
+	my $lax = shift // 0;
+	
+	my $object = eval { $class->parse($xml, $lax) };
 	my $ok = ok($object, "$test_name - parsed OK");
 	if ( !$ok ) {
-		diag("exception: $@");
+		diag("exception during parsing: $@");
 	}
 	if ( $ok and ($main::VERBOSE//0)>0) {
 		diag("read: ".Dump($object));
@@ -74,7 +81,7 @@ sub parsefail_test {
 	my $class = shift;
 	my $xml = shift;
 	my $test_name = shift;
-	my $object = eval { $class->parse( $xml ) };
+	my $object = eval { $class->parse($xml) };
 	my $error = $@;
 	my $ok = ok(!$object&&$error, "$test_name - exception raised");
 	if ( !$ok ) {
@@ -94,8 +101,8 @@ sub emit_test {
 	my $time = show_elapsed;
 	ok($r_xml, "$test_name - emitted OK ($time)")
 		or do {
-			diag("exception: $@");
-			return undef;
+		diag("exception during emitting: $@");
+		return undef;
 		};
 	if (($main::VERBOSE||0)>0) {
 		diag("xml: ".$r_xml);

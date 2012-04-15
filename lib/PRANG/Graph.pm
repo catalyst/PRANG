@@ -2,6 +2,7 @@
 package PRANG::Graph;
 
 use Moose::Role;
+use Moose::Meta::TypeConstraint;
 
 use PRANG;
 use PRANG::Graph::Context;
@@ -15,11 +16,12 @@ use PRANG::Graph::Quantity;
 
 use PRANG::Graph::Meta::Attr;
 use PRANG::Graph::Meta::Element;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 
 use PRANG::Marshaller;
 
 use Moose::Exporter;
+
 sub has_attr {
 	my ( $meta, $name, %options ) = @_;
 	my $traits_a = $options{traits} ||= [];
@@ -27,8 +29,9 @@ sub has_attr {
 	$meta->add_attribute(
 		$name,
 		%options,
-	       );
+	);
 }
+
 sub has_element {
 	my ( $meta, $name, %options ) = @_;
 	my $traits_a = $options{traits} ||= [];
@@ -36,40 +39,73 @@ sub has_element {
 	$meta->add_attribute(
 		$name,
 		%options,
-	       );
+	);
 }
 
 Moose::Exporter->setup_import_methods(
-	with_meta => [ qw(has_attr has_element) ],
-	metaclass_roles => [qw(PRANG::Graph::Meta::Class)],
-       );
+	with_meta => [qw(has_attr has_element)],
+	class_metaroles => {
+	    class => [qw(PRANG::Graph::Meta::Class)],
+	},
+);
+
 
 requires 'xmlns';
 requires 'root_element';
 
-method marshaller($inv:) { #returns PRANG::Marshaller {
+sub marshaller { #returns PRANG::Marshaller {
+    my $inv = shift;
+    
 	if ( ref $inv ) {
 		$inv = ref $inv;
 	}
-	PRANG::Marshaller->get( $inv );
+	PRANG::Marshaller->get($inv);
 }
 
-method parse($class: Str $xml) {
-	my $instance = $class->marshaller->parse( xml => $xml );
+sub parse {
+    my $class = shift;
+    
+    my ( $xml, $lax ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+        { isa => 'Bool', optional => 1, default => 0 }, 
+    );
+
+	my $instance = $class->marshaller->parse( xml => $xml, lax => $lax );
 	return $instance;
 }
 
-method parse_file($class: Str $filename) {
-	my $instance = $class->marshaller->parse( filename => $filename );
+sub parse_file {
+    my $class = shift;
+    my ( $filename, $lax ) = pos_validated_list(
+        \@_,
+        { isa => 'Str' },
+        { isa => 'Bool', optional => 1, default => 0 }, 
+    );    
+    
+	my $instance = $class->marshaller->parse( filename => $filename, lax => $lax  );
 	return $instance;
 }
 
-method parse_fh($class: GlobRef $fh) {
-	my $instance = $class->marshaller->parse( fh => $fh );
+sub parse_fh() {
+    my $class = shift;
+    my ( $fh, $lax ) = pos_validated_list(
+        \@_,
+        { isa => 'GlobRef' },
+        { isa => 'Bool', optional => 1, default => 0 }, 
+    );        
+    
+	my $instance = $class->marshaller->parse( fh => $fh, lax => $lax  );
 	return $instance;
 }
 
-method to_xml(Int $format = 0) {
+sub to_xml() {
+    my $self = shift;
+    my ( $format ) = pos_validated_list(
+        \@_,
+        { isa => 'Int', default => 0 },
+    );          
+    
 	my $marshaller = $self->marshaller;
 	$marshaller->to_xml( $self, $format );
 }
@@ -255,7 +291,7 @@ These methods are defined in, or required classes which implement the
 C<PRANG::Graph> I<role>.  In general, that means they are a document
 type.
 
-=head2 B<parse($class: Str $xml) returns Object>
+=head2 B<parse($class: Str $xml, Bool $lax) returns Object>
 
 Parse an XML string according to the PRANG Graph and return the built
 object.  Throws exceptions on error.
@@ -263,6 +299,16 @@ object.  Throws exceptions on error.
 By example, this is:
 
  my $object = $class->parse($xml);
+ 
+The $lax param tells PRANG to use 'lax' parsing mode. This ignores
+any extra elements or attributes in the XML that haven't been
+specified in your definition classes. This is useful if you're
+parsing XML from a trusted source, but that source may introduce
+new elements and attributes. Using lax mode, your parser will
+be forwards compatible for any additions. 
+
+Without lax mode, any attributes or elements not defined in your
+classes will cause PRANG to throw an exception.
 
 =head2 B<to_xml(PRANG::Graph $object: Int $format = 0) returns Str>
 
@@ -285,6 +331,11 @@ namespace.
 
 If you are not using namespaces, just define the method in your class,
 and return a false value.
+
+=head2 B<encoding() returns Maybe[Str]>
+
+Class method that defines the encoding for this class when emitting XML. 
+Defaults to 'UTF-8'.
 
 =head2 B<root_element(Moose::Meta::Class $class:) returns Str>
 

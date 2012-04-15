@@ -1,0 +1,18 @@
+This is the debian package for the PRANG module.
+It was created by Sam Vilain <sam.vilain@catalyst.net.nz> using dh-make-perl.
+
+It was downloaded from http://search.cpan.org/dist/PRANG/
+
+This copyright info was automatically extracted from the perl module.
+It may not be accurate, so you better check the module sources
+if you don't want to get into legal troubles.
+
+The upstream author is: Catalyst SRS Team <team-srs@catalyst.net.nz>.
+
+
+Copyright 2010, NZ Registry Services.  This documentation is licensed
+under the Artistic License v2.0, which permits relicensing under other
+Free Software licenses.
+
+The Debian packaging is (C) 2010, Sam Vilain <sam.vilain@catalyst.net.nz> and
+is licensed under the same terms as the software itself (see above).

@@ -9,6 +9,12 @@ has 'xmlns' =>
 	predicate => "has_xmlns",
 	;
 
+has 'xml_isa' =>
+	is => "rw",
+	isa => "Str|Moose::Meta::TypeConstraint",
+	predicate => "has_xml_isa",
+	;
+
 has 'xml_name' =>
 	is => "rw",
 	isa => "Str",
@@ -28,9 +34,10 @@ has 'xmlns_attr' =>
 	;
 
 package Moose::Meta::Attribute::Custom::Trait::PRANG::Attr;
+
 sub register_implementation {
 	"PRANG::Graph::Meta::Attr";
-};
+}
 
 1;
 
@@ -82,6 +89,11 @@ C<xmlns_attr> property, which should refer to another attribute which
 will record which XML namespace URI was passed in.  This introduces a
 potential ambiguity; the same attribute may be passed in multiple
 times, with different XML namespaces.
+
+You can also set C<xml_isa>, which currently if set will not check the
+type constraint against the input on marshall in.  In the future it
+will specify the type constraint to apply at marshall in time, instead
+of waiting for the constructor to apply one.
 
 =head1 SEE ALSO
 

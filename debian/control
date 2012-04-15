@@ -1,0 +1,29 @@
+Source: libprang-perl
+Section: perl
+Priority: optional
+Build-Depends: debhelper (>= 5)
+Build-Depends-Indep: perl (>= 5.01)
+Maintainer: Sam Vilain <sam.vilain@catalyst.net.nz>
+Standards-Version: 3.8.0
+Homepage: http://search.cpan.org/dist/PRANG/
+
+Package: libprang-perl
+Architecture: all
+Depends: perl (>= 5.01), ${misc:Depends}, libset-object-perl (>= 1.09), libxml-libxml-perl (>= 1.65), libmoose-perl (>= 0.92), libjson-perl, libmoosex-params-validate-perl
+Description: Moose XML Processor
+ PRANG is an XML Graph engine, which provides post-schema
+ validation objects (PSVO).
+ .
+ It is designed for implementing XML languages for which a description
+ of the valid sets of XML documents is available - for example, a DTD,
+ W3C XML Schema or Relax specification.  With PRANG (and, like
+ XML::Toolkit), your class structure is your XML Graph.
+ .
+ XML namespaces are supported, and the module tries to make many XML
+ conventions as convenient as possible in the generated classes.  This
+ includes XML data (elements with no attributes and textnode contents),
+ and presence elements (empty elements with no attributes which
+ indicate something).  It also supports mixed and unprocessed portions
+ of the XML, and "pluggable" specifications.
+ .
+ This description was automagically extracted from the module by dh-make-perl.

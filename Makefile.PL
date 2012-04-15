@@ -19,7 +19,8 @@ requires        ("perl" => 5.010);
 requires        ("Moose" => 0.92);
 requires        ("Set::Object" => 1.09);
 requires        ("XML::LibXML" => 1.65);
-requires        ("MooseX::Method::Signatures" => 0.17);
+requires        ("MooseX::Params::Validate" => 0.15);
+requires        ("JSON" => 2.50);
 
 my @test_requires = (
 	"XML::Compare" => 0.04,

@@ -2,7 +2,7 @@
 package PRANG::Graph::Text;
 
 use Moose;
-use MooseX::Method::Signatures;
+use MooseX::Params::Validate;
 use XML::LibXML;
 
 has 'attrName' =>
@@ -23,30 +23,47 @@ has 'extra' =>
 	isa => "ArrayRef",
 	lazy => 1,
 	default => sub {
-		my $self = shift;
-		my @extra;
-		if ( $self->nodeName_attr ) {
-			push @extra, "";
-		}
-		else {
-			push @extra, undef;
-		}
-		if ( $self->xmlns_attr ) {
-			push @extra, "";
-		}
-		elsif ( !defined $extra[0] ) {
-			pop @extra;
-		}
-		\@extra;
+	my $self = shift;
+	my @extra;
+	if ( $self->nodeName_attr ) {
+		push @extra, "";
+	}
+	else {
+		push @extra, undef;
+	}
+	if ( $self->xmlns_attr ) {
+		push @extra, "";
+	}
+	elsif ( !defined $extra[0] ) {
+		pop @extra;
+	}
+	\@extra;
 	};
 
-method node_ok( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
-	( $node->nodeType == XML_TEXT_NODE or
-		  $node->nodeType == XML_CDATA_SECTION_NODE )
+sub node_ok {
+    my $self = shift;
+    my ( $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+    );    
+    
+	(   $node->nodeType == XML_TEXT_NODE
+			or
+			$node->nodeType == XML_CDATA_SECTION_NODE
+		)
 		? 1 : undef;
 }
 
-method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
+sub accept {
+    my $self = shift;
+    my ( $node, $ctx ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'PRANG::Graph::Context' },
+        { isa => 'Bool' },
+    );    
+    
 	if ( $node->nodeType == XML_TEXT_NODE ) {
 		($self->attrName, $node->data, @{$self->extra});
 	}
@@ -58,15 +75,26 @@ method accept( XML::LibXML::Node $node, PRANG::Graph::Context $ctx ) {
 	}
 }
 
-method complete( PRANG::Graph::Context $ctx ) {
+sub complete{
 	1;
 }
 
-method expected( PRANG::Graph::Context $ctx ) {
+sub expected {
 	"TextNode";
 }
 
-method output ( Object $item, XML::LibXML::Element $node, PRANG::Graph::Context $ctx, Item $value?, Int $slot?, Str $name? ) {
+sub output  {
+    my $self = shift;
+    my ( $item, $node, $ctx, $value, $slot, $name ) = pos_validated_list(
+        \@_,
+        { isa => 'Object' },
+        { isa => 'XML::LibXML::Element' },
+        { isa => 'PRANG::Graph::Context' },
+        { isa => 'Item', optional => 1 },
+        { isa => 'Int', optional => 1 },
+        { isa => 'Str', optional => 1 },            
+    );     
+    
 	$value //= do {
 		my $attrName = $self->attrName;
 		$item->$attrName;
