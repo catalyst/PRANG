@@ -4,6 +4,16 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.15 - 26 April 2012
+
+=over
+
+=item *
+
+Fixed a bug that allows PRANG to work with newer Moose versions
+
+=back
+
 =head2 VERSION 0.14 - 10 February 2011
 
 =over
