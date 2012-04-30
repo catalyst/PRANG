@@ -4,6 +4,16 @@
 This POD file documents a summary of the changes in PRANG.  For the
 full list of changes, refer to the git history.
 
+=head2 VERSION 0.16 - 1 May 2012
+
+=over
+
+=item * 
+
+Lowered minimum versions of some dependencies
+
+=back
+
 =head2 VERSION 0.15 - 26 April 2012
 
 =over
