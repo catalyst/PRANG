@@ -5,6 +5,8 @@ package PRANG;
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 PRANG - XML graph engine - XML to Moose objects and back!
