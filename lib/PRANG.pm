@@ -70,7 +70,7 @@ PRANG - XML graph engine - XML to Moose objects and back!
      </lust>
    </lust>
  </envy>
- XML;
+ XML
 
  # Parsing the above would give you the same structure as this:
  XML::Language->new(
@@ -84,7 +84,8 @@ PRANG - XML graph engine - XML to Moose objects and back!
                  greed => 1,
              ),
          ],
-     );
+     )
+ );
 
  # step 4b.  emit!
  $format = 1;
