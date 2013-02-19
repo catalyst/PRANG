@@ -1,4 +1,6 @@
 
+=encoding utf8
+
 =head1 PRANG CHANGES
 
 This POD file documents a summary of the changes in PRANG.  For the
