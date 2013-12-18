@@ -166,7 +166,7 @@ sub accept_attributes {
 			{
 				if ( !$tc->check($attr->value) ) {
 					$context->exception(
-						"invalid value of attribute ".$attr->nodeName,
+						"invalid value '" . $attr->value . "' of attribute ".$attr->nodeName,
 						$attr->parentNode,
 					);
 				}
