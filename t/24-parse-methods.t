@@ -7,6 +7,7 @@ use warnings;
 use lib "t";
 
 use Octothorpe;
+use XML::LibXML;
 use XMLTests;
 
 my @eg_filenames = map {"t/$_"}
@@ -21,4 +22,9 @@ ok($valid_foo, "parse_fh(\*FOO)");
 
 eval {Octothorpe->parse_fh( 'blah' )};
 like($@, qr{Parameter #1 \("blah"\) to PRANG::Graph::parse_fh did not pass the 'checking type constraint for GlobRef' callback}, 
-    "parse_fh parameter validated"); 
+    "parse_fh parameter validated");
+
+my $parser = XML::LibXML->new;
+my $dom = $parser->parse_file( shift @eg_filenames );
+$valid_foo = Octothorpe->from_dom( $dom );
+ok($valid_foo, "from_dom(\$dom)");

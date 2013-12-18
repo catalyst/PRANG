@@ -87,15 +87,30 @@ sub parse {
         filename => { isa => 'Str', optional => 1 },
         fh => { isa => 'GlobRef', optional => 1 },
         lax => { isa => 'Bool', optional => 1, default => 0 },
-    );    
+    );
 
-	my $parser = XML::LibXML->new;
-	my $dom = (
-		defined $xml ? $parser->parse_string($xml) :
-			defined $filename ? $parser->parse_file($filename) :
-			defined $fh ? $parser->parse_fh($fh) :
-			croak("no input passed to parse")
-	);
+    my $parser = XML::LibXML->new;
+    my $dom = (
+        defined $xml ? $parser->parse_string($xml) :
+            defined $filename ? $parser->parse_file($filename) :
+            defined $fh ? $parser->parse_fh($fh) :
+            croak("no input passed to parse")
+    );
+
+    return $self->from_dom(
+        dom => $dom,
+        lax => $lax
+    );
+}
+
+sub from_dom {
+    my $self = shift;
+
+    my ( $dom, $lax ) = validated_list(
+        \@_,
+        dom => { isa => 'XML::LibXML::Document', },
+        lax => { isa => 'Bool', optional => 1, default => 0 },
+    );
 
 	my $rootNode = $dom->documentElement;
 	my $rootNodeNS = $rootNode->namespaceURI;
