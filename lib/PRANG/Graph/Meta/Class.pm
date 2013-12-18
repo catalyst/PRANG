@@ -398,9 +398,12 @@ sub marshall_in_element {
 
 	my $value = eval { $self->name->new(@init_args) };
 	if ( !$value ) {
+	    my $error = $@;
+	    $error =~ m|^(.+) at /|;
+	    my $msg = $1;
 		$ctx->exception(
 			"Validation error from ".$self->name
-				." constructor: $@",
+				." constructor: $1",
 			$node,
 		);
 	}
