@@ -114,6 +114,10 @@ sub from_dom {
 
 	my $rootNode = $dom->documentElement;
 	
+	return $self->from_root_node(
+	   root_node => $rootNode,
+	   lax => $lax,
+	);
 }
 
 sub from_root_node {
