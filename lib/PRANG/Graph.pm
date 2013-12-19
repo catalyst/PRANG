@@ -111,6 +111,18 @@ sub from_dom {
     return $instance;
 }
 
+sub from_root_node {
+    my $class = shift;
+    my ( $root_node, $lax ) = pos_validated_list(
+        \@_,
+        { isa => 'XML::LibXML::Node' },
+        { isa => 'Bool', optional => 1, default => 0 },
+    );
+
+    my $instance = $class->marshaller->from_root_node( root_node => $root_node, lax => $lax  );
+    return $instance;
+}
+
 sub to_xml() {
     my $self = shift;
     my ( $format ) = pos_validated_list(

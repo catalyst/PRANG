@@ -113,6 +113,18 @@ sub from_dom {
     );
 
 	my $rootNode = $dom->documentElement;
+	
+}
+
+sub from_root_node {
+    my $self = shift;
+
+    my ( $rootNode, $lax ) = validated_list(
+        \@_,
+        root_node => { isa => 'XML::LibXML::Node', },
+        lax => { isa => 'Bool', optional => 1, default => 0 },
+    );
+    
 	my $rootNodeNS = $rootNode->namespaceURI;
 
 	my $xsi = {};
