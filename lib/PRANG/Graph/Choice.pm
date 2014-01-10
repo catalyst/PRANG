@@ -254,7 +254,7 @@ sub output {
 	else {
 
 		# textnode ... jfdi
-		my $tn = $node->ownerDocument->createTextNode($value);
+		my $tn = $self->createTextNode($node->ownerDocument, $value);
 		$node->appendChild($tn);
 	}
 }

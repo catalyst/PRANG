@@ -1,6 +1,8 @@
 
 package PRANG;
 
+our $EMIT_CDATA = 0;
+
 1;
 
 __END__
@@ -155,6 +157,22 @@ release, once the "parse" role method is made to work correctly.
 
 A L<PRANG::Graph> structure also has a C<to_xml> method, which emits
 XML (optionally indented).
+
+=back
+
+=head1 Global Options
+
+There are some (well, one at the moment) global options which can be
+set via:
+
+$PRANG::OPTION = 'value';
+
+=item B<EMIT_CDATA>
+
+Setting this to true will emit all text nodes as CDATA elements rather
+than just text. Default is false.
+
+Note, for parsing, CDATA and text are treated as the same.
 
 =back
 

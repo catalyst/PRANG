@@ -388,12 +388,12 @@ sub output  {
 			}
 		}
 		elsif ( $self->has_contents and defined $value ) {
-			my $tn = $doc->createTextNode($value);
+		    my $tn = $self->createTextNode($doc, $value);
 			$nn->appendChild($tn);
 		}
 	}
 	else {
-		$nn = $doc->createTextNode($value);
+	    $nn = $self->createTextNode($doc, $value);
 		$node->appendChild($nn);
 	}
 }

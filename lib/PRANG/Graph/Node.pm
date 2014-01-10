@@ -20,6 +20,16 @@ requires 'expected';
 # method output ( Object $item, XML::LibXML::Element $node, HashRef $xsi )
 requires 'output';
 
+sub createTextNode {
+    my $self = shift;
+    my $doc = shift;
+    my $text = shift;
+    
+    my $method = $PRANG::EMIT_CDATA ? 'createCDATASection' : 'createTextNode';
+    
+    my $tn = $doc->$method($text);
+}
+
 1;
 
 __END__

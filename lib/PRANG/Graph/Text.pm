@@ -104,7 +104,8 @@ sub output  {
 	}
 	return unless length($value//"");
 	my $doc = $node->ownerDocument;
-	my $tn = $doc->createTextNode($value);
+	my $tn = $self->createTextNode($doc, $value);
+		
 	$node->appendChild($tn);
 }
 
