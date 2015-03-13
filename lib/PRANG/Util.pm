@@ -1,6 +1,9 @@
 
 package PRANG::Util;
 
+use strict;
+use warnings;
+
 use Sub::Exporter -setup =>
 	{ exports => [qw(types_of)] };
 

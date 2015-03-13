@@ -1,6 +1,9 @@
 
 package PRANG;
 
+use strict;
+use warnings;
+
 our $EMIT_CDATA = 0;
 
 1;
