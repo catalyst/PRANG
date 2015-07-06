@@ -2,6 +2,7 @@
 package PRANG::XMLSchema::Types;
 
 use strict;
+use warnings;
 use Moose::Util::TypeConstraints;
 
 subtype "PRANG::XMLSchema::normalizedString"
