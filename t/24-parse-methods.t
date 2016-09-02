@@ -20,9 +20,12 @@ open FH, "<", shift @eg_filenames;
 $valid_foo = Octothorpe->parse_fh( \*FH );
 ok($valid_foo, "parse_fh(\*FOO)");
 
-eval {Octothorpe->parse_fh( 'blah' )};
-like($@, qr{Parameter #1 \("blah"\) to PRANG::Graph::parse_fh did not pass the 'checking type constraint for GlobRef' callback}, 
-    "parse_fh parameter validated");
+{
+    eval {Octothorpe->parse_fh( 'blah' )};
+    my $error = $@;
+    ok( ($error =~ qr{Parameter #1 \("blah"\) to PRANG::Graph::parse_fh did not pass the 'checking type constraint for GlobRef' callback})
+    ||  ($error =~ qr{Parameter #1 does not pass the type constraint because: Validation failed for 'GlobRef' with value "blah"}) );
+}
 
 my $parser = XML::LibXML->new;
 my $dom = $parser->parse_file( shift @eg_filenames );
