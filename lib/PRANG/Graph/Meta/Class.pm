@@ -543,6 +543,7 @@ sub to_libxml {
 }
 
 package Moose::Meta::Class::Custom::Trait::PRANG;
+
 sub register_implementation {"PRANG::Graph::Meta::Class"}
 
 1;
