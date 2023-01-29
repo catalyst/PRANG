@@ -3,7 +3,7 @@
 use Test::More no_plan;
 use strict;
 use warnings;
-use t::Octothorpe;
+use Octothorpe;
 
 ok( Fingernails->meta->get_attribute("currency")->has_xml_name,
 	"has_attr produces an XML attribute"
