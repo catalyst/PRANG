@@ -4,7 +4,7 @@ use Test::More no_plan;
 use strict;
 use warnings;
 use XML::LibXML;
-use Octothorpe;
+use t::Octothorpe;
 
 # In this test, the element acceptor is used individually.
 
